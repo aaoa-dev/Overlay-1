@@ -1,19 +1,20 @@
-import {players} from './players.js';
+import {chatters} from './chatters.js';
 import {updateScore, isRaiding} from './reset.js';
 
 
 export const check = (tags) => {
-    if (isRaiding) return;
-    if (players.some((player) => player.user == tags.username)) { 
-      const player = players.find((player) => player.user == tags.username); 
-      player.score += 1;
+    // if (isRaiding) return;
+    if (chatters.some((chatter) => chatter.user == tags.username)) { 
+      const chatter = chatters.find((chatter) => chatter.user == tags.username); 
+      chatter.timestamp = Date.now(); 
     } else {
-      players.push({
+      chatters.push({
         name: tags["display-name"],
         user: tags.username,
-        score: 1,
+        timestamp: Date.now(),
       });
     }
-    localStorage.setItem("players", JSON.stringify(players));
-    updateScore();
+    localStorage.setItem("chatters", JSON.stringify(chatters));
+    // updateScore();
   };
+

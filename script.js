@@ -8,7 +8,7 @@ const client = new tmi.Client({
 client.connect().catch(console.error);
 client.on("message", (channel, tags, message, self) => {
   if (self) return;
-  reset(tags, message);
-  if (message.startsWith('!')) return;
+  // reset(tags, message);
+  // if (message.startsWith('!')) return;
   check(tags);
 });

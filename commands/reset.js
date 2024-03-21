@@ -1,4 +1,4 @@
-import {players} from './players.js';
+import {chatters} from './chatters.js';
 
 const p1Name = document.getElementById("p1-Name");
 const p2Name = document.getElementById("p2-Name");
@@ -6,9 +6,9 @@ const p1Score = document.getElementById("p1-Score");
 const p2Score = document.getElementById("p2-Score");
 
 export const updateScore = () => {
-  players.sort((a, b) => b.score - a.score);
-  const chatters = players.slice(0, 2);
-  chatters.map((chatter, index) => {
+  chatters.sort((a, b) => b.score - a.score);
+  const filteredChatters = chatters.slice(0, 2);
+  filteredChatters.map((chatter, index) => {
     if (index === 0) {
       p1Name.innerText = chatter.name;
       p1Score.innerText = chatter.score;
@@ -35,9 +35,9 @@ export const reset = (tags, message) => {
       return;
     }
     if (message === "!reset") {
-      localStorage.removeItem("players"); 
+      localStorage.removeItem("chatters"); 
       console.log('Local Storage cleared'); 
-      players.length = 0;
+      chatters.length = 0;
       resetUI();
       isRaiding = true;
       setTimeout(() => {isRaiding = false;}, 10000)

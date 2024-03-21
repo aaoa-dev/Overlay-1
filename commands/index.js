@@ -1,6 +1,6 @@
 import {reset, resetUI, isRaiding, updateScore} from './reset.js';
 import {check} from './check.js';
-import {players} from './players.js';
+import {chatters} from './chatters.js';
 
 export {
     reset, 
@@ -8,5 +8,5 @@ export {
     isRaiding,
     updateScore,
     check, 
-    players
+    chatters
 };
