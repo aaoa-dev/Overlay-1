@@ -1,10 +1,10 @@
-import {chatters, chattersContainer, addChatter} from './chatters.js';
+import {chatters, chattersContainer, addChatter, removeChatter} from './chatters.js';
 
 
 export const updateUI = () => {
     for (const child of chattersContainer.children) {
         if (!chatters.some((chatter) => chatter.user == child.id)) {
-            child.remove();
+            removeChatter(child);
         }
     }
     for (const chatter of chatters) {
