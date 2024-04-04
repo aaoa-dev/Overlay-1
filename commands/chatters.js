@@ -4,9 +4,16 @@ export let chatters = [];
 export const chattersContainer = document.getElementById("chattersContainer");
 export function addChatter(chatter) {
   console.log(chatter)
-  chattersContainer.innerHTML += `<div id="${chatter.user}" class="opacity-100 transition-all duration-1000 aspect-square h-auto w-20 flex justify-center align-middle items-center bg-[var(--chatter-color)] text-5xl font-extrabold text-black rounded-full" style="--chatter-color: ${chatter.color || "#ffffff"}">
+  chattersContainer.innerHTML += `<div id="${chatter.user}" class="opacity-0 transition-all duration-1000 aspect-square h-auto w-0 flex justify-center align-middle items-center bg-[var(--chatter-color)] text-0 font-extrabold text-black rounded-full" style="--chatter-color: ${chatter.color || "#ffffff"}">
   ${chatter.user[0].toUpperCase()}
   </div>`;
+
+  setTimeout(() => {
+    const child = document.getElementById(chatter.user);
+    child.classList.replace("opacity-0", "opacity-100");
+    child.classList.replace("w-0", "w-20");
+    child.classList.replace("text-0", "text-5xl")
+  }, 0);
 }
 
 export function removeChatter(child) {
@@ -31,7 +38,7 @@ if (chatterString) {
   
 }
 
-const timeSpan = 1*10*1000;
+const timeSpan = 2*60*1000;
 const interval = 2*1000;
 setInterval(() => {
   const filteredChatters = chatters.filter(chatter => Date.now() - chatter.timestamp < timeSpan);
@@ -43,3 +50,7 @@ setInterval(() => {
 }, interval);
 
 console.log(chatters);
+export function sortChatters() {
+chatters = chatters.sort((a, b) => a.timestamp - b.timestamp);
+chatters = chatters.slice(0,8);
+};

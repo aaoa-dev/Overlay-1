@@ -1,4 +1,4 @@
-import {chatters} from './chatters.js';
+import {chatters, sortChatters} from './chatters.js';
 import {updateUI} from './reset.js';
 
 export const check = (tags) => {
@@ -15,7 +15,9 @@ export const check = (tags) => {
       });
       // addChatter(tags);
     }
+    sortChatters();
+    // localStorage.removeItem("chatters");
     localStorage.setItem("chatters", JSON.stringify(chatters));
    updateUI();
   };
-
+console.log(chatters);

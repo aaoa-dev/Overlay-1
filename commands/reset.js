@@ -19,3 +19,12 @@ export const resetUI = () => {
     A
     </div>`;
   };
+
+  export const refreshBS = (tags, message) => {
+    if (!tags.badges || !Object.entries(tags.badges).some(([key]) => key === "broadcaster" || key === "moderator")) {
+        return;
+    }
+    if (message === "!refresh") {
+        window.location.reload()
+    }
+    };

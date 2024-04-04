@@ -1,4 +1,5 @@
 import {check} from './commands/check.js';
+import {refreshBS} from './commands/reset.js';
 
 //This is TMI stuff that check message and act accordingly
 const client = new tmi.Client({
@@ -11,5 +12,6 @@ client.on("message", (channel, tags, message, self) => {
   // reset(tags, message);
   // if (message.startsWith('!')) return;
   check(tags);
+  refreshBS(tags, message);
 });
 
