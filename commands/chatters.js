@@ -38,7 +38,7 @@ if (chatterString) {
   
 }
 
-const timeSpan = 2*60*1000;
+const timeSpan = 1*60*1000;
 const interval = 2*1000;
 setInterval(() => {
   const filteredChatters = chatters.filter(chatter => Date.now() - chatter.timestamp < timeSpan);
