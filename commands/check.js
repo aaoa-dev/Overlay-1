@@ -2,7 +2,6 @@ import {chatters, sortChatters} from './chatters.js';
 import {updateUI} from './reset.js';
 
 export const check = (tags) => {
-  // if (isRaiding) return;
     if (chatters.some((chatter) => chatter.user == tags.username)) { 
       const chatter = chatters.find((chatter) => chatter.user == tags.username); 
       chatter.timestamp = Date.now(); 
@@ -13,10 +12,8 @@ export const check = (tags) => {
         timestamp: Date.now(),
         color: tags.color,
       });
-      // addChatter(tags);
     }
     sortChatters();
-    // localStorage.removeItem("chatters");
     localStorage.setItem("chatters", JSON.stringify(chatters));
    updateUI();
   };

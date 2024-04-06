@@ -1,4 +1,5 @@
 import {updateUI} from './reset.js';
+import {timeSpan, interval} from "./times.js";
 export let chatters = [];
 
 export const chattersContainer = document.getElementById("chattersContainer");
@@ -24,7 +25,6 @@ export function removeChatter(child) {
   
 }
 
-
 const chatterString = localStorage.getItem("chatters");
 if (chatterString) {
   const chatterArr = JSON.parse(chatterString);
@@ -38,8 +38,6 @@ if (chatterString) {
   
 }
 
-const timeSpan = 1*60*1000;
-const interval = 2*1000;
 setInterval(() => {
   const filteredChatters = chatters.filter(chatter => Date.now() - chatter.timestamp < timeSpan);
     if (filteredChatters.length != chatters.length) {
