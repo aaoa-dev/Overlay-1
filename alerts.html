@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="output.css" />
+    <script src="tmi.js"></script>
+    <script type="module" src="alerts.js" defer></script>
+  </head>
+  <body class="m-0 p-0 h-screen w-screen overflow-hidden">
+    <div id="alertContainer" class="fixed top-0 left-0 w-full h-full pointer-events-none">
+      <!-- Alerts will be injected here -->
+    </div>
+
+    <!-- Control buttons -->
+    <div class="fixed bottom-4 right-4 flex gap-2">
+        <button 
+          onclick="resetUsedState()" 
+          class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
+        >
+          Reset Users
+        </button>
+        <button 
+          onclick="testAlert()" 
+          class="bg-purple-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-purple-600 transition-colors"
+        >
+          Test Alert
+        </button>
+    </div>
+  </body>
+</html> 
