@@ -90,19 +90,21 @@ window.testAlert = () => {
     ];
     
     const randomUser = testUsers[Math.floor(Math.random() * testUsers.length)];
+    const now = new Date().getTime();
     
     if (!userData[randomUser.name]) {
-        userData[randomUser.name] = { count: 0, usedToday: false };
+        userData[randomUser.name] = { count: 0, lastUsed: 0 };
     }
     
-    // Check if user already used !in today
-    if (userData[randomUser.name].usedToday) {
-        console.log(`${randomUser.name} already used !in today`);
+    // Check if 24 hours have passed
+    const hoursSinceLastUse = (now - (userData[randomUser.name].lastUsed || 0)) / (1000 * 60 * 60);
+    if (hoursSinceLastUse < 24) {
+        console.log(`${randomUser.name} needs to wait ${Math.ceil(24 - hoursSinceLastUse)} more hours`);
         return;
     }
     
     userData[randomUser.name].count++;
-    userData[randomUser.name].usedToday = true;
+    userData[randomUser.name].lastUsed = now;
     localStorage.setItem('userVisits', JSON.stringify(userData));
 
     queueAlert(randomUser.name, randomUser.color);
@@ -122,20 +124,22 @@ client.on("message", (channel, tags, message, self) => {
 // Separate the welcome logic into its own function
 function handleWelcome(channel, tags) {
     const username = tags['display-name'];
+    const now = new Date().getTime();
     
     // Initialize user data if first time
     if (!userData[username]) {
-        userData[username] = { count: 0, usedToday: false };
+        userData[username] = { count: 0, lastUsed: 0 };
     }
     
-    // Check if user already used the welcome command today
-    if (userData[username].usedToday) {
-        console.log(`${username} already checked in today`);
+    // Check if 24 hours have passed since last use
+    const hoursSinceLastUse = (now - (userData[username].lastUsed || 0)) / (1000 * 60 * 60);
+    if (hoursSinceLastUse < 24) {
+        console.log(`${username} needs to wait ${Math.ceil(24 - hoursSinceLastUse)} more hours`);
         return;
     }
     
     userData[username].count++;
-    userData[username].usedToday = true;
+    userData[username].lastUsed = now;
     localStorage.setItem('userVisits', JSON.stringify(userData));
 
     // Send welcome message based on visit count
@@ -151,7 +155,7 @@ function handleWelcome(channel, tags) {
 // Add reset function
 window.resetUsedState = () => {
     Object.keys(userData).forEach(username => {
-        userData[username].usedToday = false;
+        userData[username].lastUsed = 0;  // Reset the timestamp to 0
     });
     localStorage.setItem('userVisits', JSON.stringify(userData));
     console.log('All users reset and can use !in again');
