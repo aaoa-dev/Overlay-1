@@ -114,12 +114,43 @@ window.testAlert = () => {
 client.on("message", (channel, tags, message, self) => {
     if (self) return;
 
-    // Check for text commands
+    // Check if this is the user's first message this stream
+    if (tags['first-msg']) {
+        handleFirstMessage(channel, tags);
+        return;
+    }
+
+    // Still allow manual commands as fallback
     if (WELCOME_COMMANDS.includes(message.toLowerCase())) {
         handleWelcome(channel, tags);
         return;
     }
 });
+
+// Handle first message in stream
+function handleFirstMessage(channel, tags) {
+    const username = tags['display-name'];
+    const now = new Date().getTime();
+    
+    // Initialize user data if first time ever
+    if (!userData[username]) {
+        userData[username] = { count: 0, lastUsed: 0 };
+    }
+    
+    userData[username].count++;
+    userData[username].lastUsed = now;
+    localStorage.setItem('userVisits', JSON.stringify(userData));
+
+    // Send welcome message
+    if (userData[username].count <= 1) {
+        client.say(channel, `Welcome to the channel ${username}! 👋`);
+    } else {
+        client.say(channel, `Welcome back ${username}! 👋`);
+    }
+
+    // Show alert
+    queueAlert(username, tags.color);
+}
 
 // Separate the welcome logic into its own function
 function handleWelcome(channel, tags) {
