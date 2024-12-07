@@ -110,12 +110,42 @@ window.testAlert = () => {
     queueAlert(randomUser.name, randomUser.color);
 };
 
+// Check and update stream date
+const today = new Date().toDateString();
+if (currentStreamDate !== today) {
+    currentStreamDate = today;
+    localStorage.setItem('streamDate', currentStreamDate);
+    // Reset user data for the new stream
+    Object.keys(userData).forEach(username => {
+        userData[username] = {
+            ...userData[username],
+            hasChattedThisStream: false,
+            lastUsed: 0  // Also reset the cooldown
+        };
+    });
+    localStorage.setItem('userVisits', JSON.stringify(userData));
+    console.log('Stream date updated, all user states reset');
+}
+
 // Handle actual chat messages
 client.on("message", (channel, tags, message, self) => {
     if (self) return;
+    
+    const username = tags['display-name'];
 
-    // Check if this is the user's first message this stream
-    if (tags['first-msg']) {
+    // Initialize user data if needed
+    if (!userData[username]) {
+        userData[username] = { 
+            count: 0, 
+            lastUsed: 0,
+            hasChattedThisStream: false
+        };
+    }
+
+    // Check if this is the user's first message this stream or their first message ever
+    if (!userData[username].hasChattedThisStream || tags['first-msg']) {
+        userData[username].hasChattedThisStream = true;
+        localStorage.setItem('userVisits', JSON.stringify(userData));
         handleFirstMessage(channel, tags);
         return;
     }
