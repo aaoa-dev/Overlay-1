@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="output.css" />
     <script src="tmi.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script type="module" src="alerts.js" defer></script>
   </head>
   <body class="m-0 p-0 h-screen w-screen overflow-hidden">
@@ -25,6 +26,27 @@
           class="bg-purple-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-purple-600 transition-colors"
         >
           Test Alert
+        </button>
+        <button 
+          onclick="testConfettiBasic()" 
+          class="bg-green-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-green-600 transition-colors"
+          title="Test 10+ visits confetti"
+        >
+          Test Basic Confetti
+        </button>
+        <button 
+          onclick="testConfettiSilver()" 
+          class="bg-gray-400 text-white px-4 py-2 rounded-full shadow-lg hover:bg-gray-500 transition-colors"
+          title="Test 50+ visits confetti"
+        >
+          Test Silver Confetti
+        </button>
+        <button 
+          onclick="testConfettiGold()" 
+          class="bg-yellow-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-yellow-600 transition-colors"
+          title="Test 100+ visits confetti"
+        >
+          Test Gold Confetti
         </button>
     </div>
   </body>

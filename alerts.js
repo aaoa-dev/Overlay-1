@@ -22,6 +22,37 @@ let isPlaying = false;
 // Define valid commands
 const WELCOME_COMMANDS = ['!in', '!welcome', '!checkin', '!here'];
 
+// Define milestones
+const MILESTONES = [10, 50, 100];
+
+// Confetti effects for different milestones
+function celebrateMilestone(count) {
+    if (count >= 100) {
+        // Gold rain for 100+ visits
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#FFD700', '#FFA500', '#FFE4B5'],
+            gravity: 0.5,
+        });
+    } else if (count >= 50) {
+        // Silver burst for 50+ visits
+        confetti({
+            particleCount: 100,
+            spread: 60,
+            origin: { y: 0.6 },
+            colors: ['#C0C0C0', '#E5E4E2', '#FFFFFF'],
+        });
+    } else if (count >= 10) {
+        // Regular confetti for 10+ visits
+        confetti({
+            particleCount: 50,
+            spread: 45,
+        });
+    }
+}
+
 // Process queue
 async function processQueue() {
     if (isPlaying || alertQueue.length === 0) return;
@@ -168,14 +199,21 @@ function handleFirstMessage(channel, tags) {
     }
     
     userData[username].count++;
+    const newCount = userData[username].count;
     userData[username].lastUsed = now;
     localStorage.setItem('userVisits', JSON.stringify(userData));
 
     // Send welcome message
-    if (userData[username].count <= 1) {
+    if (newCount <= 1) {
         client.say(channel, `Welcome to the channel ${username}! 👋`);
     } else {
-        client.say(channel, `Welcome back ${username}! 👋`);
+        // Check if user hit a milestone
+        if (MILESTONES.includes(newCount)) {
+            client.say(channel, `🎉 Amazing! ${username} has been here ${newCount} times! Thank you for your continued support! 🎉`);
+            celebrateMilestone(newCount);
+        } else {
+            client.say(channel, `Welcome back ${username}! 👋`);
+        }
     }
 
     // Show alert
@@ -220,6 +258,33 @@ window.resetUsedState = () => {
     });
     localStorage.setItem('userVisits', JSON.stringify(userData));
     console.log('All users reset and can use !in again');
+};
+
+// Test functions for confetti effects
+window.testConfettiBasic = () => {
+    confetti({
+        particleCount: 50,
+        spread: 45,
+    });
+};
+
+window.testConfettiSilver = () => {
+    confetti({
+        particleCount: 100,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ['#C0C0C0', '#E5E4E2', '#FFFFFF'],
+    });
+};
+
+window.testConfettiGold = () => {
+    confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#FFD700', '#FFA500', '#FFE4B5'],
+        gravity: 0.5,
+    });
 };
 
 client.connect().catch(console.error); 
