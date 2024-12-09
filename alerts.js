@@ -142,8 +142,8 @@ client.on("message", (channel, tags, message, self) => {
         };
     }
 
-    // Check if this is the user's first message this stream or their first message ever
-    if (!userData[username].hasChattedThisStream || tags['first-msg']) {
+    // Check if this is the user's first message this stream using Twitch's tag
+    if (tags['first-msg-of-stream'] === true || tags['first-msg'] === true) {
         userData[username].hasChattedThisStream = true;
         localStorage.setItem('userVisits', JSON.stringify(userData));
         handleFirstMessage(channel, tags);
