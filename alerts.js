@@ -164,6 +164,13 @@ client.on("message", (channel, tags, message, self) => {
     
     const username = tags['display-name'];
 
+    // Check for reset command
+    if (message.toLowerCase() === '!reset' && (tags.mod || tags.badges?.broadcaster)) {
+        resetUsedState();
+        client.say(channel, `All users have been reset and can use !in again!`);
+        return;
+    }
+
     // Initialize user data if needed
     if (!userData[username]) {
         userData[username] = { 
@@ -173,11 +180,20 @@ client.on("message", (channel, tags, message, self) => {
         };
     }
 
-    // Check if this is the user's first message this stream using Twitch's tag
-    if (tags['first-msg-of-stream'] === true || tags['first-msg'] === true) {
+    // Handle different types of chatters
+    if (tags['first-msg']) {
+        // Brand new chatter, never chatted before
         userData[username].hasChattedThisStream = true;
         localStorage.setItem('userVisits', JSON.stringify(userData));
-        handleFirstMessage(channel, tags);
+        handleFirstMessage(channel, tags, true);
+        return;
+    }
+
+    if (tags['returning-chatter']) {
+        // Returning chatter who hasn't been around for a while
+        userData[username].hasChattedThisStream = true;
+        localStorage.setItem('userVisits', JSON.stringify(userData));
+        handleFirstMessage(channel, tags, false);
         return;
     }
 
@@ -189,7 +205,7 @@ client.on("message", (channel, tags, message, self) => {
 });
 
 // Handle first message in stream
-function handleFirstMessage(channel, tags) {
+function handleFirstMessage(channel, tags, isFirstTimeEver = false) {
     const username = tags['display-name'];
     const now = new Date().getTime();
     
@@ -204,16 +220,15 @@ function handleFirstMessage(channel, tags) {
     localStorage.setItem('userVisits', JSON.stringify(userData));
 
     // Send welcome message
-    if (newCount <= 1) {
-        client.say(channel, `Welcome to the channel ${username}! 👋`);
+    if (isFirstTimeEver) {
+        client.say(channel, `Welcome to the channel ${username}! Thanks for chatting for the very first time! 🎉`);
+    } else if (MILESTONES.includes(newCount)) {
+        client.say(channel, `🎉 Amazing! ${username} has been here ${newCount} times! Thank you for your continued support! 🎉`);
+        celebrateMilestone(newCount);
+    } else if (tags['returning-chatter']) {
+        client.say(channel, `Welcome back after a while ${username}! Great to see you again! 🎉`);
     } else {
-        // Check if user hit a milestone
-        if (MILESTONES.includes(newCount)) {
-            client.say(channel, `🎉 Amazing! ${username} has been here ${newCount} times! Thank you for your continued support! 🎉`);
-            celebrateMilestone(newCount);
-        } else {
-            client.say(channel, `Welcome back ${username}! 👋`);
-        }
+        client.say(channel, `Welcome back ${username}! 👋`);
     }
 
     // Show alert
@@ -251,10 +266,14 @@ function handleWelcome(channel, tags) {
     queueAlert(username, tags.color);
 }
 
-// Add reset function
+// Reset all users' used state
 window.resetUsedState = () => {
     Object.keys(userData).forEach(username => {
-        userData[username].lastUsed = 0;  // Reset the timestamp to 0
+        userData[username] = {
+            ...userData[username],
+            lastUsed: 0,
+            hasChattedThisStream: false
+        };
     });
     localStorage.setItem('userVisits', JSON.stringify(userData));
     console.log('All users reset and can use !in again');
