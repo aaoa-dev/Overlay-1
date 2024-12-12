@@ -1,4 +1,4 @@
-import { config } from './config.js';
+import { config } from './config/config.js';
 
 const client = new tmi.Client({
     options: { skipUpdatingEmotesets: true },
@@ -9,7 +9,7 @@ const client = new tmi.Client({
     channels: [config.settings.TWITCH.CHANNEL_NAME],
 });
 
-// Load stored user dat
+// Load stored user data
 let userData = JSON.parse(localStorage.getItem('userVisits')) || {};
 
 // Track current stream date
@@ -60,7 +60,7 @@ async function processQueue() {
     isPlaying = true;
     const { username, color } = alertQueue.shift();
     
-    await createInAlert(username, color);
+    await createAlert(username, color);
     
     isPlaying = false;
     processQueue(); // Process next item if any
@@ -72,22 +72,32 @@ function queueAlert(username, color) {
     processQueue();
 }
 
-async function createInAlert(username, color) {
+// Create and show alert
+async function createAlert(username, color) {
     return new Promise((resolve) => {
         const alertContainer = document.getElementById('alertContainer');
         const alert = document.createElement('div');
         
         const userColor = color || "#ffffff";
+        const visitCount = userData[username].count;
+        let message = `has been here ${visitCount} times`;
+
+        // Customize message based on visit count
+        if (visitCount === 1) {
+            message = 'Welcome to the channel!';
+        }
         
-        alert.className = 'fixed left-1/2 -translate-x-1/2 -top-20 transition-all duration-700';
+        alert.className = 'alert-content fixed left-1/2 -translate-x-1/2 -top-20 transition-all duration-700';
         alert.innerHTML = `
-            <div class="flex items-center bg-black rounded-full p-2 text-white text-2xl">
-                <div class="w-12 h-12 rounded-full flex items-center justify-center text-black font-bold" style="background-color: ${userColor}">
-                    ${username[0].toUpperCase()}
+            <div class="flex items-center rounded-full p-2 text-white shadow-lg bg-black">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: ${userColor}">
+                    <span class="text-2xl font-bold text-white">
+                        ${username[0].toUpperCase()}
+                    </span>
                 </div>
-                <div class="px-4">
-                    ${username}
-                    <span class="opacity-75">has been here ${userData[username].count} times</span>
+                <div class="flex flex-col px-4">
+                    <span class="font-bold">${username}</span>
+                    <span class="text-sm opacity-90">${message}</span>
                 </div>
             </div>
         `;
@@ -106,56 +116,8 @@ async function createInAlert(username, color) {
                 alert.remove();
                 resolve();
             }, 700);
-        }, 3000);
+        }, 4000);
     });
-}
-
-// Test function
-window.testAlert = () => {
-    const testUsers = [
-        { name: 'TestUser1', color: '#FF0000' },
-        { name: 'TestUser2', color: '#00FF00' },
-        { name: 'TestUser3', color: '#0000FF' },
-        { name: 'TestUser4', color: '#FF00FF' },
-        { name: 'TestUser5', color: '#FFFF00' }
-    ];
-    
-    const randomUser = testUsers[Math.floor(Math.random() * testUsers.length)];
-    const now = new Date().getTime();
-    
-    if (!userData[randomUser.name]) {
-        userData[randomUser.name] = { count: 0, lastUsed: 0 };
-    }
-    
-    // Check if 24 hours have passed
-    const hoursSinceLastUse = (now - (userData[randomUser.name].lastUsed || 0)) / (1000 * 60 * 60);
-    if (hoursSinceLastUse < 24) {
-        console.log(`${randomUser.name} needs to wait ${Math.ceil(24 - hoursSinceLastUse)} more hours`);
-        return;
-    }
-    
-    userData[randomUser.name].count++;
-    userData[randomUser.name].lastUsed = now;
-    localStorage.setItem('userVisits', JSON.stringify(userData));
-
-    queueAlert(randomUser.name, randomUser.color);
-};
-
-// Check and update stream date
-const today = new Date().toDateString();
-if (currentStreamDate !== today) {
-    currentStreamDate = today;
-    localStorage.setItem('streamDate', currentStreamDate);
-    // Reset user data for the new stream
-    Object.keys(userData).forEach(username => {
-        userData[username] = {
-            ...userData[username],
-            hasChattedThisStream: false,
-            lastUsed: 0  // Also reset the cooldown
-        };
-    });
-    localStorage.setItem('userVisits', JSON.stringify(userData));
-    console.log('Stream date updated, all user states reset');
 }
 
 // Handle actual chat messages
@@ -173,11 +135,15 @@ client.on("message", (channel, tags, message, self) => {
         };
     }
 
-    // Check if this is the user's first message this stream using Twitch's tag
-    if (tags['first-msg-of-stream'] === true || tags['first-msg'] === true) {
-        userData[username].hasChattedThisStream = true;
-        localStorage.setItem('userVisits', JSON.stringify(userData));
-        handleFirstMessage(channel, tags);
+    // Check for first-time chatters using Twitch's tag
+    if (tags['first-msg']) {
+        handleFirstMessage(channel, tags, true);  // true indicates first time ever
+        return;
+    }
+
+    // Check for returning chatters using Twitch's tag
+    if (tags['returning-chatter']) {
+        handleFirstMessage(channel, tags, false);  // false indicates returning chatter
         return;
     }
 
@@ -189,7 +155,7 @@ client.on("message", (channel, tags, message, self) => {
 });
 
 // Handle first message in stream
-function handleFirstMessage(channel, tags) {
+function handleFirstMessage(channel, tags, isFirstTimeEver = false) {
     const username = tags['display-name'];
     const now = new Date().getTime();
     
@@ -204,8 +170,8 @@ function handleFirstMessage(channel, tags) {
     localStorage.setItem('userVisits', JSON.stringify(userData));
 
     // Send welcome message
-    if (newCount <= 1) {
-        client.say(channel, `Welcome to the channel ${username}! 👋`);
+    if (isFirstTimeEver) {
+        client.say(channel, `Welcome to the channel ${username}! Thanks for chatting for the very first time! 🎉`);
     } else {
         // Check if user hit a milestone
         if (MILESTONES.includes(newCount)) {
@@ -220,7 +186,7 @@ function handleFirstMessage(channel, tags) {
     queueAlert(username, tags.color);
 }
 
-// Separate the welcome logic into its own function
+// Handle manual welcome commands
 function handleWelcome(channel, tags) {
     const username = tags['display-name'];
     const now = new Date().getTime();
@@ -251,40 +217,72 @@ function handleWelcome(channel, tags) {
     queueAlert(username, tags.color);
 }
 
-// Add reset function
-window.resetUsedState = () => {
+// Test functions
+globalThis.testAlert = (type = 'new') => {
+    const testUsers = [
+        { name: 'TestUser1', color: '#FF0000' },
+        { name: 'TestUser2', color: '#00FF00' },
+        { name: 'TestUser3', color: '#0000FF' },
+        { name: 'TestUser4', color: '#FF00FF' },
+        { name: 'TestUser5', color: '#FFFF00' }
+    ];
+    
+    const randomUser = testUsers[Math.floor(Math.random() * testUsers.length)];
+    
+    if (!userData[randomUser.name]) {
+        userData[randomUser.name] = { count: 0, lastUsed: 0 };
+    }
+    
+    // Simulate different visit counts based on type
+    if (type === 'new') {
+        userData[randomUser.name].count = 1;
+    } else if (type === 'milestone100') {
+        userData[randomUser.name].count = 100;
+    } else if (type === 'milestone50') {
+        userData[randomUser.name].count = 50;
+    } else if (type === 'milestone10') {
+        userData[randomUser.name].count = 10;
+    } else {
+        userData[randomUser.name].count = Math.floor(Math.random() * 9) + 2; // 2-9 visits
+    }
+    
+    localStorage.setItem('userVisits', JSON.stringify(userData));
+    queueAlert(randomUser.name, randomUser.color);
+    
+    // Trigger confetti for milestones
+    if (MILESTONES.includes(userData[randomUser.name].count)) {
+        celebrateMilestone(userData[randomUser.name].count);
+    }
+};
+
+// Reset function
+globalThis.resetUsedState = () => {
     Object.keys(userData).forEach(username => {
-        userData[username].lastUsed = 0;  // Reset the timestamp to 0
+        userData[username] = {
+            ...userData[username],
+            lastUsed: 0,
+            hasChattedThisStream: false
+        };
     });
     localStorage.setItem('userVisits', JSON.stringify(userData));
     console.log('All users reset and can use !in again');
 };
 
-// Test functions for confetti effects
-window.testConfettiBasic = () => {
-    confetti({
-        particleCount: 50,
-        spread: 45,
+// Check and update stream date
+const today = new Date().toDateString();
+if (currentStreamDate !== today) {
+    currentStreamDate = today;
+    localStorage.setItem('streamDate', currentStreamDate);
+    // Reset user data for the new stream
+    Object.keys(userData).forEach(username => {
+        userData[username] = {
+            ...userData[username],
+            hasChattedThisStream: false,
+            lastUsed: 0
+        };
     });
-};
-
-window.testConfettiSilver = () => {
-    confetti({
-        particleCount: 100,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#C0C0C0', '#E5E4E2', '#FFFFFF'],
-    });
-};
-
-window.testConfettiGold = () => {
-    confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#FFD700', '#FFA500', '#FFE4B5'],
-        gravity: 0.5,
-    });
-};
+    localStorage.setItem('userVisits', JSON.stringify(userData));
+    console.log('Stream date updated, all user states reset');
+}
 
 client.connect().catch(console.error); 
