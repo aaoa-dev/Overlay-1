@@ -25,6 +25,9 @@ const WELCOME_COMMANDS = ['!in', '!welcome', '!checkin', '!here'];
 // Define milestones
 const MILESTONES = [10, 50, 100];
 
+// Add reset command to valid commands list
+const RESET_COMMAND = '!reset';
+
 // Confetti effects for different milestones
 function celebrateMilestone(count) {
     if (count >= 100) {
@@ -89,15 +92,15 @@ async function createAlert(username, color) {
         
         alert.className = 'alert-content fixed left-1/2 -translate-x-1/2 -top-20 transition-all duration-700';
         alert.innerHTML = `
-            <div class="flex items-center rounded-full p-2 text-white shadow-lg bg-black">
-                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: ${userColor}">
+            <div class="flex items-center rounded-full p-2 text-white shadow-lg bg-black h-16">
+                <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center" style="background-color: ${userColor}">
                     <span class="text-2xl font-bold text-white">
                         ${username[0].toUpperCase()}
                     </span>
                 </div>
-                <div class="flex flex-col px-4">
-                    <span class="font-bold">${username}</span>
-                    <span class="text-sm opacity-90">${message}</span>
+                <div class="flex flex-col px-4 min-w-0">
+                    <span class="font-bold truncate">${username}</span>
+                    <span class="text-sm opacity-90 truncate">${message}</span>
                 </div>
             </div>
         `;
@@ -124,6 +127,19 @@ async function createAlert(username, color) {
 client.on("message", (channel, tags, message, self) => {
     if (self) return;
     
+    // Check for reset command (only for mods/broadcaster)
+    if (message.toLowerCase() === RESET_COMMAND) {
+        // Check if user is mod or broadcaster
+        if (tags.mod || tags.badges?.broadcaster) {
+            resetUsedState();
+            client.say(channel, `All user states have been reset! You can use !in again.`);
+            return;
+        } else {
+            client.say(channel, `Sorry @${tags['display-name']}, only moderators can use this command!`);
+            return;
+        }
+    }
+
     const username = tags['display-name'];
 
     // Initialize user data if needed
