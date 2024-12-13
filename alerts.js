@@ -28,32 +28,10 @@ const MILESTONES = [10, 50, 100];
 // Add reset command to valid commands list
 const RESET_COMMAND = '!reset';
 
-// Confetti effects for different milestones
-function celebrateMilestone(count) {
-    if (count >= 100) {
-        // Gold rain for 100+ visits
-        confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#FFD700', '#FFA500', '#FFE4B5'],
-            gravity: 0.5,
-        });
-    } else if (count >= 50) {
-        // Silver burst for 50+ visits
-        confetti({
-            particleCount: 100,
-            spread: 60,
-            origin: { y: 0.6 },
-            colors: ['#C0C0C0', '#E5E4E2', '#FFFFFF'],
-        });
-    } else if (count >= 10) {
-        // Regular confetti for 10+ visits
-        confetti({
-            particleCount: 50,
-            spread: 45,
-        });
-    }
+// Add to queue
+function queueAlert(username, color, milestoneCount = 0) {
+    alertQueue.push({ username, color, milestoneCount });
+    processQueue();
 }
 
 // Process queue
@@ -61,18 +39,43 @@ async function processQueue() {
     if (isPlaying || alertQueue.length === 0) return;
     
     isPlaying = true;
-    const { username, color } = alertQueue.shift();
+    const { username, color, milestoneCount } = alertQueue.shift();
     
-    await createAlert(username, color);
+    // Start the alert
+    const alertPromise = createAlert(username, color);
+    
+    // Trigger confetti shortly after alert starts sliding in
+    if (milestoneCount >= 10) {
+        setTimeout(() => {
+            if (milestoneCount >= 100) {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#FFD700', '#FFA500', '#FFE4B5'],
+                    gravity: 0.5,
+                });
+            } else if (milestoneCount >= 50) {
+                confetti({
+                    particleCount: 100,
+                    spread: 60,
+                    origin: { y: 0.6 },
+                    colors: ['#C0C0C0', '#E5E4E2', '#FFFFFF'],
+                });
+            } else {
+                confetti({
+                    particleCount: 50,
+                    spread: 45,
+                });
+            }
+        }, 300); // Trigger 300ms after alert starts
+    }
+    
+    // Wait for alert to complete
+    await alertPromise;
     
     isPlaying = false;
     processQueue(); // Process next item if any
-}
-
-// Add to queue
-function queueAlert(username, color) {
-    alertQueue.push({ username, color });
-    processQueue();
 }
 
 // Create and show alert
@@ -129,7 +132,6 @@ client.on("message", (channel, tags, message, self) => {
     
     // Check for reset command (only for mods/broadcaster)
     if (message.toLowerCase() === RESET_COMMAND) {
-        // Check if user is mod or broadcaster
         if (tags.mod || tags.badges?.broadcaster) {
             resetUsedState();
             client.say(channel, `All user states have been reset! You can use !in again.`);
@@ -163,6 +165,24 @@ client.on("message", (channel, tags, message, self) => {
         return;
     }
 
+    // If not first-msg or returning, check if it's their first message this stream
+    if (!userData[username].hasChattedThisStream) {
+        userData[username].hasChattedThisStream = true;
+        userData[username].count++;
+        userData[username].lastUsed = new Date().getTime();
+        localStorage.setItem('userVisits', JSON.stringify(userData));
+
+        // Check for milestones
+        const newCount = userData[username].count;
+        if (MILESTONES.includes(newCount)) {
+            client.say(channel, `🎉 Amazing! ${username} has been here ${newCount} times! Thank you for your continued support! 🎉`);
+            queueAlert(username, tags.color, newCount);
+        } else {
+            client.say(channel, `Welcome back ${username}! 👋`);
+            queueAlert(username, tags.color);
+        }
+    }
+
     // Still allow manual commands as fallback
     if (WELCOME_COMMANDS.includes(message.toLowerCase())) {
         handleWelcome(channel, tags);
@@ -192,14 +212,12 @@ function handleFirstMessage(channel, tags, isFirstTimeEver = false) {
         // Check if user hit a milestone
         if (MILESTONES.includes(newCount)) {
             client.say(channel, `🎉 Amazing! ${username} has been here ${newCount} times! Thank you for your continued support! 🎉`);
-            celebrateMilestone(newCount);
+            queueAlert(username, tags.color, newCount);
         } else {
             client.say(channel, `Welcome back ${username}! 👋`);
+            queueAlert(username, tags.color);
         }
     }
-
-    // Show alert
-    queueAlert(username, tags.color);
 }
 
 // Handle manual welcome commands
@@ -250,25 +268,24 @@ globalThis.testAlert = (type = 'new') => {
     }
     
     // Simulate different visit counts based on type
+    let milestoneCount = 0;
     if (type === 'new') {
         userData[randomUser.name].count = 1;
     } else if (type === 'milestone100') {
         userData[randomUser.name].count = 100;
+        milestoneCount = 100;
     } else if (type === 'milestone50') {
         userData[randomUser.name].count = 50;
+        milestoneCount = 50;
     } else if (type === 'milestone10') {
         userData[randomUser.name].count = 10;
+        milestoneCount = 10;
     } else {
         userData[randomUser.name].count = Math.floor(Math.random() * 9) + 2; // 2-9 visits
     }
     
     localStorage.setItem('userVisits', JSON.stringify(userData));
-    queueAlert(randomUser.name, randomUser.color);
-    
-    // Trigger confetti for milestones
-    if (MILESTONES.includes(userData[randomUser.name].count)) {
-        celebrateMilestone(userData[randomUser.name].count);
-    }
+    queueAlert(randomUser.name, randomUser.color, milestoneCount);
 };
 
 // Reset function
