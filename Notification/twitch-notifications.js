@@ -34,7 +34,7 @@ function initializeElements() {
 }
 
 // Animation function
-async function animateText(text, duration = 3000) {
+async function animateText(text, duration = 5000) {
     if (!initializeElements()) return;
     if (isAnimating) {
         debug('Animation already in progress, clearing...');
@@ -43,16 +43,27 @@ async function animateText(text, duration = 3000) {
     }
 
     try {
-        debug(`Starting animation for: ${text}`);
+        // Replace hyphens and underscores with spaces
+        const processedText = text.replace(/[-_]/g, ' ');
+        debug(`Starting animation for: ${processedText}`);
         isAnimating = true;
         signatureMain.innerHTML = '';
         
-        for (const char of text) {
+        // Create a container for the text that will grow from left to right
+        const textContainer = document.createElement('div');
+        textContainer.style.display = 'flex';
+        textContainer.style.flexWrap = 'nowrap';
+        textContainer.style.alignItems = 'center';
+        textContainer.style.width = 'fit-content';
+        textContainer.style.transition = 'opacity 0.5s ease';
+        signatureMain.appendChild(textContainer);
+        
+        for (const char of processedText) {
             // Handle spaces
             if (char === ' ') {
                 const space = document.createElement('div');
                 space.style.minWidth = '12px';
-                signatureMain.appendChild(space);
+                textContainer.appendChild(space);
                 await new Promise(resolve => setTimeout(resolve, 50));
                 continue;
             }
@@ -78,6 +89,8 @@ async function animateText(text, duration = 3000) {
             clone.style.visibility = 'visible';
             clone.style.position = 'relative';
             clone.style.display = 'block';
+            clone.style.opacity = '0';
+            clone.style.transition = 'opacity 0.3s ease';
             
             const path = clone.querySelector('path');
             if (path) {
@@ -87,10 +100,11 @@ async function animateText(text, duration = 3000) {
                 path.style.strokeDashoffset = `${length}`;
                 
                 // Add to DOM
-                signatureMain.appendChild(clone);
+                textContainer.appendChild(clone);
                 
                 // Trigger animation
                 requestAnimationFrame(() => {
+                    clone.style.opacity = '1';
                     path.style.strokeDashoffset = '0';
                 });
                 
@@ -101,9 +115,15 @@ async function animateText(text, duration = 3000) {
         debug('Animation sequence complete, waiting for display duration...');
         
         currentTimeout = setTimeout(() => {
-            signatureMain.innerHTML = '';
-            isAnimating = false;
-            debug('Animation complete and cleared');
+            // Fade out the text container
+            textContainer.style.opacity = '0';
+            
+            // Remove the container after fade out completes
+            setTimeout(() => {
+                signatureMain.innerHTML = '';
+                isAnimating = false;
+                debug('Animation complete and cleared');
+            }, 500); // Wait for fade out transition to complete
         }, duration);
 
     } catch (error) {
