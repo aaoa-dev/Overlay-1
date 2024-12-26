@@ -154,10 +154,107 @@ function testSub() {
     animateText('New Subscriber!');
 }
 
+// Initialize Twitch client
+let client = null;
+
+// Initialize Twitch connection
+async function initTwitchClient() {
+    try {
+        // Import config
+        const { config } = await import('../config/config.js');
+        
+        // Create client
+        client = new tmi.Client({
+            options: { debug: true },
+            identity: {
+                username: config.settings.TWITCH.USERNAME,
+                password: config.settings.TWITCH.OAUTH_TOKEN
+            },
+            channels: [config.settings.TWITCH.CHANNEL_NAME]
+        });
+
+        // Connect to Twitch
+        await client.connect();
+        debug('Connected to Twitch chat!');
+
+        // Set up event handlers
+        setupTwitchEvents();
+    } catch (error) {
+        handleError(error, 'Twitch initialization');
+    }
+}
+
+// Set up Twitch event handlers
+function setupTwitchEvents() {
+    if (!client) return;
+
+    // Chat messages
+    client.on('chat', (channel, userstate, message, self) => {
+        if (self) return; // Skip messages from the bot
+        
+        // Optional: Handle chat commands or special messages
+        if (message.startsWith('!')) {
+            // Handle commands here if needed
+            return;
+        }
+    });
+
+    // New subscription
+    client.on('subscription', (channel, username, methods, message, userstate) => {
+        debug(`New subscription from ${username}!`);
+        animateText(`${username} just subscribed!`);
+    });
+
+    // Resubscription
+    client.on('resub', (channel, username, streakMonths, message, userstate, methods) => {
+        debug(`Resub from ${username} for ${streakMonths} months!`);
+        animateText(`${username} resubbed for ${streakMonths} months!`);
+    });
+
+    // Gifted subscription
+    client.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
+        debug(`${username} gifted a sub to ${recipient}!`);
+        animateText(`${username} gifted a sub to ${recipient}!`);
+    });
+
+    // Bits/Cheers
+    client.on('cheer', (channel, userstate, message) => {
+        const bits = userstate.bits;
+        debug(`${userstate.username} cheered ${bits} bits!`);
+        animateText(`${userstate.username} cheered ${bits} bits!`);
+    });
+
+    // Raid
+    client.on('raided', (channel, username, viewers, userstate) => {
+        debug(`${username} raided with ${viewers} viewers!`);
+        animateText(`${username} raided with ${viewers} viewers!`);
+    });
+
+    // Channel points redemption
+    client.on('redeem', (channel, username, rewardType, tags, message) => {
+        debug(`${username} redeemed ${rewardType}!`);
+        animateText(`${username} redeemed ${rewardType}!`);
+    });
+
+    // Anonymous gift sub
+    client.on('anonsubgift', (channel, streakMonths, recipient, methods, userstate) => {
+        debug(`Anonymous gifted a sub to ${recipient}!`);
+        animateText(`Anonymous gifted a sub to ${recipient}!`);
+    });
+
+    // Mystery gift subs
+    client.on('submysterygift', (channel, username, giftSubCount, methods, userstate) => {
+        debug(`${username} gifted ${giftSubCount} subs!`);
+        animateText(`${username} gifted ${giftSubCount} subs!`);
+    });
+}
+
 // Initialize on load
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     debug('Page loaded, initializing...');
     if (initializeElements()) {
+        debug('Elements initialized successfully');
+        await initTwitchClient();
         debug('Ready to animate! Try the test buttons below.');
     }
 }); 
