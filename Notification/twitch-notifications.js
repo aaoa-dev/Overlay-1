@@ -202,50 +202,50 @@ function setupTwitchEvents() {
     // New subscription
     client.on('subscription', (channel, username, methods, message, userstate) => {
         debug(`New subscription from ${username}!`);
-        animateText(`${username} just subscribed!`);
+        animateText(`Brand new sub for ${username}`);
     });
 
     // Resubscription
     client.on('resub', (channel, username, streakMonths, message, userstate, methods) => {
         debug(`Resub from ${username} for ${streakMonths} months!`);
-        animateText(`${username} resubbed for ${streakMonths} months!`);
+        animateText(`Brand new sub for ${username}`);
     });
 
     // Gifted subscription
     client.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
         debug(`${username} gifted a sub to ${recipient}!`);
-        animateText(`${username} gifted a sub to ${recipient}!`);
+        animateText(`Brand new sub for ${recipient}`);
     });
 
     // Bits/Cheers
     client.on('cheer', (channel, userstate, message) => {
         const bits = userstate.bits;
         debug(`${userstate.username} cheered ${bits} bits!`);
-        animateText(`${userstate.username} cheered ${bits} bits!`);
+        animateText(`${userstate.username} keep sending me money`);
     });
 
     // Raid
     client.on('raided', (channel, username, viewers, userstate) => {
         debug(`${username} raided with ${viewers} viewers!`);
-        animateText(`${username} raided with ${viewers} viewers!`);
+        animateText(`${username} just raided`);
     });
 
     // Channel points redemption
     client.on('redeem', (channel, username, rewardType, tags, message) => {
         debug(`${username} redeemed ${rewardType}!`);
-        animateText(`${username} redeemed ${rewardType}!`);
+        animateText(`${username} redeemed ${rewardType}`);
     });
 
     // Anonymous gift sub
     client.on('anonsubgift', (channel, streakMonths, recipient, methods, userstate) => {
         debug(`Anonymous gifted a sub to ${recipient}!`);
-        animateText(`Anonymous gifted a sub to ${recipient}!`);
+        animateText(`Brand new sub for ${recipient}`);
     });
 
     // Mystery gift subs
     client.on('submysterygift', (channel, username, giftSubCount, methods, userstate) => {
         debug(`${username} gifted ${giftSubCount} subs!`);
-        animateText(`${username} gifted ${giftSubCount} subs!`);
+        animateText(`${username} keep sending me money`);
     });
 }
 
