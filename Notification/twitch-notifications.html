@@ -9,18 +9,26 @@
             margin: 0;
             padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: #000;
+            background: transparent !important;
         }
 
-        .modal {
+        .scale-container {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(2);
+            transform-origin: center center;
             width: 100%;
             max-width: 800px;
             text-align: center;
             z-index: 1;
+        }
+
+        .modal {
+            position: relative;
+            width: 100%;
+            text-align: center;
+            background: transparent !important;
         }
 
         .test-controls {
@@ -35,6 +43,7 @@
             padding: 20px;
             background: rgba(255,255,255,0.9);
             border-radius: 12px;
+            transform: scale(1); /* Ensure controls stay at original size */
         }
         
         .test-button {
@@ -75,9 +84,9 @@
         }
 
         .signature {
-            border-bottom: 1px solid rgba(255,255,255,0.25);
             position: relative;
             z-index: 1;
+            background: transparent !important;
         }
 
         .letter-bank {
@@ -97,6 +106,7 @@
             z-index: 2;
             margin-left: 100px;
             max-width: calc(100% - 200px);
+            background: transparent !important;
         }
 
         /* SVG styling */
@@ -231,7 +241,7 @@
     <!-- Debug info -->
     <div id="debug">Waiting for initialization...</div>
 
-    <div class="modal active">
+    <div class="scale-container">
         <div class="signature">
             <div class="letter-bank">
                 <!-- Copy the entire letter-bank content from notifications.html -->
@@ -496,7 +506,6 @@
                     </svg>
                   </div>
                 </div>
-                <div class="signed-by">Signed by,</div>
                 <div class="signature-main"></div>
                     </div>
     </div>
