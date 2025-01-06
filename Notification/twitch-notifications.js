@@ -135,6 +135,27 @@ function calculateTextWidth(text) {
     return totalWidth;
 }
 
+// Function to translate leet speak to regular text
+function leetToText(text) {
+    const leetMap = {
+        '0': 'o',
+        '1': 'i',
+        '2': 'z',
+        '3': 'e',
+        '4': 'a',
+        '5': 's',
+        '6': 'g',
+        '7': 't',
+        '8': 'b',
+        '9': 'p',
+        '@': 'a',
+        '$': 's',
+        '_': ' '
+    };
+    
+    return text.split('').map(char => leetMap[char] || char).join('');
+}
+
 // Error handling helper
 function handleError(error, context) {
     console.error(`Error in ${context}:`, error);
@@ -167,8 +188,10 @@ async function animateText(text, duration = 5000) {
     }
 
     try {
-        // Replace hyphens and underscores with spaces
-        const processedText = text.replace(/[-_]/g, ' ');
+        // First translate leet speak to regular text
+        const translatedText = leetToText(text);
+        // Then replace hyphens and underscores with spaces
+        const processedText = translatedText.replace(/[-_]/g, ' ');
         const textWidth = calculateTextWidth(processedText) * 1.4;
         const totalWidth = textWidth + (HORIZONTAL_PADDING * 2); // Add padding to total width
         debug(`Starting animation for: ${processedText} (Calculated width: ${textWidth}px, Total width with padding: ${totalWidth}px)`);
