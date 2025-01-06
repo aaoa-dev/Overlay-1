@@ -1,4 +1,4 @@
-import { config } from '../config.js';
+import { config } from '../config/config.js';
 
 function sendMessage(message, client) {
     console.warn(message, client);

@@ -1,7 +1,7 @@
 import {check} from './commands/check.js';
 import {refreshBS} from './commands/reset.js';
 import {messageHandleTempertature} from './commands/temps.js';
-import {config} from './config.js';
+import {config} from './config/config.js';
 
 //This is TMI stuff that check message and act accordingly
 const client = new tmi.Client({
