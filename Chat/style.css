@@ -4,7 +4,7 @@
   height: 3rem;
   display: flex;
   flex-direction: row-reverse;
-  align-items: flex-end;
+  align-items: center;
   overflow: visible;
   will-change: transform;
   min-width: 100%;
@@ -19,7 +19,7 @@
   font-size: 0.875rem;
   line-height: 1.5;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   flex-shrink: 0;
   opacity: 1;
   will-change: transform;
@@ -37,31 +37,38 @@
   white-space: nowrap;
   flex-shrink: 0;
   margin-right: 2px;
-  align-self: flex-end;
 }
 
 .colon {
   margin-right: 8px;
   flex-shrink: 0;
   opacity: 0.8;
-  align-self: flex-end;
 }
 
 .message-content {
   display: inline-flex;
-  align-items: flex-end;
+  align-items: center;
   flex-wrap: nowrap;
   gap: 0.125rem;
   overflow: hidden;
   text-overflow: ellipsis;
+  height: 1.5rem;
 }
 
 .emote {
   width: auto;
   height: 1.25rem;
-  vertical-align: bottom;
+  vertical-align: middle;
   margin: 0 0.125rem;
   flex-shrink: 0;
+  display: inline-block;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+/* Subtle scale effect on animated emotes (all emotes will have this hover effect) */
+.emote:hover {
+  transform: scale(1.2);
 }
 
 .badge {
@@ -76,12 +83,5 @@
   flex-shrink: 0;
   margin-right: 4px;
   gap: 2px;
-  align-self: flex-end;
-}
-
-/* Style for consecutive messages from the same user */
-.chat-message.same-user {
-  margin-top: -0.25rem;
-  height: 2.5rem;
-  padding: 0.25rem 0;
+  height: 1rem;
 } 
