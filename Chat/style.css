@@ -1,0 +1,80 @@
+#chatContainer {
+  transition: transform 0.5s ease-out;
+  position: relative;
+  height: 3rem;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  overflow: visible;
+  will-change: transform;
+  min-width: 100%;
+}
+
+.chat-message {
+  height: fit-content;
+  min-height: 2.5rem;
+  width: fit-content;
+  margin-left: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 1.5rem;
+  padding: 0.5rem 0.75rem;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  opacity: 1;
+  will-change: transform;
+}
+
+.chat-message.offscreen {
+  position: absolute;
+  right: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-message.alt {
+  background-color: rgba(75, 85, 99, 0.6);
+}
+
+.username {
+  font-weight: bold;
+  margin-right: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.message-content {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emote {
+  width: auto;
+  height: 1.25rem;
+  vertical-align: middle;
+  margin: 0 0.125rem;
+  flex-shrink: 0;
+}
+
+.badge {
+  width: auto;
+  height: 1rem;
+  margin-right: 0.25rem;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.badges {
+  display: flex;
+  flex-shrink: 0;
+  margin-right: 0.25rem;
+} 
