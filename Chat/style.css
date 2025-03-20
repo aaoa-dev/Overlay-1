@@ -4,27 +4,22 @@
   height: 3rem;
   display: flex;
   flex-direction: row-reverse;
-  align-items: center;
+  align-items: flex-end;
   overflow: visible;
   will-change: transform;
   min-width: 100%;
 }
 
 .chat-message {
-  height: fit-content;
-  min-height: 2.5rem;
+  height: 2.5rem;
   width: fit-content;
-  margin-left: 0.5rem;
-  background-color: rgba(0, 0, 0, 0.6);
-  border-radius: 1.5rem;
-  padding: 0.5rem 0.75rem;
+  margin-left: 16px;
+  padding: 0.25rem 0;
   color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   font-size: 0.875rem;
   line-height: 1.5;
   display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  align-items: flex-end;
   flex-shrink: 0;
   opacity: 1;
   will-change: transform;
@@ -37,20 +32,24 @@
   pointer-events: none;
 }
 
-.chat-message.alt {
-  background-color: rgba(75, 85, 99, 0.6);
-}
-
 .username {
   font-weight: bold;
-  margin-right: 0.25rem;
   white-space: nowrap;
   flex-shrink: 0;
+  margin-right: 2px;
+  align-self: flex-end;
+}
+
+.colon {
+  margin-right: 8px;
+  flex-shrink: 0;
+  opacity: 0.8;
+  align-self: flex-end;
 }
 
 .message-content {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   flex-wrap: nowrap;
   gap: 0.125rem;
   overflow: hidden;
@@ -60,7 +59,7 @@
 .emote {
   width: auto;
   height: 1.25rem;
-  vertical-align: middle;
+  vertical-align: bottom;
   margin: 0 0.125rem;
   flex-shrink: 0;
 }
@@ -68,7 +67,6 @@
 .badge {
   width: auto;
   height: 1rem;
-  margin-right: 0.25rem;
   flex-shrink: 0;
   border-radius: 2px;
 }
@@ -76,5 +74,14 @@
 .badges {
   display: flex;
   flex-shrink: 0;
-  margin-right: 0.25rem;
+  margin-right: 4px;
+  gap: 2px;
+  align-self: flex-end;
+}
+
+/* Style for consecutive messages from the same user */
+.chat-message.same-user {
+  margin-top: -0.25rem;
+  height: 2.5rem;
+  padding: 0.25rem 0;
 } 

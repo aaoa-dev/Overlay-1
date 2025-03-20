@@ -18,6 +18,9 @@ const BADGE_URLS = {
 // Message counter for alternating styles
 let messageCounter = 0;
 
+// Track the last message sender
+let lastMessageSender = null;
+
 // Queue for pending messages
 const messageQueue = [];
 let processingQueue = false;
@@ -49,6 +52,9 @@ function init() {
   
   // Test button
   testMessageBtn.addEventListener('click', () => {
+    // Reset the last sender to ensure proper display
+    lastMessageSender = null;
+    
     const testTags = {
       username: 'testUser',
       'display-name': 'TestUser',
@@ -67,16 +73,20 @@ function init() {
   
   // Test multiple messages
   testMultipleBtn.addEventListener('click', () => {
+    // Reset the last sender for the first message
+    lastMessageSender = null;
+    
     const messages = [
       { name: 'UserOne', message: 'Hello everyone!', color: '#FF4500', badges: { moderator: '1' } },
       { name: 'UserTwo', message: 'Great stream today!', color: '#00CED1', badges: { subscriber: '3' } },
+      { name: 'UserTwo', message: 'I\'m really enjoying it!', color: '#00CED1', badges: { subscriber: '3' } },
       { name: 'UserThree', message: 'Kappa This is amazing!', color: '#9ACD32', badges: { vip: '1' }, emotes: { '25': ['0-4'] } },
-      { name: 'UserFour', message: 'Looking forward to the next stream!', color: '#BA55D3', badges: { premium: '1' } }
+      { name: 'UserThree', message: 'The overlays look fantastic!', color: '#9ACD32', badges: { vip: '1' } }
     ];
     
     messages.forEach((msg, index) => {
       const testTags = {
-        username: `user${index + 1}`,
+        username: msg.name.toLowerCase().replace(/\s+/g, ''),
         'display-name': msg.name,
         color: msg.color,
         badges: msg.badges || {},
@@ -129,49 +139,80 @@ function cleanupOffscreenMessages() {
     // Note: since we're using flex-direction: row-reverse, we check the right edge
     if (msgRect.left > containerRect.right + msgRect.width) {
       chatContainer.removeChild(msg);
+      
+      // If this was the only message left and it's being removed, clear lastMessageSender
+      if (messages.length === 1) {
+        lastMessageSender = null;
+      }
     }
   });
 }
 
 // Create a message element
 function createMessageElement(tags, message) {
+  const username = tags.username || '';
+  const isFromSameUser = username === lastMessageSender;
+  lastMessageSender = username;
+  
   // Create message element
   const messageElement = document.createElement('div');
-  messageElement.className = `chat-message ${messageCounter % 2 === 0 ? '' : 'alt'}`;
+  messageElement.className = isFromSameUser ? 'chat-message same-user' : 'chat-message';
   messageCounter++;
   
-  // Badge container
-  const badgesContainer = document.createElement('span');
-  badgesContainer.className = 'badges';
-  
-  // Add badges if available
-  if (tags.badges) {
-    Object.entries(tags.badges).forEach(([type, version]) => {
-      const badgeImg = document.createElement('img');
-      badgeImg.className = 'badge';
-      
-      // Use our predefined badge URLs for testing
-      if (BADGE_URLS[type]) {
-        badgeImg.src = BADGE_URLS[type];
-      } else {
-        // Fallback to the Twitch API path
-        badgeImg.src = `https://static-cdn.jtvnw.net/badges/v1/${type}/${version}/3`;
-      }
-      
-      badgeImg.alt = type;
-      badgesContainer.appendChild(badgeImg);
-    });
+  // Add content based on whether it's a consecutive message or not
+  if (isFromSameUser) {
+    // For consecutive messages, only add the message content directly
+    addMessageContent(messageElement, tags, message);
+  } else {
+    // For new messages from a different user, add badges, username, and message
+    
+    // Badge container
+    const badgesContainer = document.createElement('span');
+    badgesContainer.className = 'badges';
+    
+    // Add badges if available
+    if (tags.badges) {
+      Object.entries(tags.badges).forEach(([type, version]) => {
+        const badgeImg = document.createElement('img');
+        badgeImg.className = 'badge';
+        
+        // Use our predefined badge URLs for testing
+        if (BADGE_URLS[type]) {
+          badgeImg.src = BADGE_URLS[type];
+        } else {
+          // Fallback to the Twitch API path
+          badgeImg.src = `https://static-cdn.jtvnw.net/badges/v1/${type}/${version}/3`;
+        }
+        
+        badgeImg.alt = type;
+        badgesContainer.appendChild(badgeImg);
+      });
+    }
+    
+    messageElement.appendChild(badgesContainer);
+    
+    // Username with color
+    const usernameSpan = document.createElement('span');
+    usernameSpan.className = 'username';
+    usernameSpan.textContent = tags['display-name'] || tags.username;
+    usernameSpan.style.color = tags.color || getRandomColor(tags.username);
+    messageElement.appendChild(usernameSpan);
+    
+    // Add colon
+    const colonSpan = document.createElement('span');
+    colonSpan.className = 'colon';
+    colonSpan.textContent = ':';
+    messageElement.appendChild(colonSpan);
+    
+    // Add message content
+    addMessageContent(messageElement, tags, message);
   }
   
-  messageElement.appendChild(badgesContainer);
-  
-  // Username with color
-  const usernameSpan = document.createElement('span');
-  usernameSpan.className = 'username';
-  usernameSpan.textContent = tags['display-name'] || tags.username;
-  usernameSpan.style.color = tags.color || getRandomColor(tags.username);
-  messageElement.appendChild(usernameSpan);
-  
+  return messageElement;
+}
+
+// Add message content with emote handling
+function addMessageContent(messageElement, tags, message) {
   // Message content with emotes
   const contentSpan = document.createElement('span');
   contentSpan.className = 'message-content';
@@ -222,8 +263,6 @@ function createMessageElement(tags, message) {
   }
   
   messageElement.appendChild(contentSpan);
-  
-  return messageElement;
 }
 
 // Calculate the width needed for the new message
@@ -268,7 +307,9 @@ async function addChatMessage(tags, message) {
     chatContainer.prepend(messageElement);
     
     // Step 5: Calculate how much to shift the container
-    const shiftAmount = width + 8; // Add a small gap
+    // Add a smaller gap for consecutive messages from the same user
+    const isFromSameUser = messageElement.classList.contains('same-user');
+    const shiftAmount = width + (isFromSameUser ? 4 : 16); // Adjust spacing based on whether it's from the same user
     
     // Step 6: Shift the container to accommodate the new message (without animation)
     chatContainer.style.transform = `translateX(${shiftAmount}px)`;
