@@ -12,7 +12,21 @@ const BADGE_URLS = {
   subscriber: "https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/3",
   premium: "https://static-cdn.jtvnw.net/badges/v1/bbbe0db0-a598-423e-86d0-f9fb98ca1933/3",
   partner: "https://static-cdn.jtvnw.net/badges/v1/d12a2e27-16f6-41d0-ab77-b780518f00a3/3",
-  vip: "https://static-cdn.jtvnw.net/badges/v1/b817aba4-fad8-49e2-b88a-7cc744dfa6ec/3"
+  vip: "https://static-cdn.jtvnw.net/badges/v1/b817aba4-fad8-49e2-b88a-7cc744dfa6ec/3",
+  turbo: "https://static-cdn.jtvnw.net/badges/v1/bd444ec6-8f34-4bf9-91f4-af1e3428d80f/3",
+  glitchcon2020: "https://static-cdn.jtvnw.net/badges/v1/1d4b03b9-51ea-42c9-8f29-698e3c85be3d/3",
+  staff: "https://static-cdn.jtvnw.net/badges/v1/d97c37bd-a6f5-4c38-8f57-4e4bef88af34/3",
+  admin: "https://static-cdn.jtvnw.net/badges/v1/9ef7e029-4cdf-4d4d-a0d5-e2b3fb2583fe/3",
+  global_mod: "https://static-cdn.jtvnw.net/badges/v1/9384c43e-4ce7-4e94-b2a1-b93656896eba/3",
+  artist: "https://static-cdn.jtvnw.net/badges/v1/4300a897-03dc-4e83-8c0c-c9f4d5ad064c/3"
+};
+
+// YouTube badge mappings
+const YOUTUBE_BADGE_URLS = {
+  owner: "https://www.gstatic.com/youtube/img/creator_badges/yt_owner_badge.svg",
+  moderator: "https://www.gstatic.com/youtube/img/creator_badges/yt_moderator_badge.svg",
+  member: "https://yt3.googleusercontent.com/oBFfC7-qXJA0kxYWZvPpay3f4yyWUwSaKfVkaBwoEFgF-fopVQXtHMzxGwJqvwvLn0swRNfUPg=w48-h48-c-k-nd",
+  verified: "https://www.gstatic.com/youtube/img/creator_badges/yt_verified_badge.svg"
 };
 
 // Message counter
@@ -24,7 +38,7 @@ let processingQueue = false;
 let animating = false;
 
 // Connect to Twitch
-const client = new tmi.Client({
+const twitchClient = new tmi.Client({
   options: {
     skipUpdatingEmotesets: true,
   },
@@ -38,16 +52,21 @@ const client = new tmi.Client({
 // Initialize
 function init() {
   // Connect to Twitch once DOM is loaded
-  client.connect().catch(console.error);
+  twitchClient.connect().catch(console.error);
   
-  // Listen for messages
-  client.on('message', (channel, tags, message, self) => {
+  // Listen for Twitch messages
+  twitchClient.on('message', (channel, tags, message, self) => {
     if (self) return; // Ignore messages from the bot
     
+    // Add platform info to distinguish the source
+    tags.platform = 'twitch';
     queueMessage(tags, message);
   });
   
-  // Test button
+  // Check if YouTube integration is enabled
+  setupYouTubeIntegration();
+  
+  // Test button - Twitch message
   testMessageBtn.addEventListener('click', () => {
     const testTags = {
       username: 'testUser',
@@ -55,23 +74,86 @@ function init() {
       color: '#FF7F50',
       badges: {
         broadcaster: '1',
-        subscriber: '3'
+        subscriber: '3',
+        turbo: '1'
       },
       emotes: {
         '25': ['0-4'], // Example emote (Kappa)
-      }
+      },
+      platform: 'twitch'
     };
     
     queueMessage(testTags, 'Kappa Hello from the test message! 👋');
   });
   
+  // Test button - Add YouTube test
+  const testYouTubeBtn = document.createElement('button');
+  testYouTubeBtn.textContent = 'Test YouTube';
+  testYouTubeBtn.className = 'bg-red-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-red-600 transition-colors';
+  testYouTubeBtn.addEventListener('click', () => {
+    const testYouTubeTags = {
+      username: 'youtubeUser',
+      'display-name': 'YouTube User',
+      color: '#FF0000', // YouTube red
+      badges: {
+        owner: '1',
+        member: '1'
+      },
+      platform: 'youtube'
+    };
+    
+    queueMessage(testYouTubeTags, 'Hello from YouTube chat! 🔴');
+  });
+  
+  // Add YouTube Config button 
+  const configYouTubeBtn = document.createElement('button');
+  configYouTubeBtn.textContent = 'Connect YouTube';
+  configYouTubeBtn.className = 'bg-red-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-red-700 transition-colors';
+  configYouTubeBtn.addEventListener('click', showYouTubeConnectDialog);
+  
+  // Add the buttons after the existing buttons
+  const buttonsContainer = testMultipleBtn.parentElement;
+  buttonsContainer.appendChild(testYouTubeBtn);
+  buttonsContainer.appendChild(configYouTubeBtn);
+  
   // Test multiple messages
   testMultipleBtn.addEventListener('click', () => {
     const messages = [
-      { name: 'UserOne', message: 'Hello everyone!', color: '#FF4500', badges: { moderator: '1' } },
-      { name: 'UserTwo', message: 'Great stream today!', color: '#00CED1', badges: { subscriber: '3' } },
-      { name: 'UserThree', message: 'Kappa This is amazing!', color: '#9ACD32', badges: { vip: '1' }, emotes: { '25': ['0-4'] } },
-      { name: 'UserFour', message: 'Looking forward to the next stream!', color: '#BA55D3', badges: { premium: '1' } }
+      { 
+        name: 'TwitchUser1', 
+        message: 'Hello from Twitch!', 
+        color: '#9146FF', 
+        badges: { moderator: '1', subscriber: '3' },
+        platform: 'twitch'
+      },
+      { 
+        name: 'YouTubeUser1', 
+        message: 'Hello from YouTube!', 
+        color: '#FF0000', 
+        badges: { member: '1', moderator: '1' },
+        platform: 'youtube'
+      },
+      { 
+        name: 'TwitchUser2', 
+        message: 'Twitch chat is the best!', 
+        color: '#00CED1', 
+        badges: { subscriber: '3', turbo: '1', premium: '1' },
+        platform: 'twitch'
+      },
+      { 
+        name: 'YouTubeUser2', 
+        message: 'YouTube chat says hi!', 
+        color: '#FF0000', 
+        badges: { owner: '1', verified: '1' },
+        platform: 'youtube'
+      },
+      { 
+        name: 'TwitchAdmin', 
+        message: 'Twitch admin checking in!', 
+        color: '#FF4500', 
+        badges: { admin: '1', staff: '1' },
+        platform: 'twitch'
+      }
     ];
     
     messages.forEach((msg) => {
@@ -80,7 +162,8 @@ function init() {
         'display-name': msg.name,
         color: msg.color,
         badges: msg.badges || {},
-        emotes: msg.emotes || null
+        emotes: msg.emotes || null,
+        platform: msg.platform
       };
       
       queueMessage(testTags, msg.message);
@@ -89,6 +172,168 @@ function init() {
   
   // Set up an interval to check for messages that have moved off-screen
   setInterval(cleanupOffscreenMessages, 1000);
+}
+
+// Setup YouTube integration - simplified user approach
+function setupYouTubeIntegration() {
+  // Check if user has set a YouTube channel name
+  if (config.settings.YOUTUBE && config.settings.YOUTUBE.CHANNEL_NAME) {
+    // Create hidden elements for YouTube message parsing
+    setupYouTubeMessageListener();
+  }
+}
+
+// Show YouTube connect dialog
+function showYouTubeConnectDialog() {
+  // Create the dialog
+  const dialogContainer = document.createElement('div');
+  dialogContainer.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  
+  const dialog = document.createElement('div');
+  dialog.className = 'bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full';
+  
+  // Dialog title
+  const title = document.createElement('h2');
+  title.className = 'text-xl font-bold text-white mb-4';
+  title.textContent = 'Connect to YouTube Chat';
+  
+  // Dialog content
+  const content = document.createElement('div');
+  content.className = 'mb-4';
+  content.innerHTML = `
+    <p class="text-white mb-4">To connect YouTube chat:</p>
+    <ol class="text-white list-decimal pl-5 mb-4 space-y-2">
+      <li>Enter your YouTube channel name (as it appears in your channel URL)</li>
+      <li>When you're live, your YouTube chat will automatically appear alongside Twitch chat</li>
+    </ol>
+    <div class="mb-4">
+      <label class="block text-white mb-2" for="youtubeChannel">YouTube Channel Name:</label>
+      <input type="text" id="youtubeChannel" class="w-full px-3 py-2 bg-gray-700 text-white rounded" 
+        placeholder="e.g. YourChannel" 
+        value="${config.settings.YOUTUBE?.CHANNEL_NAME || ''}">
+    </div>
+    <p class="text-gray-400 text-sm italic">Note: This service uses a browser-based integration with no API keys required.</p>
+  `;
+  
+  // Dialog actions
+  const actions = document.createElement('div');
+  actions.className = 'flex justify-end space-x-3';
+  
+  const cancelButton = document.createElement('button');
+  cancelButton.className = 'px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700';
+  cancelButton.textContent = 'Cancel';
+  cancelButton.onclick = () => {
+    document.body.removeChild(dialogContainer);
+  };
+  
+  const saveButton = document.createElement('button');
+  saveButton.className = 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700';
+  saveButton.textContent = 'Save';
+  saveButton.onclick = () => {
+    // Get the channel name
+    const channelInput = document.getElementById('youtubeChannel');
+    const channelName = channelInput.value.trim();
+    
+    // Save to local storage
+    const savedConfig = JSON.parse(localStorage.getItem('chatConfig') || '{}');
+    if (!savedConfig.settings) savedConfig.settings = {};
+    if (!savedConfig.settings.YOUTUBE) savedConfig.settings.YOUTUBE = {};
+    
+    savedConfig.settings.YOUTUBE.CHANNEL_NAME = channelName;
+    localStorage.setItem('chatConfig', JSON.stringify(savedConfig));
+    
+    // Update config in memory
+    if (!config.settings.YOUTUBE) config.settings.YOUTUBE = {};
+    config.settings.YOUTUBE.CHANNEL_NAME = channelName;
+    
+    // Set up the YouTube integration
+    setupYouTubeMessageListener();
+    
+    // Close the dialog
+    document.body.removeChild(dialogContainer);
+  };
+  
+  // Assemble the dialog
+  actions.appendChild(cancelButton);
+  actions.appendChild(saveButton);
+  
+  dialog.appendChild(title);
+  dialog.appendChild(content);
+  dialog.appendChild(actions);
+  
+  dialogContainer.appendChild(dialog);
+  document.body.appendChild(dialogContainer);
+}
+
+// Set up a hidden iframe based YouTube message listener
+function setupYouTubeMessageListener() {
+  // Remove any existing iframe
+  const existingIframe = document.getElementById('youtube-chat-iframe');
+  if (existingIframe) {
+    existingIframe.remove();
+  }
+  
+  if (!config.settings.YOUTUBE?.CHANNEL_NAME) {
+    console.log('No YouTube channel configured');
+    return;
+  }
+  
+  // Create a hidden iframe for YouTube chat
+  const iframe = document.createElement('iframe');
+  iframe.id = 'youtube-chat-iframe';
+  iframe.style.display = 'none';
+  
+  // Set the source to our message receiver page
+  iframe.src = `youtube-chat-bridge.html?channel=${encodeURIComponent(config.settings.YOUTUBE.CHANNEL_NAME)}`;
+  
+  // Add a message listener to receive YouTube chat messages
+  window.addEventListener('message', (event) => {
+    // Security check - only accept messages from our iframe
+    // In a real-world setting, you'd check the event.origin
+    
+    if (event.data.type === 'youtube-chat-message') {
+      const message = event.data.message;
+      
+      // Create tags similar to Twitch format
+      const tags = {
+        username: message.author.toLowerCase().replace(/\s+/g, '-'),
+        'display-name': message.author,
+        color: message.isOwner ? '#FF0000' : getRandomColor(message.author),
+        badges: {},
+        platform: 'youtube'
+      };
+      
+      // Add badges based on author role
+      if (message.isOwner) {
+        tags.badges.owner = '1';
+      }
+      
+      if (message.isModerator) {
+        tags.badges.moderator = '1';
+      }
+      
+      if (message.isMember) {
+        tags.badges.member = '1';
+      }
+      
+      if (message.isVerified) {
+        tags.badges.verified = '1';
+      }
+      
+      // Skip empty messages
+      if (!message.text || message.text.trim() === '') {
+        return;
+      }
+      
+      // Add the message to the queue
+      queueMessage(tags, message.text);
+    }
+  });
+  
+  // Add the iframe to the page
+  document.body.appendChild(iframe);
+  
+  console.log(`Connected to YouTube channel: ${config.settings.YOUTUBE.CHANNEL_NAME}`);
 }
 
 // Queue a message for processing
@@ -137,8 +382,17 @@ function cleanupOffscreenMessages() {
 function createMessageElement(tags, message) {
   // Create message element
   const messageElement = document.createElement('div');
-  messageElement.className = 'chat-message';
+  messageElement.className = `chat-message ${tags.platform || 'twitch'}`;
   messageCounter++;
+  
+  // Platform indicator dot
+  const platformIndicator = document.createElement('span');
+  platformIndicator.className = 'platform-indicator';
+  
+  // Color the dot based on platform (purple for Twitch, red for YouTube)
+  platformIndicator.style.backgroundColor = tags.platform === 'youtube' ? '#FF0000' : '#9146FF';
+  
+  messageElement.appendChild(platformIndicator);
   
   // Badge container
   const badgesContainer = document.createElement('span');
@@ -150,16 +404,30 @@ function createMessageElement(tags, message) {
       const badgeImg = document.createElement('img');
       badgeImg.className = 'badge';
       
-      // Use our predefined badge URLs for testing
-      if (BADGE_URLS[type]) {
-        badgeImg.src = BADGE_URLS[type];
+      // Get the right badge URL based on platform
+      if (tags.platform === 'youtube') {
+        if (YOUTUBE_BADGE_URLS[type]) {
+          badgeImg.src = YOUTUBE_BADGE_URLS[type];
+          badgeImg.alt = type;
+          badgesContainer.appendChild(badgeImg);
+        }
       } else {
-        // Fallback to the Twitch API path
-        badgeImg.src = `https://static-cdn.jtvnw.net/badges/v1/${type}/${version}/3`;
+        // Twitch badges
+        if (BADGE_URLS[type]) {
+          badgeImg.src = BADGE_URLS[type];
+          badgeImg.alt = type;
+          badgesContainer.appendChild(badgeImg);
+        } else {
+          // Fallback to the Twitch API path for badges that aren't in our mapping
+          badgeImg.src = `https://static-cdn.jtvnw.net/badges/v1/${type}/${version}/3`;
+          badgeImg.alt = type;
+          badgeImg.onerror = () => {
+            // If badge fails to load, remove it
+            badgeImg.remove();
+          };
+          badgesContainer.appendChild(badgeImg);
+        }
       }
-      
-      badgeImg.alt = type;
-      badgesContainer.appendChild(badgeImg);
     });
   }
   
