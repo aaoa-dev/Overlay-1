@@ -1,79 +1,85 @@
-/* Chat message animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
+/* Chat message animations - handled via inline styles now */
 
 /* Message container styles */
 #chatContainer {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  padding-bottom: 2rem; /* Extra padding at bottom for better visibility */
+  white-space: nowrap;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  direction: rtl; /* Right-to-left layout for container */
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-end;
+  pointer-events: none; /* Allow clicks to pass through the container */
+  width: 100%;
+  min-width: 100%;
+  box-sizing: border-box;
+  border-radius: 16px 16px 0 0; /* Rounded top corners */
 }
 
 #chatContainer::-webkit-scrollbar {
   display: none;
 }
 
-/* Message styles */
+/* Message wrapper for positioning */
+.message-wrapper {
+  margin-left: 0.5rem;
+  display: inline-block;
+  direction: ltr;
+  margin-bottom: 0.5rem;
+}
+
+/* Unified message style */
 .chat-message {
-  animation: slideIn 0.3s ease-out;
   background: rgba(0, 0, 0, 0.75);
-  border-radius: 8px;
-  padding: 0.75rem;
+  border-radius: 999px; /* Pill shape */
+  padding: 0.75rem 1.25rem; /* Increased horizontal padding for better pill shape */
   color: white;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
-  max-width: 90%;
-  word-wrap: break-word;
+  width: auto;
+  max-width: none;
   font-size: 1rem;
   line-height: 1.5;
+  display: inline-block;
+  vertical-align: bottom;
+  direction: ltr;
+  text-align: left;
+  white-space: nowrap;
+  overflow: visible;
+  pointer-events: auto;
 }
 
-.chat-message.sub {
-  background: rgba(145, 71, 255, 0.75);
-  border: 2px solid #9147ff;
-}
-
-.chat-message.mod {
-  background: rgba(0, 173, 3, 0.75);
-  border: 2px solid #00ad03;
-}
-
-.chat-message.vip {
-  background: rgba(255, 91, 91, 0.75);
-  border: 2px solid #ff5b5b;
-}
-
-.chat-message.fade-out {
-  animation: fadeOut 0.5s ease-out forwards;
+/* Message text styles */
+.message-text {
+  display: inline;
+  white-space: nowrap;
+  overflow: visible;
+  vertical-align: middle;
 }
 
 /* Username styles */
 .username {
   font-weight: bold;
   margin-right: 0.5rem;
+  white-space: nowrap;
+  overflow: visible;
+  display: inline-block;
+  vertical-align: middle;
 }
 
-/* Badge and emote styles */
+/* Badge styles */
 .badge-container {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-right: 10px;
+  margin-right: 8px;
   height: 18px;
   vertical-align: middle;
 }
@@ -86,9 +92,12 @@
   min-width: 18px;
 }
 
+/* Emote styles */
 .emote {
   display: inline-block;
   vertical-align: middle;
   height: 1.5em;
   margin: 0 2px;
+  max-height: 24px;
 }
+

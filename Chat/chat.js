@@ -1,7 +1,6 @@
 // Import config
 import { config } from '../config/config.js';
 // Message display settings
-const MESSAGE_TIMEOUT = 30000; // Messages fade out after 30 seconds
 const MAX_MESSAGES = 30; // Maximum number of messages to show
 
 // Badge caches
@@ -126,6 +125,7 @@ function initializeChat(authDetails) {
     if (error.includes('authentication failed')) {
       localStorage.removeItem('twitch_oauth_token');
       localStorage.removeItem('twitch_username');
+      localStorage.removeItem('twitch_channel_id');
       showAuthPrompt();
     }
   });
@@ -214,9 +214,13 @@ function fetchBadges(authDetails) {
 // Display a chat message
 function displayMessage(tags, message, messageId) {
   const messageElement = document.createElement('div');
-  messageElement.className = `chat-message ${getMessageClass(tags)}`;
+  messageElement.className = 'chat-message';
   messageElement.dataset.messageId = messageId;
 
+  // Position element initially off-screen to the right (outside container)
+  messageElement.style.transform = 'translateX(100%)';
+  messageElement.style.opacity = '0';
+  
   // Add badges if present
   if (tags.badges || tags['badges-raw']) {
     const badgeContainer = document.createElement('span');
@@ -250,6 +254,7 @@ function displayMessage(tags, message, messageId) {
 
   // Add message text with emote support
   const messageText = document.createElement('span');
+  messageText.className = 'message-text';
   if (tags.emotes) {
     const emotePositions = [];
     
@@ -281,40 +286,34 @@ function displayMessage(tags, message, messageId) {
   }
   messageElement.appendChild(messageText);
 
-  // Add to container
+  // Add to container (at the beginning for horizontal layout)
   const chatContainer = document.getElementById('chatContainer');
-  chatContainer.appendChild(messageElement);
+  
+  // Create a wrapper element to position the new message outside the visible area first
+  const messageWrapper = document.createElement('div');
+  messageWrapper.className = 'message-wrapper';
+  messageWrapper.style.display = 'inline-block';
+  messageWrapper.style.transformOrigin = 'right';
+  messageWrapper.appendChild(messageElement);
+  
+  // Insert at the beginning (right side visually due to RTL container)
+  if (chatContainer.firstChild) {
+    chatContainer.insertBefore(messageWrapper, chatContainer.firstChild);
+  } else {
+    chatContainer.appendChild(messageWrapper);
+  }
 
   // Remove old messages if exceeding limit
   while (chatContainer.children.length > MAX_MESSAGES) {
-    chatContainer.removeChild(chatContainer.firstChild);
+    chatContainer.removeChild(chatContainer.lastChild);
   }
 
-  // Auto-scroll to bottom
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-
-  // Set timeout to remove message
-  const removeTimeout = setTimeout(() => {
-    if (messageElement && messageElement.parentNode) {
-      messageElement.classList.add('fade-out');
-      setTimeout(() => {
-        if (messageElement && messageElement.parentNode) {
-          messageElement.remove();
-        }
-      }, 500);
-    }
-  }, MESSAGE_TIMEOUT);
-  
-  // Store timeout ID on element for cleanup
-  messageElement.dataset.removeTimeout = removeTimeout;
-}
-
-// Determine message class based on user tags
-function getMessageClass(tags) {
-  if (tags.subscriber) return 'sub';
-  if (tags.mod) return 'mod';
-  if (tags.vip) return 'vip';
-  return '';
+  // Trigger the animation after a small delay to ensure the element is in the DOM
+  setTimeout(() => {
+    messageElement.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
+    messageElement.style.transform = 'translateX(0)';
+    messageElement.style.opacity = '1';
+  }, 10);
 }
 
 // Map badge types to their correct IDs
@@ -374,7 +373,7 @@ function getBadgeUrl(type, version) {
 }
 
 // Test message function for development
-globalThis.testMessage = (type) => {
+globalThis.testMessage = () => {
   const testTags = {
     'display-name': 'TestUser',
     color: '#FF0000',
@@ -383,17 +382,5 @@ globalThis.testMessage = (type) => {
     }
   };
 
-  switch (type) {
-    case 'sub':
-      testTags.subscriber = true;
-      break;
-    case 'mod':
-      testTags.mod = true;
-      break;
-    case 'vip':
-      testTags.vip = true;
-      break;
-  }
-
-  displayMessage(testTags, 'This is a test message with 👋 emoji and Kappa emote!', Date.now());
+  displayMessage(testTags, 'This is a test message with a pill shape design! 👋 How does it look?', Date.now());
 };
