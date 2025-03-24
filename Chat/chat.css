@@ -30,7 +30,7 @@
 
 /* Message wrapper for positioning */
 .message-wrapper {
-  margin-left: 0.5rem; /* Increased from 0.5rem */
+  margin-left: 0.25rem; /* Increased from 0.5rem */
   display: inline-block;
   direction: ltr;
   margin-bottom: 1rem; /* Increased from 0.5rem */
@@ -40,7 +40,7 @@
 .chat-message {
   background: rgba(0, 0, 0, 0);
   border-radius: 999px; /* Pill shape */
-  padding: 1.5rem 2rem; /* Increased by 1.5x from 0.75rem 1.25rem */
+  padding: 1.25rem 1.25rem; /* Increased by 1.5x from 0.75rem 1.25rem */
   color: white;
   width: auto;
   max-width: none;
