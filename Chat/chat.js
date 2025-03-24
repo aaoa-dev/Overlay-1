@@ -143,6 +143,9 @@ function initializeChat(authDetails) {
     // Prevent self-messages and duplicates
     if (self) return;
     
+    // Skip messages that start with ! or / (command messages)
+    if (message.startsWith('!') || message.startsWith('/')) return;
+    
     // Generate unique message ID
     const messageId = `${tags['message-id'] || Date.now()}-${tags['user-id']}`;
     
@@ -217,6 +220,9 @@ function fetchBadges(authDetails) {
 
 // Display a chat message
 function displayMessage(tags, message, messageId) {
+  // Skip command messages (double-check)
+  if (message.startsWith('!') || message.startsWith('/')) return;
+  
   const chatContainer = document.getElementById('chatContainer');
   
   // Create the message element
@@ -421,7 +427,7 @@ function getBadgeUrl(type, version) {
 }
 
 // Test message function for development
-globalThis.testMessage = () => {
+globalThis.testMessage = (type = 'regular') => {
   const testTags = {
     'display-name': 'TestUser',
     color: '#FF0000',
@@ -430,5 +436,11 @@ globalThis.testMessage = () => {
     }
   };
 
-  displayMessage(testTags, 'This is a test message with a pill shape design! 👋 How does it look?', Date.now());
+  if (type === 'regular') {
+    displayMessage(testTags, 'This is a test message with a pill shape design! 👋 How does it look?', Date.now());
+  } else if (type === 'command') {
+    displayMessage(testTags, '!command This should be filtered out', Date.now());
+  } else if (type === 'slash') {
+    displayMessage(testTags, '/whisper This should also be filtered out', Date.now());
+  }
 };
