@@ -1,65 +1,61 @@
-# Twitch Stream Overlay Project
+# Twitch Chat Overlay
 
-This project contains various overlays for Twitch streams.
+A browser-based Twitch chat overlay designed for use with OBS Studio and other streaming software.
 
-## Setup
+## Features
 
-1. Clone the repository
-2. Run `npm install` to install dependencies
-3. Copy `config.example.js` to `config.js` and add your Twitch credentials
-4. Run `npm run dev` to start the Tailwind CSS compiler
+- Real-time Twitch chat messages with badges and emotes
+- Animated message display with synchronized slide-in animations
+- Command filtering (messages starting with ! or / are hidden)
+- Authentication via Twitch OAuth
+- Easy OBS Browser Source integration
 
-## Available Overlays
+## Setup Instructions
 
-### 1. Chatter Display (Root Directory)
-Shows active chatters in a circular display at the bottom of the screen.
+### Regular Browser Usage
 
-**Usage:**
-Open `index.html` in your browser or add as a browser source in OBS.
+1. Open the chat overlay in your browser
+2. Click "Connect with Twitch" to authenticate
+3. Once authenticated, you can view chat messages in real-time
 
-### 2. Alerts
-Displays various alerts for stream events (follows, subs, etc.).
+### OBS Browser Source Setup
 
-**Usage:**
-Open `alerts.html` in your browser or add as a browser source in OBS.
+1. **Regular Authentication Method (Recommended)**:
+   - First authenticate in a regular browser window
+   - Click the "Copy OBS URL" button
+   - In OBS, add a Browser Source and paste the copied URL
 
-### 3. Horizontal Chat (Chat Directory)
-Displays chat messages horizontally with emote support.
+2. **Manual URL Parameter Method**:
+   - Get your Twitch OAuth token from [Twitch Token Generator](https://twitchapps.com/tmi/)
+   - Create a URL with the following format:
+     ```
+     https://your-site.com/Chat/chat.html?token=YOUR_TOKEN&username=YOUR_USERNAME&channel=CHANNEL_TO_WATCH
+     ```
+   - Add this URL to your OBS Browser Source
 
-**Features:**
-- Shows Twitch badges
-- Displays emotes inline
-- Alternating message background colors
-- Auto-removal of old messages
-- Test button for previewing
+## Browser Source Settings in OBS
 
-**Usage:**
-Open `Chat/index.html` in your browser or add as a browser source in OBS.
+For best results, use these settings in your OBS Browser Source:
+
+- Width: 800 (or match your screen width)
+- Height: 600 (adjust based on how much chat history you want to see)
+- Custom CSS: (leave empty to use overlay's built-in styles)
+- Shutdown source when not visible: Unchecked
+- Refresh browser when scene becomes active: Optional
+
+## Troubleshooting
+
+- **No messages appear**: Verify your authentication is working correctly
+- **Missing badges**: Ensure your OBS browser cache is cleared
+- **Animation issues**: Try refreshing the browser source
 
 ## Development
 
-To modify the styles, edit the relevant CSS files and run:
+This project uses:
+- TMI.js for Twitch chat connectivity
+- Modern JavaScript with CSS animations
+- Tailwind CSS for styling components
 
-```
-npm run dev
-```
+## License
 
-This will watch for changes and compile the Tailwind CSS.
-
-## Configuration
-
-Update the `config.js` file with your Twitch credentials:
-
-```javascript
-export const config = {
-    settings: {
-        TWITCH: {
-            USERNAME: 'your_username',
-            OAUTH_TOKEN: 'oauth:your_token',
-            CHANNEL_NAME: 'your_channel'
-        },
-    },
-}
-```
-
-You can get an OAuth token from [Twitch Token Generator](https://twitchapps.com/tmi/). 
+MIT License - Feel free to use and modify for your own streams! 

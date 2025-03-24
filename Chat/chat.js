@@ -11,24 +11,89 @@ let channelBadgeCache = {};
 let isAnimating = false;
 let slideDistance = 0;
 
-// Get auth details from localStorage or fall back to config
+// Parse URL parameters
+function getUrlParams() {
+  const params = {};
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  
+  // Get auth params
+  const token = urlParams.get('token');
+  const username = urlParams.get('username');
+  const channel = urlParams.get('channel');
+  const channelId = urlParams.get('channelId');
+  
+  if (token) params.token = token;
+  if (username) params.username = username;
+  if (channel) params.channel = channel;
+  if (channelId) params.channelId = channelId;
+  
+  return params;
+}
+
+// Generate OBS URL with auth parameters
+function generateOBSUrl(token, username, channel) {
+  if (!token || !username) {
+    console.error('Missing required parameters for OBS URL');
+    return null;
+  }
+  
+  const currentUrl = new URL(window.location.href);
+  // Clear existing parameters
+  currentUrl.search = '';
+  
+  // Add necessary parameters
+  const params = new URLSearchParams();
+  params.append('token', token);
+  params.append('username', username);
+  
+  // Only add channel if it's different from username
+  if (channel && channel !== username) {
+    params.append('channel', channel);
+  }
+  
+  // Set the search parameters on the URL
+  currentUrl.search = params.toString();
+  
+  return currentUrl.toString();
+}
+
+// Export for use in HTML
+globalThis.generateOBSUrl = generateOBSUrl;
+
+// Get auth details from URL params, localStorage, or config
 const getAuthDetails = () => {
+  // First check URL parameters (highest priority for OBS)
+  const urlParams = getUrlParams();
+  if (urlParams.token && urlParams.username) {
+    console.log('Using URL parameters for authentication');
+    return {
+      username: urlParams.username,
+      password: `oauth:${urlParams.token}`,
+      channel: urlParams.channel || urlParams.username,
+      clientId: config.settings.TWITCH.CLIENT_ID,
+      channelId: urlParams.channelId || config.settings.TWITCH.CHANNEL_ID
+    };
+  }
+  
+  // Then try localStorage
   const storedToken = localStorage.getItem('twitch_oauth_token');
   const storedUsername = localStorage.getItem('twitch_username');
   const storedChannelId = localStorage.getItem('twitch_channel_id');
   
-  // Return from localStorage if available
   if (storedToken && storedUsername) {
+    console.log('Using localStorage for authentication');
     return {
       username: storedUsername,
       password: `oauth:${storedToken}`,
       channel: storedUsername, // Use authenticated user's channel by default
       clientId: config.settings.TWITCH.CLIENT_ID,
-      channelId: config.settings.TWITCH.CHANNEL_ID
+      channelId: storedChannelId || config.settings.TWITCH.CHANNEL_ID
     };
   }
   
   // Fall back to config file
+  console.log('Using config file for authentication');
   return {
     username: config.settings.TWITCH.USERNAME,
     password: config.settings.TWITCH.OAUTH_TOKEN,
@@ -41,7 +106,13 @@ const getAuthDetails = () => {
 // Check for authentication
 document.addEventListener('DOMContentLoaded', () => {
   const authDetails = getAuthDetails();
-  console.log(authDetails);
+  console.log('Auth details (sensitive data redacted):', {
+    username: authDetails.username,
+    hasPassword: !!authDetails.password,
+    channel: authDetails.channel,
+    hasClientId: !!authDetails.clientId
+  });
+  
   // If no auth details are available, show auth prompt
   if (!authDetails.password || !authDetails.password.startsWith('oauth:')) {
     showAuthPrompt();
@@ -52,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeChat(authDetails);
 });
 
-// Show authentication prompt
+// Show authentication prompt with OBS instructions
 function showAuthPrompt() {
   const chatContainer = document.getElementById('chatContainer');
   
@@ -67,6 +138,12 @@ function showAuthPrompt() {
       <h2>Authentication Required</h2>
       <p>Please login with your Twitch account to display chat messages.</p>
       <a href="/auth/oauth.html" class="auth-button">Login with Twitch</a>
+      
+      <div class="obs-instructions">
+        <h3>Using in OBS?</h3>
+        <p>After logging in, copy the URL from the address bar and add it to your Browser Source in OBS.</p>
+        <p>Or use this format: <code>${window.location.origin}${window.location.pathname}?token=YOUR_TOKEN&username=YOUR_USERNAME&channel=CHANNEL_TO_WATCH</code></p>
+      </div>
     </div>
   `;
   
@@ -86,7 +163,7 @@ function showAuthPrompt() {
       padding: 1.5rem;
       text-align: center;
       color: white;
-      max-width: 400px;
+      max-width: 500px;
     }
     .auth-button {
       display: inline-block;
@@ -100,6 +177,25 @@ function showAuthPrompt() {
     }
     .auth-button:hover {
       background-color: #772ce8;
+    }
+    .obs-instructions {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      text-align: left;
+    }
+    .obs-instructions h3 {
+      margin-bottom: 0.5rem;
+    }
+    .obs-instructions code {
+      display: block;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      word-break: break-all;
     }
   `;
   
