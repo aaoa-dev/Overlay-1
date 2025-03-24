@@ -11,6 +11,9 @@ let channelBadgeCache = {};
 let isAnimating = false;
 let slideDistance = 0;
 
+// Track the last message sender
+let lastMessageSenderId = null;
+
 // Parse URL parameters
 function getUrlParams() {
   const params = {};
@@ -320,42 +323,47 @@ function displayMessage(tags, message, messageId) {
   if (message.startsWith('!') || message.startsWith('/')) return;
   
   const chatContainer = document.getElementById('chatContainer');
+  const currentUserId = tags['user-id'];
+  const isSameUser = currentUserId && currentUserId === lastMessageSenderId;
   
   // Create the message element
   const messageElement = document.createElement('div');
   messageElement.className = 'chat-message';
   messageElement.dataset.messageId = messageId;
   
-  // Add badges if present
-  if (tags.badges || tags['badges-raw']) {
-    const badgeContainer = document.createElement('span');
-    badgeContainer.className = 'badge-container';
-    
-    // Parse badges from badges-raw if available, otherwise use badges object
-    const badgeData = tags['badges-raw'] ? 
-      tags['badges-raw'].split(',').map(badge => {
-        const [type, version] = badge.split('/');
-        return { type, version };
-      }) :
-      Object.entries(tags.badges).map(([type, version]) => ({ type, version }));
-    
-    badgeData.forEach(({ type, version }) => {
-      const badgeImg = document.createElement('img');
-      badgeImg.className = 'badge';
-      badgeImg.src = getBadgeUrl(type, version);
-      badgeImg.alt = type;
-      badgeContainer.appendChild(badgeImg);
-    });
-    
-    messageElement.appendChild(badgeContainer);
-  }
+  // Only add badges and username if it's a different user than the last message
+  if (!isSameUser) {
+    // Add badges if present
+    if (tags.badges || tags['badges-raw']) {
+      const badgeContainer = document.createElement('span');
+      badgeContainer.className = 'badge-container';
+      
+      // Parse badges from badges-raw if available, otherwise use badges object
+      const badgeData = tags['badges-raw'] ? 
+        tags['badges-raw'].split(',').map(badge => {
+          const [type, version] = badge.split('/');
+          return { type, version };
+        }) :
+        Object.entries(tags.badges).map(([type, version]) => ({ type, version }));
+      
+      badgeData.forEach(({ type, version }) => {
+        const badgeImg = document.createElement('img');
+        badgeImg.className = 'badge';
+        badgeImg.src = getBadgeUrl(type, version);
+        badgeImg.alt = type;
+        badgeContainer.appendChild(badgeImg);
+      });
+      
+      messageElement.appendChild(badgeContainer);
+    }
 
-  // Add username
-  const usernameSpan = document.createElement('span');
-  usernameSpan.className = 'username';
-  usernameSpan.style.color = tags.color || '#ffffff';
-  usernameSpan.textContent = tags['display-name'] || tags.username;
-  messageElement.appendChild(usernameSpan);
+    // Add username
+    const usernameSpan = document.createElement('span');
+    usernameSpan.className = 'username';
+    usernameSpan.style.color = tags.color || '#ffffff';
+    usernameSpan.textContent = tags['display-name'] || tags.username;
+    messageElement.appendChild(usernameSpan);
+  }
 
   // Add message text with emote support
   const messageText = document.createElement('span');
@@ -404,6 +412,9 @@ function displayMessage(tags, message, messageId) {
     setTimeout(() => displayMessage(tags, message, messageId), 50);
     return;
   }
+  
+  // Update the last message sender ID
+  lastMessageSenderId = currentUserId;
   
   // Set animating flag
   isAnimating = true;
@@ -527,9 +538,19 @@ function getBadgeUrl(type, version) {
 globalThis.testMessage = (type = 'regular') => {
   const testTags = {
     'display-name': 'TestUser',
+    'user-id': '123456',
     color: '#FF0000',
     badges: {
       subscriber: '1'
+    }
+  };
+  
+  const secondUserTags = {
+    'display-name': 'AnotherUser',
+    'user-id': '789012',
+    color: '#00FF00',
+    badges: {
+      moderator: '1'
     }
   };
 
@@ -539,5 +560,23 @@ globalThis.testMessage = (type = 'regular') => {
     displayMessage(testTags, '!command This should be filtered out', Date.now());
   } else if (type === 'slash') {
     displayMessage(testTags, '/whisper This should also be filtered out', Date.now());
+  } else if (type === 'sequence') {
+    // First message from TestUser
+    displayMessage(testTags, 'First message from TestUser', Date.now());
+    
+    // Second message from same user (should not show badges/username)
+    setTimeout(() => {
+      displayMessage(testTags, 'Second message from TestUser without badges/username', Date.now() + 1);
+    }, 1000);
+    
+    // Message from different user (should show badges/username)
+    setTimeout(() => {
+      displayMessage(secondUserTags, 'Message from AnotherUser with badges/username', Date.now() + 2);
+    }, 2000);
+    
+    // Another message from first user (should show badges/username again)
+    setTimeout(() => {
+      displayMessage(testTags, 'Back to TestUser with badges/username', Date.now() + 3);
+    }, 3000);
   }
 };
