@@ -30,22 +30,20 @@
 
 /* Message wrapper for positioning */
 .message-wrapper {
-  margin-left: 0.5rem;
+  margin-left: 0.5rem; /* Increased from 0.5rem */
   display: inline-block;
   direction: ltr;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem; /* Increased from 0.5rem */
 }
 
 /* Unified message style */
 .chat-message {
-  background: rgba(0, 0, 0, 0.75);
   border-radius: 999px; /* Pill shape */
-  padding: 0.75rem 1.25rem; /* Increased horizontal padding for better pill shape */
+  padding: 1.5rem 2rem; /* Increased by 1.5x from 0.75rem 1.25rem */
   color: white;
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
   width: auto;
   max-width: none;
-  font-size: 1rem;
+  font-size: 1.75rem; /* Increased from 1rem */
   line-height: 1.5;
   display: inline-block;
   vertical-align: bottom;
@@ -67,7 +65,7 @@
 /* Username styles */
 .username {
   font-weight: bold;
-  margin-right: 0.5rem;
+  margin-right: 1rem; /* Increased from 0.5rem */
   white-space: nowrap;
   overflow: visible;
   display: inline-block;
@@ -78,9 +76,9 @@
 .badge-container {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-right: 8px;
-  height: 18px;
+  gap: 8px; /* Increased from 4px */
+  margin-right: 16px; /* Increased from 8px */
+  height: 32px; /* Increased from 18px */
   vertical-align: middle;
 }
 
@@ -89,7 +87,7 @@
   width: auto;
   height: 100%;
   object-fit: contain;
-  min-width: 18px;
+  min-width: 32px; /* Increased from 18px */
 }
 
 /* Emote styles */
@@ -97,7 +95,7 @@
   display: inline-block;
   vertical-align: middle;
   height: 1.5em;
-  margin: 0 2px;
-  max-height: 24px;
+  margin: 0 6px; /* Increased from 0 2px */
+  max-height: 40px; /* Increased from 24px */
 }
 
