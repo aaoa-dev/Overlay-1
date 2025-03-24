@@ -96,7 +96,7 @@
   display: inline-block;
   vertical-align: middle;
   height: 1.5em;
-  margin: 0 6px; /* Increased from 0 2px */
+  margin: 0 0.4rem; /* Increased from 0 2px */
   max-height: 40px; /* Increased from 24px */
 }
 
