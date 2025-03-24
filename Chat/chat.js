@@ -381,7 +381,8 @@ function displayMessage(tags, message, messageId) {
     // Replace emotes with images
     let processedMessage = message;
     emotePositions.forEach(({ start, end, id }) => {
-      const emoteImg = `<img class="emote" src="https://static-cdn.jtvnw.net/emoticons/v1/${id}/1.0" />`;
+      // Use Twitch V2 emote API which supports animated emotes
+      const emoteImg = `<img class="emote" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/3.0" />`;
       processedMessage = processedMessage.slice(0, start) + emoteImg + processedMessage.slice(end + 1);
     });
 
