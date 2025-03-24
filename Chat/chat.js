@@ -7,6 +7,10 @@ const MAX_MESSAGES = 30; // Maximum number of messages to show
 let globalBadgeCache = {};
 let channelBadgeCache = {};
 
+// Animation state tracking
+let isAnimating = false;
+let slideDistance = 0;
+
 // Get auth details from localStorage or fall back to config
 const getAuthDetails = () => {
   const storedToken = localStorage.getItem('twitch_oauth_token');
@@ -213,13 +217,12 @@ function fetchBadges(authDetails) {
 
 // Display a chat message
 function displayMessage(tags, message, messageId) {
+  const chatContainer = document.getElementById('chatContainer');
+  
+  // Create the message element
   const messageElement = document.createElement('div');
   messageElement.className = 'chat-message';
   messageElement.dataset.messageId = messageId;
-
-  // Position element initially off-screen to the right (outside container)
-  messageElement.style.transform = 'translateX(100%)';
-  messageElement.style.opacity = '0';
   
   // Add badges if present
   if (tags.badges || tags['badges-raw']) {
@@ -285,16 +288,26 @@ function displayMessage(tags, message, messageId) {
     messageText.textContent = message;
   }
   messageElement.appendChild(messageText);
-
-  // Add to container (at the beginning for horizontal layout)
-  const chatContainer = document.getElementById('chatContainer');
   
-  // Create a wrapper element to position the new message outside the visible area first
+  // Create a wrapper element
   const messageWrapper = document.createElement('div');
   messageWrapper.className = 'message-wrapper';
   messageWrapper.style.display = 'inline-block';
   messageWrapper.style.transformOrigin = 'right';
   messageWrapper.appendChild(messageElement);
+  
+  // If we're already animating, wait for it to complete
+  if (isAnimating) {
+    setTimeout(() => displayMessage(tags, message, messageId), 50);
+    return;
+  }
+  
+  // Set animating flag
+  isAnimating = true;
+  
+  // First, position the new message wrapper outside the view
+  messageWrapper.style.transform = 'translateX(100%)';
+  messageWrapper.style.opacity = '0';
   
   // Insert at the beginning (right side visually due to RTL container)
   if (chatContainer.firstChild) {
@@ -302,18 +315,53 @@ function displayMessage(tags, message, messageId) {
   } else {
     chatContainer.appendChild(messageWrapper);
   }
-
+  
   // Remove old messages if exceeding limit
   while (chatContainer.children.length > MAX_MESSAGES) {
     chatContainer.removeChild(chatContainer.lastChild);
   }
-
-  // Trigger the animation after a small delay to ensure the element is in the DOM
+  
+  // We need to measure the width of the new message to determine how far to slide
+  // Force a reflow to get accurate measurements
+  void messageWrapper.offsetWidth;
+  
+  // Get width of the message wrapper
+  const wrapperWidth = messageWrapper.offsetWidth;
+  // Add some margin to ensure visibility
+  const extraMargin = 10;
+  // Calculate slide distance
+  slideDistance = wrapperWidth + extraMargin;
+  
+  // Apply the initial offset to all existing messages
+  // (they're not being animated yet, just positioned)
+  Array.from(chatContainer.children).forEach(child => {
+    if (child !== messageWrapper) {
+      child.style.transition = 'none';
+      child.style.transform = `translateX(${slideDistance}px)`;
+    }
+  });
+  
+  // Force a reflow before setting up the animation
+  void chatContainer.offsetWidth;
+  
+  // Now set up all elements to animate together
+  Array.from(chatContainer.children).forEach(child => {
+    child.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
+    
+    if (child === messageWrapper) {
+      // New message slides in
+      child.style.transform = 'translateX(0)';
+      child.style.opacity = '1';
+    } else {
+      // Existing messages slide back to original position
+      child.style.transform = 'translateX(0)';
+    }
+  });
+  
+  // Reset animation state after animation completes
   setTimeout(() => {
-    messageElement.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
-    messageElement.style.transform = 'translateX(0)';
-    messageElement.style.opacity = '1';
-  }, 10);
+    isAnimating = false;
+  }, 400); // Match the duration of the animation
 }
 
 // Map badge types to their correct IDs
