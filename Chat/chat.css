@@ -44,8 +44,8 @@
   color: white;
   width: auto;
   max-width: none;
-  font-size: 1.75rem; /* Increased from 1rem */
-  line-height: 1.5;
+  font-size: 2rem; /* Increased from 1rem */
+  line-height: 100%;
   display: inline-block;
   vertical-align: bottom;
   direction: ltr;
@@ -77,9 +77,9 @@
 .badge-container {
   display: inline-flex;
   align-items: center;
-  gap: 8px; /* Increased from 4px */
-  margin-right: 16px; /* Increased from 8px */
-  height: 32px; /* Increased from 18px */
+  gap: 0.5rem; /* Increased from 4px */
+  margin-right: 1rem; /* Increased from 8px */
+  height: 2rem; /* Increased from 18px */
   vertical-align: middle;
 }
 
@@ -88,7 +88,7 @@
   width: auto;
   height: 100%;
   object-fit: contain;
-  min-width: 32px; /* Increased from 18px */
+  min-width: 2rem; /* Increased from 18px */
 }
 
 /* Emote styles */
@@ -97,6 +97,6 @@
   vertical-align: middle;
   height: 1.5em;
   margin: 0 0.4rem; /* Increased from 0 2px */
-  max-height: 40px; /* Increased from 24px */
+  max-height: 2.5rem; /* Increased from 24px */
 }
 
