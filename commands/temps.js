@@ -18,7 +18,7 @@ function convertFahrenheitToCelcius(fahrenheit) {
 }
 
 export function messageHandleTempertature(message, client) {
-    const match = message.match(/(\s|^)\d{1,}[CF](\s|$)/i);
+    const match = message.match(/(\s|^)\d{1,}[CFcf](\s|$)/i);
 
     if (!match) {
         return;
