@@ -334,10 +334,12 @@
             <h3>📖 How to Get Your Token</h3>
             <ol>
                 <li>Click the <strong>"Get Token from Twitch"</strong> button above</li>
-                <li>Log in with your Twitch account</li>
-                <li>Click <strong>"Authorize"</strong> to generate your token</li>
-                <li>Copy the entire token (starts with "oauth:")</li>
-                <li>Paste it in the field above and click <strong>"Save & Connect"</strong></li>
+                <li>Select <strong>"Custom Scope Token"</strong></li>
+                <li>Check these scopes: <code>chat:read</code> and <code>chat:edit</code></li>
+                <li>Click <strong>"Generate Token"</strong></li>
+                <li>Copy the <strong>Access Token</strong> (NOT the OAuth token format)</li>
+                <li>Paste it above - it will auto-format to <code>oauth:xxxxx</code></li>
+                <li>Click <strong>"Save & Connect"</strong></li>
             </ol>
             <p style="margin-top: 1rem; font-size: 0.875rem; color: #718096;">
                 💡 Your token is stored locally in your browser and never sent to any server.
@@ -491,7 +493,7 @@
         }
 
         function openTokenGenerator() {
-            window.open('https://twitchapps.com/tmi/', '_blank');
+            window.open('https://twitchtokengenerator.com/', '_blank');
         }
 
         // Allow Enter key to submit
