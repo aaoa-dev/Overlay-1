@@ -4,6 +4,7 @@ import { resolve } from 'path';
 export default defineConfig({
   root: '.',
   base: '/Overlay-1/', // GitHub Pages base path
+  publicDir: 'public', // Static assets that won't be processed
   
   build: {
     rollupOptions: {
@@ -11,17 +12,12 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         chat: resolve(__dirname, 'Chat/chat.html'),
         verticalChat: resolve(__dirname, 'Chat/vertical-chat.html'),
-        alerts: resolve(__dirname, 'alerts.html'),
         alertsRefactored: resolve(__dirname, 'alerts-refactored.html'),
         followers: resolve(__dirname, 'followers.html'),
         subscribers: resolve(__dirname, 'subscribers.html'),
-        notifications: resolve(__dirname, 'Notification/notifications.html'),
-        twitchNotifications: resolve(__dirname, 'Notification/twitch-notifications.html'),
-        voice: resolve(__dirname, 'Voice/index.html'),
-        oauth: resolve(__dirname, 'auth/oauth.html'),
-        callback: resolve(__dirname, 'auth/callback.html'),
         simpleAuth: resolve(__dirname, 'auth/simple-auth.html'),
       },
+      external: ['/tmi.js', '/config.js'], // Don't bundle these
     },
     outDir: 'dist',
     emptyOutDir: true,
