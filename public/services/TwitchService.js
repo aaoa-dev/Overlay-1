@@ -6,7 +6,6 @@
 import { StorageService } from './StorageService.js';
 import { TwitchAPI } from './TwitchAPI.js';
 import { ErrorHandler } from '../utils/ErrorHandler.js';
-import { config } from '../config/config.js';
 
 export class TwitchService {
     constructor() {
@@ -85,30 +84,29 @@ export class TwitchService {
         // Check localStorage
         const storedAuth = StorageService.getAuthData();
         
-        // Build configuration with priority
+        // Build configuration with priority (localStorage only, no config file)
         const authConfig = {
             username: urlParams.username || 
                      options.username || 
                      storedAuth.username || 
-                     config.settings.TWITCH.USERNAME,
+                     '',
             
             password: urlParams.token ? `oauth:${urlParams.token}` :
                      options.token ? `oauth:${options.token}` :
-                     storedAuth.token ? `oauth:${storedAuth.token}` :
-                     config.settings.TWITCH.OAUTH_TOKEN,
+                     storedAuth.token || '',
             
             channel: urlParams.channel || 
                     options.channel || 
                     storedAuth.username || 
-                    config.settings.TWITCH.CHANNEL_NAME,
+                    '',
             
             channelId: urlParams.channelId || 
                       options.channelId || 
                       storedAuth.channelId || 
-                      config.settings.TWITCH.CHANNEL_ID,
+                      '',
             
             clientId: options.clientId || 
-                     config.settings.TWITCH.CLIENT_ID
+                     'kimne78kx3ncx6brgo4mv6wki5h1ko' // Public Twitch CLI client ID
         };
 
         ErrorHandler.debug('Auth config resolved', {
