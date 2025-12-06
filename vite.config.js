@@ -13,6 +13,7 @@ export default defineConfig({
         followers: resolve(__dirname, 'followers.html'),
         subscribers: resolve(__dirname, 'subscribers.html'),
         simpleAuth: resolve(__dirname, 'auth/simple-auth.html'),
+        connect: resolve(__dirname, 'auth/connect.html'),
       },
     },
     outDir: 'dist',
