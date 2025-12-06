@@ -1,0 +1,104 @@
+/**
+ * Chat Message Component Styles
+ */
+
+/* Message container */
+#chatContainer {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    padding-bottom: 2rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    direction: rtl;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-end;
+    pointer-events: none;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    border-radius: 16px 16px 0 0;
+}
+
+#chatContainer::-webkit-scrollbar {
+    display: none;
+}
+
+/* Message wrapper */
+.message-wrapper {
+    margin-left: 0.25rem;
+    display: inline-block;
+    direction: ltr;
+    margin-bottom: 1rem;
+}
+
+/* Message element */
+.chat-message {
+    background: rgba(0, 0, 0, 0);
+    border-radius: 999px;
+    padding: 1.25rem;
+    color: white;
+    width: auto;
+    max-width: none;
+    font-size: 2rem;
+    line-height: 100%;
+    display: inline-block;
+    vertical-align: bottom;
+    direction: ltr;
+    text-align: left;
+    white-space: nowrap;
+    overflow: visible;
+    pointer-events: auto;
+}
+
+/* Message text */
+.message-text {
+    display: inline;
+    white-space: nowrap;
+    overflow: visible;
+    vertical-align: middle;
+}
+
+/* Username */
+.username {
+    font-weight: bold;
+    margin-right: 1rem;
+    white-space: nowrap;
+    overflow: visible;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Badge container */
+.badge-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 1rem;
+    height: 2rem;
+    vertical-align: middle;
+}
+
+.badge {
+    display: block;
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+    min-width: 2rem;
+}
+
+/* Emotes */
+.emote {
+    display: inline-block;
+    vertical-align: middle;
+    height: 1.5em;
+    margin: 0 0.4rem;
+    max-height: 2.5rem;
+}
+

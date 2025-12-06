@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscriber Count</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        #subCount {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 10vw;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 
+                0 0 10px rgba(0, 0, 0, 0.5),
+                0 4px 6px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Animation for count changes */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+
+        /* Responsive sizing */
+        @media (max-width: 600px) {
+            #subCount {
+                font-size: 15vw;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            #subCount {
+                font-size: 8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="subCount">0</div>
+
+    <script type="module">
+        import { StreamStatsService } from './services/StreamStatsService.js';
+        import { ErrorHandler } from './utils/ErrorHandler.js';
+
+        // Initialize stats service
+        const streamStats = new StreamStatsService();
+        const subCountElement = document.getElementById('subCount');
+        let lastCount = 0;
+
+        /**
+         * Update the subscriber count display
+         */
+        function updateDisplay() {
+            const currentCount = streamStats.getSubCount();
+            
+            // Only update if count changed
+            if (currentCount !== lastCount) {
+                subCountElement.textContent = currentCount;
+                
+                // Add pulse animation on change
+                subCountElement.classList.add('pulse');
+                setTimeout(() => {
+                    subCountElement.classList.remove('pulse');
+                }, 500);
+                
+                lastCount = currentCount;
+                ErrorHandler.debug('Subscriber count updated', { count: currentCount });
+            }
+        }
+
+        // Initial update
+        updateDisplay();
+
+        // Update every second
+        setInterval(updateDisplay, 1000);
+
+        // Make stats service available globally for manual updates
+        window.streamStats = streamStats;
+
+        // Log for debugging
+        ErrorHandler.info('Subscriber count display initialized', {
+            count: streamStats.getSubCount()
+        });
+
+        // Listen for storage changes from other tabs/windows
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'stream_sub_count') {
+                streamStats.load();
+                updateDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
+

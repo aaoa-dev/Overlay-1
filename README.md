@@ -1,14 +1,43 @@
-# Twitch Chat Overlay
+# Twitch Stream Overlay System
 
-A browser-based Twitch chat overlay designed for use with OBS Studio and other streaming software.
+A comprehensive browser-based Twitch overlay system designed for use with OBS Studio and other streaming software.
 
-## Features
+## 📦 Available Overlays
+
+### **🔐 Authentication**
+- **Simple Auth** 🆕 (`/auth/simple-auth.html`) - Easy token-based auth (recommended for hosted deployments)
+- **OAuth Flow** (`/auth/oauth.html`) - Traditional OAuth (for local development)
+
+### **Chat Overlays**
+- **Horizontal Chat** (`/Chat/chat.html`) - Traditional horizontal chat display
+- **Vertical Chat** 🧾 (`/Chat/vertical-chat.html`) - Thermal printer receipt style
+
+### **Counter Displays**
+- **Follower Counter** (`/followers.html`) - Real-time follower count display
+- **Subscriber Counter** (`/subscribers.html`) - Real-time subscriber count display
+
+### **Alerts System**
+- **Welcome Alerts** (`/alerts-refactored.html`) - User visit tracking & milestone celebrations
+- Tracks first-time chatters, returning users, and milestones (10, 50, 100+ visits)
+- Follower & subscriber count tracking with admin reset command
+
+### **Notifications**
+- **Custom Notifications** (`/Notification/notifications.html`) - Signature-style text animations
+- **Twitch Notifications** (`/Notification/twitch-notifications.html`) - SVG letter animations
+
+### **Voice Recognition**
+- **Voice Commands** (`/Voice/index.html`) - Web Speech API integration for voice monitoring
+
+## ✨ Features
 
 - Real-time Twitch chat messages with badges and emotes
 - Animated message display with synchronized slide-in animations
 - Command filtering (messages starting with ! or / are hidden)
 - Authentication via Twitch OAuth
 - Easy OBS Browser Source integration
+- Stream statistics tracking (followers, subscribers, visit counts)
+- Thermal printer receipt aesthetic option
+- Centralized services architecture for reliability
 
 ## Setup Instructions
 
@@ -49,12 +78,56 @@ For best results, use these settings in your OBS Browser Source:
 - **Missing badges**: Ensure your OBS browser cache is cleared
 - **Animation issues**: Try refreshing the browser source
 
-## Development
+## 🎨 Quick Start
+
+### **Development Server**
+```bash
+npm run dev
+```
+
+Access overlays at:
+- **Simple Auth:** http://localhost:3000/auth/simple-auth.html ⭐ Start here!
+- Horizontal Chat: http://localhost:3000/Chat/chat.html
+- **Thermal Receipt Chat:** http://localhost:3000/Chat/vertical-chat.html
+- Follower Counter: http://localhost:3000/followers.html
+- Subscriber Counter: http://localhost:3000/subscribers.html
+- Alerts System: http://localhost:3000/alerts-refactored.html
+
+### **Production Build**
+```bash
+npm run build
+```
+
+## 📚 Documentation
+
+Detailed documentation for each overlay:
+- **Deployment Guide**: `/DEPLOYMENT_GUIDE.md` ⭐ Deploy to Cloudflare/GitHub Pages
+- **Thermal Chat**: `/Chat/THERMAL_CHAT.md`
+- **Counter Displays**: `/COUNTER_DISPLAYS.md`
+- **Alerts System**: `/ALERTS_README.md`
+- **Refactoring Guide**: `/REFACTORING_PLAN.md`
+- **Migration Guide**: `/MIGRATION_GUIDE.md`
+
+## 🚀 Deployment
+
+Want to host your overlays online? Check out the **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)**!
+
+Works with:
+- ✅ Cloudflare Pages (recommended)
+- ✅ GitHub Pages
+- ✅ Netlify
+- ✅ Vercel
+- ✅ Any static hosting
+
+## 🛠️ Development
 
 This project uses:
-- TMI.js for Twitch chat connectivity
-- Modern JavaScript with CSS animations
-- Tailwind CSS for styling components
+- **TMI.js** for Twitch chat connectivity
+- **Vite** for fast development and bundling
+- **Modern JavaScript** (ES6+ modules)
+- **Tailwind CSS** for styling components
+- **Service-based architecture** for maintainability
+- **Component-based UI** for reusability
 
 ## License
 

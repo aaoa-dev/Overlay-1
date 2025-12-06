@@ -1,0 +1,28 @@
+/**
+ * Chatter Display Component Styles
+ */
+
+#chattersContainer {
+    transition: min-width 0.3s;
+    min-width: 24px;
+    height: 24px;
+    width: max-content;
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: center;
+    align-middle: center;
+    padding: 0.5rem;
+    background: black;
+    border-radius: 9999px;
+}
+
+.removingChatter {
+    width: 0px;
+    height: 0px;
+    font-size: 0px;
+    transition: all;
+    transition-duration: 420ms;
+}
+

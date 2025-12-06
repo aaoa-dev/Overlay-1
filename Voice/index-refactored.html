@@ -118,12 +118,6 @@
             <button id="stopButton">⏸️ Stop Listening</button>
         </div>
 
-        <div style="margin-top: 15px; padding: 10px; background: rgba(234, 179, 8, 0.1); border-left: 3px solid #eab308; border-radius: 5px;">
-            <p style="color: #eab308; margin: 0; font-size: 13px;">
-                <strong>⚠️ Known Issue:</strong> The Web Speech API can be unreliable due to connection issues with Google's servers. If it stops after multiple errors, simply click "Start Listening" again. This is a limitation of the browser API, not our code.
-            </p>
-        </div>
-
         <div class="info">
             <strong>How it works:</strong><br>
             This tool listens to your microphone and sends Twitch chat commands when specific words are detected.
@@ -137,20 +131,11 @@
             <strong>Requirements:</strong><br>
             • Chrome or Edge browser<br>
             • Microphone permission<br>
-            • Configured Twitch credentials<br>
-            • Internet connection (uses Google's speech service)
-            <br><br>
-            <strong>⚠️ Network Errors:</strong><br>
-            If you see "Network error", this is normal! The browser's speech recognition service occasionally needs to reconnect. The tool will automatically retry with smart delays. After 10 consecutive errors, you'll need to click Start again.
-            <br><br>
-            <strong>💡 Tip:</strong> If network errors persist, try:<br>
-            • Refreshing the page<br>
-            • Using a different network<br>
-            • Testing during off-peak hours<br>
-            • Closing other tabs using speech recognition
+            • Configured Twitch credentials
         </div>
     </div>
 
     <script type="module" src="speech-recognition-refactored.js"></script>
 </body>
-</html> 
+</html>
+
