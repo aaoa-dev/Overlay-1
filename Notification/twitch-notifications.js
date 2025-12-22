@@ -1,7 +1,8 @@
 // Debug helper
 function debug(message) {
     console.log(message);
-    updateDebug(message);
+    const debugEl = document.getElementById('debug');
+    if (debugEl) debugEl.textContent = message;
 }
 
 // Animation state
@@ -16,6 +17,7 @@ const letterBank = document.querySelector('.letter-bank');
 // Create background element
 const HORIZONTAL_PADDING = 32; // 32px padding on each side
 const backgroundElement = document.createElement('div');
+backgroundElement.id = 'backgroundElement';
 backgroundElement.style.position = 'absolute';
 backgroundElement.style.left = `-${HORIZONTAL_PADDING}px`; // Offset left to account for padding
 backgroundElement.style.top = '0';
@@ -45,8 +47,10 @@ svgStyle.textContent = `
 `;
 document.head.appendChild(svgStyle);
 
-signatureMain.style.position = 'relative';
-signatureMain.insertBefore(backgroundElement, signatureMain.firstChild);
+if (signatureMain) {
+    signatureMain.style.position = 'relative';
+    signatureMain.insertBefore(backgroundElement, signatureMain.firstChild);
+}
 
 // Character width mappings (based on SVG viewBox and margins)
 const characterWidths = {
@@ -104,111 +108,55 @@ const characterWidths = {
     'z': { width: 24, margins: { left: -10, right: -4 } }
 };
 
-// Function to calculate text width
 function calculateTextWidth(text) {
     let totalWidth = 0;
-    const spaceWidth = 12; // Width of space character
-
+    const spaceWidth = 12;
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
-        
-        if (char === ' ') {
-            totalWidth += spaceWidth;
-            continue;
-        }
-
+        if (char === ' ') { totalWidth += spaceWidth; continue; }
         const charInfo = characterWidths[char];
         if (charInfo) {
-            // Add the base width
-            totalWidth += charInfo.width;
-            
-            // Add the margins
-            totalWidth += charInfo.margins.left + charInfo.margins.right;
-            
-            // Add a small gap between characters (if not the last character)
-            if (i < text.length - 1) {
-                totalWidth += 2; // Default gap between characters
-            }
+            totalWidth += charInfo.width + charInfo.margins.left + charInfo.margins.right;
+            if (i < text.length - 1) totalWidth += 2;
         }
     }
-
     return totalWidth;
 }
 
-// Function to translate leet speak to regular text
 function leetToText(text) {
-    const leetMap = {
-        '0': 'o',
-        '1': 'i',
-        '2': 'z',
-        '3': 'e',
-        '4': 'a',
-        '5': 's',
-        '6': 'g',
-        '7': 't',
-        '8': 'b',
-        '9': 'p',
-        '@': 'a',
-        '$': 's',
-        '_': ' '
-    };
-    
+    const leetMap = { '0': 'o', '1': 'i', '2': 'z', '3': 'e', '4': 'a', '5': 's', '6': 'g', '7': 't', '8': 'b', '9': 'p', '@': 'a', '$': 's', '_': ' ' };
     return text.split('').map(char => leetMap[char] || char).join('');
 }
 
-// Error handling helper
-function handleError(error, context) {
-    console.error(`Error in ${context}:`, error);
-    debug(`Error in ${context}: ${error.message}`);
-}
-
-// Initialize elements and check for errors
 function initializeElements() {
-    try {
-        if (!signature) throw new Error('Signature element not found');
-        if (!signatureMain) throw new Error('Signature main element not found');
-        if (!letterBank) throw new Error('Letter bank not found');
-        debug('Elements initialized successfully');
-        return true;
-    } catch (error) {
-        handleError(error, 'initialization');
+    if (!signature || !signatureMain || !letterBank) {
+        debug(`Missing elements: signature=${!!signature}, main=${!!signatureMain}, bank=${!!letterBank}`);
         return false;
     }
+    return true;
 }
 
-// Animation function
 async function animateText(text, duration = 5000) {
     if (!initializeElements()) return;
     if (isAnimating) {
-        debug('Animation already in progress, clearing...');
         if (currentTimeout) clearTimeout(currentTimeout);
         signatureMain.innerHTML = '';
-        // Re-create background element since innerHTML cleared it
         signatureMain.insertBefore(backgroundElement, signatureMain.firstChild);
     }
 
     try {
-        // First translate leet speak to regular text
         const translatedText = leetToText(text);
-        // Then replace hyphens and underscores with spaces
-        const processedText = translatedText.replace(/[-_]/g, ' ');
+        const processedText = translatedText.replace(/[^a-zA-Z ]/g, ' ');
         const textWidth = calculateTextWidth(processedText) * 1.4;
-        const totalWidth = textWidth + (HORIZONTAL_PADDING * 2); // Add padding to total width
-        debug(`Starting animation for: ${processedText} (Calculated width: ${textWidth}px, Total width with padding: ${totalWidth}px)`);
+        const totalWidth = textWidth + (HORIZONTAL_PADDING * 2);
         
-        // Set the container width to match text width exactly
         signatureMain.style.width = `${textWidth}px`;
-        
         isAnimating = true;
-        
-        // First, animate the background with padding
         backgroundElement.style.width = `${totalWidth}px`;
         backgroundElement.style.opacity = '1';
         
-        // Wait for background animation
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Create a container for the text that will grow from left to right
         const textContainer = document.createElement('div');
         textContainer.style.display = 'flex';
         textContainer.style.flexWrap = 'nowrap';
@@ -217,12 +165,10 @@ async function animateText(text, duration = 5000) {
         textContainer.style.transition = 'opacity 0.5s ease';
         textContainer.style.position = 'relative';
         textContainer.style.zIndex = '2';
-        textContainer.style.marginLeft = `${HORIZONTAL_PADDING}px`; // Add left margin to text container
+        textContainer.style.marginLeft = `${HORIZONTAL_PADDING}px`;
         signatureMain.appendChild(textContainer);
         
-        // Animate each character
         for (const char of processedText) {
-            // Handle spaces
             if (char === ' ') {
                 const space = document.createElement('div');
                 space.style.minWidth = '12px';
@@ -230,21 +176,14 @@ async function animateText(text, duration = 5000) {
                 await new Promise(resolve => setTimeout(resolve, 50));
                 continue;
             }
+            if (!/[a-zA-Z]/.test(char)) continue;
 
-            // Skip if not a letter (a-z or A-Z)
-            if (!/[a-zA-Z]/.test(char)) {
-                debug(`Skipping unsupported character: ${char}`);
-                continue;
-            }
-
-            // Determine if uppercase or lowercase
             const isUpperCase = char === char.toUpperCase();
             const letterClass = isUpperCase ? 'up' : 'lo';
             const letterChar = char.toLowerCase();
-
             const letter = letterBank.querySelector(`.${letterChar}.${letterClass}`);
             if (!letter) {
-                debug(`Letter not found in bank: ${char} (${letterClass})`);
+                console.warn(`Letter not found in bank: ${letterChar}.${letterClass}`);
                 continue;
             }
             
@@ -257,175 +196,86 @@ async function animateText(text, duration = 5000) {
             
             const path = clone.querySelector('path');
             if (path) {
-                // Set initial state
                 const length = path.getTotalLength();
                 path.style.strokeDasharray = `${length}`;
                 path.style.strokeDashoffset = `${length}`;
-                
-                // Add to DOM
                 textContainer.appendChild(clone);
-                
-                // Trigger animation
                 requestAnimationFrame(() => {
                     clone.style.opacity = '1';
                     path.style.strokeDashoffset = '0';
                 });
-                
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
 
-        debug('Animation sequence complete, waiting for display duration...');
-        
-        // Wait for the specified duration before fading out
         currentTimeout = setTimeout(async () => {
-            // Fade out the text container first
             textContainer.style.opacity = '0';
             await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Then fade out the background
             backgroundElement.style.opacity = '0';
             backgroundElement.style.width = '0';
-            
-            // Wait for fade out transitions to complete
             setTimeout(() => {
                 signatureMain.innerHTML = '';
-                // Re-create background element
                 signatureMain.insertBefore(backgroundElement, signatureMain.firstChild);
                 isAnimating = false;
-                debug('Animation complete and cleared');
             }, 500);
         }, duration);
 
     } catch (error) {
-        handleError(error, 'animation');
+        console.error(error);
         isAnimating = false;
     }
 }
 
-// Test functions
-function testAnimationFromInput() {
+// TEST FUNCTIONS
+window.testAnimationFromInput = () => {
     const input = document.querySelector('.test-input');
-    if (!input) {
-        debug('Test input element not found');
-        return;
-    }
-    animateText(input.value);
-}
+    if (input) animateText(input.value);
+};
+window.testFollow = () => animateText('New Follower');
+window.testRaid = () => animateText('Incoming Raid');
+window.testSub = () => animateText('New Subscriber');
 
-function testFollow() {
-    animateText('New Follower!');
-}
+// TWITCH INTEGRATION
+import { TwitchService } from '../src/services/TwitchService.js';
 
-function testRaid() {
-    animateText('Incoming Raid!');
-}
-
-function testSub() {
-    animateText('New Subscriber!');
-}
-
-// Initialize Twitch client
-let client = null;
-
-// Initialize Twitch connection
-async function initTwitchClient() {
+async function init() {
     try {
-        // Import config
-        const { config } = await import('../config/config.js');
-        
-        // Create client
-        client = new tmi.Client({
-            options: { debug: true },
-            identity: {
-                username: config.settings.TWITCH.USERNAME,
-                password: config.settings.TWITCH.OAUTH_TOKEN
-            },
-            channels: [config.settings.TWITCH.CHANNEL_NAME]
-        });
+        debug('Connecting to Twitch...');
+        const twitch = new TwitchService();
+        await twitch.initialize();
+        debug(`Connected to ${twitch.getChannel()}`);
 
-        // Connect to Twitch
-        await client.connect();
-        debug('Connected to Twitch chat!');
-
-        // Set up event handlers
-        setupTwitchEvents();
-    } catch (error) {
-        handleError(error, 'Twitch initialization');
-    }
-}
-
-// Set up Twitch event handlers
-function setupTwitchEvents() {
-    if (!client) return;
-
-    // Chat messages
-    client.on('chat', (channel, userstate, message, self) => {
-        if (self) return; // Skip messages from the bot
-        
-        // Optional: Handle chat commands or special messages
-        if (message.startsWith('!')) {
-            // Handle commands here if needed
-            return;
+        // Apply theme settings if available
+        const theme = twitch.authConfig.theme;
+        if (theme && (theme.color || theme.fontSize)) {
+            const style = document.createElement('style');
+            let css = '';
+            if (theme.color) {
+                css += `.signature-main svg path { stroke: ${theme.color} !important; }\n`;
+                css += `#backgroundElement { background: ${theme.color} !important; }\n`;
+            }
+            if (theme.fontSize) {
+                css += `.scale-container { transform: translate(-50%, -50%) scale(${parseFloat(theme.fontSize)/16 * 2}) !important; }\n`;
+            }
+            style.textContent = css;
+            document.head.appendChild(style);
         }
-    });
 
-    // New subscription
-    client.on('subscription', (channel, username, methods, message, userstate) => {
-        debug(`New subscription from ${username}!`);
-        animateText(`Brand new sub for ${username}`);
-    });
+        twitch.on('subscription', (channel, username) => animateText(`New Sub ${username}`));
+        twitch.on('resub', (channel, username, months) => animateText(`Resub ${username} ${months}`));
+        twitch.on('subgift', (channel, username, recipient) => animateText(`${username} gifted ${recipient}`));
+        twitch.on('raided', (channel, username, viewers) => animateText(`Raid ${username} ${viewers}`));
 
-    // Resubscription
-    client.on('resub', (channel, username, streakMonths, message, userstate, methods) => {
-        debug(`Resub from ${username} for ${streakMonths} months!`);
-        animateText(`Brand new sub for ${username}`);
-    });
-
-    // Gifted subscription
-    client.on('subgift', (channel, username, streakMonths, recipient, methods, userstate) => {
-        debug(`${username} gifted a sub to ${recipient}!`);
-        animateText(`Brand new sub for ${recipient}`);
-    });
-
-    // Bits/Cheers
-    client.on('cheer', (channel, userstate, message) => {
-        const bits = userstate.bits;
-        debug(`${userstate.username} cheered ${bits} bits!`);
-        animateText(`${userstate.username} keep sending me money`);
-    });
-
-    // Raid
-    client.on('raided', (channel, username, viewers, userstate) => {
-        debug(`${username} raided with ${viewers} viewers!`);
-        animateText(`${username} just raided`);
-    });
-
-    // Channel points redemption
-    client.on('redeem', (channel, username, rewardType, tags, message) => {
-        debug(`${username} redeemed ${rewardType}!`);
-        animateText(`${username} redeemed ${rewardType}`);
-    });
-
-    // Anonymous gift sub
-    client.on('anonsubgift', (channel, streakMonths, recipient, methods, userstate) => {
-        debug(`Anonymous gifted a sub to ${recipient}!`);
-        animateText(`Brand new sub for ${recipient}`);
-    });
-
-    // Mystery gift subs
-    client.on('submysterygift', (channel, username, giftSubCount, methods, userstate) => {
-        debug(`${username} gifted ${giftSubCount} subs!`);
-        animateText(`${username} keep sending me money`);
-    });
+    } catch (error) {
+        debug(`Error: ${error.message}`);
+        console.error('Twitch initialization failed:', error);
+    }
 }
 
-// Initialize on load
-window.addEventListener('load', async () => {
-    debug('Page loaded, initializing...');
+window.addEventListener('load', () => {
     if (initializeElements()) {
-        debug('Elements initialized successfully');
-        await initTwitchClient();
-        debug('Ready to animate! Try the test buttons below.');
+        init();
+    } else {
+        debug('Failed to initialize elements');
     }
-}); 
+});

@@ -530,8 +530,11 @@
     </script>
     
     <!-- Import scripts -->
-    <script src="../tmi.js"></script>
-    <script src="../config/config.js" type="module"></script>
-    <script src="twitch-notifications.js"></script>
+    <script src="../src/vendor/tmi.js"></script>
+    <script type="module">
+        import { TwitchService } from '../src/services/TwitchService.js';
+        console.log('TwitchService module loaded');
+    </script>
+    <script src="twitch-notifications.js" type="module"></script>
 </body>
 </html> 

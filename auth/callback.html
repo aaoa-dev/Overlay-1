@@ -1,176 +1,67 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../output.css" />
-    <title>Twitch OAuth Callback</title>
+    <title>Connecting...</title>
     <style>
-      body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #0e0e10;
-        color: white;
-      }
-      .callback-container {
-        text-align: center;
-        background-color: #18181b;
-        padding: 2rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        max-width: 500px;
-        width: 90%;
-      }
-      .status {
-        margin-top: 1rem;
-        padding: 1rem;
-        border-radius: 0.25rem;
-      }
-      .status.success {
-        background-color: #1a472a;
-      }
-      .status.error {
-        background-color: #5c1a1a;
-      }
-      .btn {
-        background-color: #9147ff;
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-        border-radius: 0.25rem;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        text-decoration: none;
-        display: inline-block;
-        margin-top: 1rem;
-      }
-      .btn:hover {
-        background-color: #772ce8;
-      }
+        body { background: #0e0e10; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #18181b; padding: 2rem; border-radius: 1rem; text-align: center; max-width: 400px; }
+        .loader { border: 4px solid #333; border-top: 4px solid #9147ff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error { color: #eb4034; }
     </style>
-  </head>
-  <body>
-    <div class="callback-container">
-      <h1 class="text-2xl font-bold mb-4">Twitch Authorization</h1>
-      <div id="status" class="status">Processing authorization...</div>
-      <a href="/Chat/chat.html" id="continue-btn" class="btn" style="display: none;">Continue to Chat</a>
+</head>
+<body>
+    <div class="box">
+        <div id="status-icon" class="loader"></div>
+        <h2 id="status-text">Finalizing Connection...</h2>
+        <p id="error-text" class="error"></p>
     </div>
-    
+
     <script type="module">
-      // Import config
-      import { config } from '../config/config.js';
-      
-      // Twitch Client ID constant from config
-      const TWITCH_CLIENT_ID = config.settings.TWITCH.CLIENT_ID;
-      
-      document.addEventListener('DOMContentLoaded', () => {
-        const statusDiv = document.getElementById('status');
-        const continueBtn = document.getElementById('continue-btn');
-        
-        // Extract hash parameters from URL
-        if (window.location.hash) {
-          const params = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = params.get('access_token');
-          const state = params.get('state');
-          const storedState = localStorage.getItem('oauth_state');
-          console.log(accessToken, state, storedState)
-          // Validate state parameter to prevent CSRF attacks
-          if (state !== storedState) {
-            handleError('State validation failed. This could be a cross-site request forgery attempt.');
-            return;
-          }
-          
-          if (accessToken) {
-            // Get user information using the token
-            fetch('https://api.twitch.tv/helix/users', {
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Client-Id': TWITCH_CLIENT_ID
-              }
-            })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Failed to fetch user data');
-              }
-              return response.json();
-            })
-            .then(data => {
-              const username = data.data[0].login;
-              const channelId = data.data[0].id;
-              
-              // Store token, username and channel ID
-              localStorage.setItem('twitch_oauth_token', accessToken);
-              localStorage.setItem('twitch_username', username);
-              localStorage.setItem('twitch_channel_id', channelId);
-              
-              // Update UI
-              statusDiv.textContent = `Successfully authenticated as ${username}`;
-              statusDiv.className = 'status success';
-              continueBtn.style.display = 'inline-block';
-              
-              // Store token in config
-              updateConfig(accessToken, username, channelId);
-            })
-            .catch(error => {
-              handleError(`Authentication error: ${error.message}`);
-            });
-          } else {
-            handleError('No access token received');
-          }
-        } else {
-          handleError('No response data received from Twitch');
+        import { StorageService } from '../src/services/StorageService.js';
+        import { TwitchAPI } from '../src/services/TwitchAPI.js';
+        import { config } from '../src/config.js';
+
+        async function handleCallback() {
+            const statusText = document.getElementById('status-text');
+            const errorText = document.getElementById('error-text');
+            const statusIcon = document.getElementById('status-icon');
+
+            try {
+                // 1. Get tokens from URL hash
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash);
+                const accessToken = params.get('access_token');
+                const state = params.get('state');
+                const storedState = StorageService.get(StorageService.KEYS.OAUTH_STATE);
+
+                if (!accessToken) throw new Error("No access token found in URL.");
+                if (state !== storedState) throw new Error("Security mismatch (State). Please try again.");
+
+                // 2. Fetch User Info
+                const clientId = config.settings.TWITCH.CLIENT_ID;
+                const api = new TwitchAPI(clientId, accessToken);
+                const user = await api.fetchUserInfo();
+
+                if (!user) throw new Error("Twitch didn't return user data.");
+
+                // 3. Save everything
+                StorageService.setAuthData(accessToken, user.login, user.id);
+                localStorage.setItem('twitch_username', user.login); // For compatibility
+
+                statusText.textContent = "Success! Redirecting...";
+                setTimeout(() => window.location.href = '/index.html', 1000);
+
+            } catch (err) {
+                console.error(err);
+                statusIcon.style.display = 'none';
+                statusText.textContent = "Connection Failed";
+                errorText.textContent = err.message;
+            }
         }
-      });
-      
-      function handleError(message) {
-        const statusDiv = document.getElementById('status');
-        statusDiv.textContent = message;
-        statusDiv.className = 'status error';
-        
-        // Add a back button
-        const backBtn = document.createElement('a');
-        backBtn.href = '/auth/oauth.html';
-        backBtn.className = 'btn';
-        backBtn.textContent = 'Try Again';
-        backBtn.style.marginLeft = '1rem';
-        document.querySelector('.callback-container').appendChild(backBtn);
-      }
-      
-      function updateConfig(token, username, channelId) {
-        // In a production app, you would update your backend configuration here
-        console.log(`Storing token for user: ${username} with channel ID: ${channelId}`);
-        
-        // Option 1: Send to a server endpoint to update the config file
-        /* 
-        // Uncomment when server implementation is ready
-        fetch('/api/update-config', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            accessToken: token,
-            username: username,
-            channelId: channelId
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Config updated on server:', data);
-        })
-        .catch(error => {
-          console.error('Error updating config on server:', error);
-        });
-        */
-        
-        // Option 2: We're storing in localStorage, which the chat component uses
-        // This is the current implementation
-      }
+
+        handleCallback();
     </script>
-  </body>
-</html> 
+</body>
+</html>

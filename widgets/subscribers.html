@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscriber Count</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="../src/vendor/tmi.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        #subCount {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 10vw;
+            font-weight: 600;
+            color: #ffffff;
+            text-shadow: 
+                0 0 10px rgba(0, 0, 0, 0.5),
+                0 4px 6px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+
+        @media (max-width: 600px) {
+            #subCount {
+                font-size: 15vw;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            #subCount {
+                font-size: 8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="subCount">...</div>
+
+    <script type="module">
+        import { TwitchService } from '../src/services/TwitchService.js';
+        import { ErrorHandler } from '../src/utils/ErrorHandler.js';
+
+        const subCountElement = document.getElementById('subCount');
+        let lastCount = -1;
+        const twitch = new TwitchService();
+
+        async function init() {
+            try {
+                await twitch.initialize();
+                updateSubs();
+                // Check every 60 seconds (subs change less frequently)
+                setInterval(updateSubs, 60000);
+            } catch (error) {
+                subCountElement.textContent = 'Error';
+                ErrorHandler.handle(error, 'subs_init');
+            }
+        }
+
+        async function updateSubs() {
+            try {
+                // Requires channel:read:subscriptions scope
+                const count = await twitch.api.fetchSubscriberCount(twitch.authConfig.channelId);
+                
+                if (count !== lastCount) {
+                    subCountElement.textContent = count;
+                    if (lastCount !== -1) {
+                        subCountElement.classList.add('pulse');
+                        setTimeout(() => subCountElement.classList.remove('pulse'), 500);
+                    }
+                    lastCount = count;
+                }
+            } catch (error) {
+                ErrorHandler.handle(error, 'update_subs');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

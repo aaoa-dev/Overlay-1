@@ -1,73 +1,153 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../output.css" />
-    <title>Twitch OAuth Login</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect your Twitch - Overlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-      body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #0e0e10;
-        color: white;
-      }
-      .auth-container {
-        text-align: center;
-        background-color: #18181b;
-        padding: 2rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        max-width: 500px;
-        width: 90%;
-      }
-      .twitch-button {
-        background-color: #9147ff;
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-        border-radius: 0.25rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        transition: background-color 0.2s;
-      }
-      .twitch-button:hover {
-        background-color: #772ce8;
-      }
-      .twitch-logo {
-        width: 1.5rem;
-        height: 1.5rem;
-        margin-right: 0.5rem;
-      }
-      .status {
-        margin-top: 1rem;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        background-color: #2c2c2e;
-      }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            padding: 1rem;
+        }
+        .container {
+            background: white; border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px; width: 100%; padding: 2.5rem;
+        }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .logo {
+            width: 64px; height: 64px; margin: 0 auto 1rem;
+            background: #9147ff; border-radius: 1rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        h1 { font-size: 1.5rem; color: #1a202c; margin-bottom: 0.5rem; }
+        p { color: #718096; font-size: 0.9rem; }
+        
+        .input-group { margin-bottom: 1.5rem; }
+        .input-wrapper { position: relative; }
+        .input-wrapper span {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            color: #a0aec0; font-weight: 600;
+        }
+        input {
+            width: 100%; padding: 1rem 1rem 1rem 2.2rem;
+            border: 2px solid #e2e8f0; border-radius: 0.75rem;
+            font-size: 1.1rem; transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: #9147ff; box-shadow: 0 0 0 3px rgba(145, 71, 255, 0.1); }
+        
+        .btn {
+            width: 100%; padding: 1rem; border: none; border-radius: 0.75rem;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn-primary { background: #9147ff; color: white; }
+        .btn-primary:hover { background: #772ce8; transform: translateY(-1px); }
+        
+        .overlay-links { display: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #edf2f7; }
+        .overlay-links.show { display: block; }
+        .link-grid { display: grid; gap: 0.75rem; margin-top: 1rem; }
+        .link-card {
+            background: #f7fafc; padding: 1rem; border-radius: 0.75rem;
+            border: 1px solid #e2e8f0; text-decoration: none; color: #2d3748;
+            display: flex; flex-direction: column; transition: all 0.2s;
+        }
+        .link-card:hover { border-color: #9147ff; background: #faf5ff; }
+        .link-title { font-weight: 700; margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .link-desc { font-size: 0.8rem; color: #718096; margin-bottom: 0.75rem; }
+        
+        .copy-btn {
+            background: #edf2f7; color: #4a5568; padding: 0.5rem;
+            border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600;
+            text-align: center; border: none; cursor: pointer;
+        }
+        .copy-btn:hover { background: #e2e8f0; }
+        .copy-btn.success { background: #c6f6d5; color: #22543d; }
+
+        .unlock-stats {
+            margin-top: 1.5rem; padding: 1rem; background: #fff5f5;
+            border-radius: 0.75rem; border: 1px dashed #feb2b2; text-align: center;
+        }
+        .unlock-stats p { font-size: 0.8rem; color: #c53030; margin-bottom: 0.75rem; font-weight: 600; }
+        .btn-outline { background: white; color: #9147ff; border: 2px solid #9147ff; padding: 0.5rem; font-size: 0.8rem; }
+        .btn-outline:hover { background: #f3ebff; }
+
+        .status-badge {
+            display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem;
+            font-size: 0.75rem; font-weight: 700; margin-top: 0.5rem;
+        }
+        .status-anon { background: #edf2f7; color: #4a5568; }
+        .status-auth { background: #c6f6d5; color: #22543d; }
     </style>
-  </head>
-  <body>
-    <div class="auth-container">
-      <h1 class="text-2xl font-bold mb-4">Twitch Chat Overlay</h1>
-      <p class="mb-6">Authorize with your Twitch account to display chat messages in your stream.</p>
-      
-      <button id="login-button" class="twitch-button">
-        <svg class="twitch-logo" viewBox="0 0 24 24" fill="white">
-          <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
-        </svg>
-        Login with Twitch
-      </button>
-      
-      <div id="status" class="status" style="display: none;"></div>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+                </svg>
+            </div>
+            <h1>Twitch Overlays</h1>
+            <p id="sub-header">Enter your name to get your overlay URLs</p>
+            <div id="auth-status-badge"></div>
+        </div>
+
+        <div id="setup-view">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <span>@</span>
+                    <input type="text" id="twitch-name" placeholder="your_username" spellcheck="false">
+                </div>
+            </div>
+            <button id="link-btn" class="btn btn-primary">Link Channel</button>
+        </div>
+
+        <div id="links-view" class="overlay-links">
+            <h3>🎨 Your Overlay URLs</h3>
+            <p style="margin-bottom: 1rem;">Copy these into OBS as "Browser Sources"</p>
+            
+            <div class="link-grid">
+                <div class="link-card">
+                    <span class="link-title">💬 Horizontal Chat</span>
+                    <span class="link-desc">Clean, animated horizontal chat.</span>
+                    <button class="copy-btn" data-url="../Chat/chat.html">📋 Copy OBS URL</button>
+                </div>
+                <div class="link-card">
+                    <span class="link-title">🧾 Thermal Chat</span>
+                    <span class="link-desc">Receipt-style vertical chat.</span>
+                    <button class="copy-btn" data-url="../Chat/vertical-chat.html">📋 Copy OBS URL</button>
+                </div>
+                <div class="link-card">
+                    <span class="link-title">🔔 Welcome Alerts</span>
+                    <span class="link-desc">Greets new chatters automatically.</span>
+                    <button class="copy-btn" data-url="../alerts.html">📋 Copy OBS URL</button>
+                </div>
+                <div class="link-card" id="follower-card">
+                    <span class="link-title">👥 Follower Count</span>
+                    <span class="link-desc">Live follower counter.</span>
+                    <button class="copy-btn" data-url="../followers.html">📋 Copy OBS URL</button>
+                </div>
+            </div>
+
+            <div id="stats-unlock" class="unlock-stats">
+                <p>⚠️ Live Stats (Followers/Subs) require login</p>
+                <button id="auth-btn" class="btn btn-outline">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+                    Unlock Full Features
+                </button>
+            </div>
+
+            <button id="reset-btn" class="copy-btn" style="width: 100%; margin-top: 2rem; background: none; color: #a0aec0;">Switch Account</button>
+        </div>
     </div>
-    
-    <script src="oauth.js"></script>
-  </body>
-</html> 
+    <script type="module" src="oauth.js"></script>
+</body>
+</html>

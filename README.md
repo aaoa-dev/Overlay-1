@@ -1,134 +1,80 @@
-# Twitch Stream Overlay System
+# 🎮 Overlay-1 | Pro Streaming Widgets
 
-A comprehensive browser-based Twitch overlay system designed for use with OBS Studio and other streaming software.
-
-## 📦 Available Overlays
-
-### **🔐 Authentication**
-- **Simple Auth** 🆕 (`/auth/simple-auth.html`) - Easy token-based auth (recommended for hosted deployments)
-- **OAuth Flow** (`/auth/oauth.html`) - Traditional OAuth (for local development)
-
-### **Chat Overlays**
-- **Horizontal Chat** (`/Chat/chat.html`) - Traditional horizontal chat display
-- **Vertical Chat** 🧾 (`/Chat/vertical-chat.html`) - Thermal printer receipt style
-
-### **Counter Displays**
-- **Follower Counter** (`/followers.html`) - Real-time follower count display
-- **Subscriber Counter** (`/subscribers.html`) - Real-time subscriber count display
-
-### **Alerts System**
-- **Welcome Alerts** (`/alerts-refactored.html`) - User visit tracking & milestone celebrations
-- Tracks first-time chatters, returning users, and milestones (10, 50, 100+ visits)
-- Follower & subscriber count tracking with admin reset command
-
-### **Notifications**
-- **Custom Notifications** (`/Notification/notifications.html`) - Signature-style text animations
-- **Twitch Notifications** (`/Notification/twitch-notifications.html`) - SVG letter animations
-
-### **Voice Recognition**
-- **Voice Commands** (`/Voice/index.html`) - Web Speech API integration for voice monitoring
+Beautiful, lightweight, and high-performance overlays for Twitch. Level up your stream in one click with zero complex setup.
 
 ## ✨ Features
 
-- Real-time Twitch chat messages with badges and emotes
-- Animated message display with synchronized slide-in animations
-- Command filtering (messages starting with ! or / are hidden)
-- Authentication via Twitch OAuth
-- Easy OBS Browser Source integration
-- Stream statistics tracking (followers, subscribers, visit counts)
-- Thermal printer receipt aesthetic option
-- Centralized services architecture for reliability
+- **🚀 Instant Dashboard** - Manage all your overlays from a single central hub.
+- **💬 Modern Chat** - Clean, pill-shaped design with smooth slide-in animations.
+- **🧾 Thermal Receipt Chat** - A unique retro-style scrolling receipt aesthetic.
+- **🔔 Smart Alerts** - Automated welcome messages for new and returning viewers.
+- **📈 Live Counters** - Real-time follower and subscriber goals.
+- **🎤 Voice Monitor** - AI-powered speech monitoring for your stream.
+- **🎨 Global Customization** - Unified theme color and font size settings across all widgets.
+- **🔐 Secure Auth** - Simple Twitch integration that prioritizes privacy.
 
-## Setup Instructions
+## 🚀 Quick Start
 
-### Regular Browser Usage
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v16 or higher)
+- A Twitch account
 
-1. Open the chat overlay in your browser
-2. Click "Connect with Twitch" to authenticate
-3. Once authenticated, you can view chat messages in real-time
+### 2. Installation
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd Overlay-1
 
-### OBS Browser Source Setup
+# Install dependencies
+npm install
+```
 
-1. **Regular Authentication Method (Recommended)**:
-   - First authenticate in a regular browser window
-   - Click the "Copy OBS URL" button
-   - In OBS, add a Browser Source and paste the copied URL
+### 3. Configuration
+Copy the template and add your Twitch credentials:
+```bash
+cp config/config.template.js config/config.js
+```
+*Note: `config.js` is gitignored to keep your tokens safe.*
 
-2. **Manual URL Parameter Method**:
-   - Get your Twitch OAuth token from [Twitch Token Generator](https://twitchapps.com/tmi/)
-   - Create a URL with the following format:
-     ```
-     https://your-site.com/Chat/chat.html?token=YOUR_TOKEN&username=YOUR_USERNAME&channel=CHANNEL_TO_WATCH
-     ```
-   - Add this URL to your OBS Browser Source
-
-## Browser Source Settings in OBS
-
-For best results, use these settings in your OBS Browser Source:
-
-- Width: 800 (or match your screen width)
-- Height: 600 (adjust based on how much chat history you want to see)
-- Custom CSS: (leave empty to use overlay's built-in styles)
-- Shutdown source when not visible: Unchecked
-- Refresh browser when scene becomes active: Optional
-
-## Troubleshooting
-
-- **No messages appear**: Verify your authentication is working correctly
-- **Missing badges**: Ensure your OBS browser cache is cleared
-- **Animation issues**: Try refreshing the browser source
-
-## 🎨 Quick Start
-
-### **Development Server**
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
+Visit `http://localhost:3000` to access your Dashboard.
 
-Access overlays at:
-- **Simple Auth:** http://localhost:3000/auth/simple-auth.html ⭐ Start here!
-- Horizontal Chat: http://localhost:3000/Chat/chat.html
-- **Thermal Receipt Chat:** http://localhost:3000/Chat/vertical-chat.html
-- Follower Counter: http://localhost:3000/followers.html
-- Subscriber Counter: http://localhost:3000/subscribers.html
-- Alerts System: http://localhost:3000/alerts-refactored.html
+## 📡 OBS Integration
 
-### **Production Build**
-```bash
-npm run build
-```
+1. Open the **Dashboard** in your regular browser.
+2. Click **"Connect with Twitch"** and log in.
+3. Use the **Global Settings** to customize your theme.
+4. Click **"Copy OBS URL"** for the widget you want.
+5. In OBS, add a **Browser Source**, paste the URL, and set the dimensions:
+   - **Modern Chat**: 800x600 (adjust as needed)
+   - **Thermal Receipt Chat**: 450x1080
+   - **Live Counters**: 400x200
+6. **Important**: Uncheck "Shutdown source when not visible" to ensure widgets stay synced.
+
+## 🏗️ Project Structure
+
+- `/chats` - Chat-related overlays (Modern & Thermal).
+- `/alerts` - Welcome systems and signature animations.
+- `/widgets` - Live counters, chatters display, and voice monitor.
+- `/src` - Core logic, services, and shared components.
+- `/auth` - Twitch OAuth and authentication flows.
 
 ## 📚 Documentation
 
-Detailed documentation for each overlay:
-- **Deployment Guide**: `/DEPLOYMENT_GUIDE.md` ⭐ Deploy to Cloudflare/GitHub Pages
-- **Thermal Chat**: `/Chat/THERMAL_CHAT.md`
-- **Counter Displays**: `/COUNTER_DISPLAYS.md`
-- **Alerts System**: `/ALERTS_README.md`
-- **Refactoring Guide**: `/REFACTORING_PLAN.md`
-- **Migration Guide**: `/MIGRATION_GUIDE.md`
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - How to host your overlays on Cloudflare or GitHub Pages.
+- **[Project Status](PROJECT_STATUS.md)** - Latest updates and architectural decisions.
+- **[Development Guide](DEVELOPMENT.md)** - Technical details on the service-based architecture.
 
-## 🚀 Deployment
+## 🛠️ Built With
 
-Want to host your overlays online? Check out the **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)**!
+- **TMI.js** - Twitch chat connectivity.
+- **Vite** - Lightning-fast build tool and dev server.
+- **Tailwind CSS** - Modern utility-first styling.
+- **Canvas Confetti** - Celebration effects.
 
-Works with:
-- ✅ Cloudflare Pages (recommended)
-- ✅ GitHub Pages
-- ✅ Netlify
-- ✅ Vercel
-- ✅ Any static hosting
+## 📝 License
 
-## 🛠️ Development
-
-This project uses:
-- **TMI.js** for Twitch chat connectivity
-- **Vite** for fast development and bundling
-- **Modern JavaScript** (ES6+ modules)
-- **Tailwind CSS** for styling components
-- **Service-based architecture** for maintainability
-- **Component-based UI** for reusability
-
-## License
-
-MIT License - Feel free to use and modify for your own streams! 
+MIT License - Feel free to use and modify for your own streams!

@@ -1,16 +1,395 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="output.css" />
-    <script src="tmi.js"></script>
-    <script type="module" src="script.js" defer></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay-1 | Pro Streaming Widgets</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="output.css">
+    <style>
+        :root {
+            --twitch-purple: #9147ff;
+            --twitch-dark: #772ce8;
+            --bg-dark: #0e0e10;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            overflow-x: hidden;
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at top right, rgba(145, 71, 255, 0.15), transparent),
+                        radial-gradient(circle at bottom left, rgba(145, 71, 255, 0.1), transparent);
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .btn-twitch {
+            background: var(--twitch-purple);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-twitch:hover {
+            background: var(--twitch-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(145, 71, 255, 0.4);
+        }
+        .overlay-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .overlay-card:hover {
+            border-color: var(--twitch-purple);
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .preview-box {
+            background: #000;
+            aspect-ratio: 16/9;
+            border-radius: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .preview-box iframe {
+            width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.5); transform-origin: top left; width: 200%; height: 200%;
+        }
+        .overlay-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 2rem;
+        }
+        @media (min-width: 768px) {
+            .overlay-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1024px) {
+            .overlay-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+    </style>
   </head>
-  <body class="m-16 ">
-    <div id="chattersContainer" class="transition min-w-24 h-24 w-max gap-2 flex flex-row-reverse items-center justify-center align-middle p-2 bg-black rounded-full">
+<body class="hero-gradient min-h-screen px-4 md:px-8">
+    <!-- Navigation -->
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center gap-2">
+            <div class="bg-purple-600 p-2 rounded-xl">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+            </div>
+            <span class="text-xl font-extrabold tracking-tight">OVERLAY-1</span>
+        </div>
+        <div id="nav-user" class="hidden flex items-center gap-4">
+            <span id="user-display" class="text-sm font-semibold opacity-70"></span>
+            <button id="logout-btn" class="text-xs opacity-50 hover:opacity-100">Logout</button>
+        </div>
+    </nav>
 
+    <!-- Hero Section -->
+    <main class="max-w-7xl mx-auto px-6 pt-12 pb-24">
+        <div class="text-center mb-20">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+                Level up your stream<br>in one click.
+            </h1>
+            <p class="text-gray-400 text-lg mb-10 max-w-2xl mx-auto">
+                Beautiful, lightweight, and high-performance overlays for Twitch. No complex setup, no heavy browser sources.
+            </p>
+            
+            <div id="logged-out-hero">
+                <a href="/auth/oauth.html" class="btn-twitch inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-lg">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+                    Connect with Twitch
+                </a>
+            </div>
+        </div>
+
+        <!-- Gallery Section -->
+        <div id="gallery" class="pb-24">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Overlay Gallery</h2>
+                    <p class="text-gray-400">Choose and customize your widgets</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="open-customizer" class="px-4 py-2 rounded-lg glass text-sm font-bold hover:bg-white hover:text-black transition-all">
+                        ⚙️ Global Settings
+                    </button>
+                </div>
+            </div>
+
+            <div id="overlay-grid" class="overlay-grid">
+                <!-- Cards are injected dynamically via script below -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Customizer Sidebar -->
+    <div id="customizer" class="fixed inset-y-0 right-0 w-80 glass border-l border-white/10 p-8 transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-xl font-bold">Customizer</h2>
+            <button id="close-customizer" class="text-gray-400 hover:text-white">✕</button>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Theme Color</label>
+                <div class="grid grid-cols-5 gap-2">
+                    <button class="color-swatch w-8 h-8 rounded-full bg-purple-500 border-2 border-white" data-color="#9147ff"></button>
+                    <button class="color-swatch w-8 h-8 rounded-full bg-pink-500" data-color="#ff47b6"></button>
+                    <button class="color-swatch w-8 h-8 rounded-full bg-blue-500" data-color="#47a0ff"></button>
+                    <button class="color-swatch w-8 h-8 rounded-full bg-green-500" data-color="#47ff85"></button>
+                    <button class="color-swatch w-8 h-8 rounded-full bg-orange-500" data-color="#ff8547"></button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Font Size</label>
+                <input type="range" id="font-size" min="12" max="24" value="16" class="w-full accent-purple-500">
+                <div class="flex justify-between text-[10px] mt-1 text-gray-500">
+                    <span>Small</span>
+                    <span>Large</span>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-white/10">
+                <button id="save-settings" class="w-full py-3 rounded-xl bg-white text-black font-bold hover:bg-gray-200 transition-all">
+                    Save Changes
+                </button>
+            </div>
+        </div>
     </div>
+
+    <footer class="text-center py-12 border-t border-white/5 opacity-30 text-sm">
+        &copy; 2025 Overlay-1 Platform. Built for creators.
+    </footer>
+
+    <script type="module">
+        import { StorageService } from './src/services/StorageService.js';
+        
+        const OVERLAYS = [
+            {
+                id: 'chat',
+                title: 'Modern Chat',
+                description: 'Clean, pill-shaped design with smooth animations.',
+                path: '/chats/chat.html',
+                previewId: 'preview-chat'
+            },
+            {
+                id: 'thermal',
+                title: 'Thermal Receipt',
+                description: 'Retro-style scrolling receipt paper.',
+                path: '/chats/vertical-chat.html',
+                previewId: 'preview-thermal'
+            },
+            {
+                id: 'alerts',
+                title: 'Smart Alerts',
+                description: 'Welcome messages for your viewers.',
+                path: '/alerts/alerts.html',
+                previewId: 'preview-alerts'
+            },
+            {
+                id: 'chatters',
+                title: 'Active Chatters',
+                description: 'Real-time bubbles showing who is chatting.',
+                path: '/widgets/chatters.html',
+                previewId: 'preview-chatters'
+            },
+            {
+                id: 'signature',
+                title: 'Signature Alerts',
+                description: 'Hand-drawn signature style for new followers/subs.',
+                path: '/alerts/signature-alerts.html',
+                previewId: 'preview-signature'
+            },
+            {
+                id: 'followers',
+                title: 'Follower Count',
+                description: 'Live counter showing your total follower goal.',
+                path: '/widgets/followers.html',
+                previewId: 'preview-followers'
+            },
+            {
+                id: 'subscribers',
+                title: 'Subscriber Count',
+                description: 'Live counter showing your total subscribers.',
+                path: '/widgets/subscribers.html',
+                previewId: 'preview-subscribers'
+            }
+            // {
+            //     id: 'voice',
+            //     title: 'AI Censorship Monitor',
+            //     description: 'Live speech-to-chat monitoring for your stream.',
+            //     path: '/widgets/voice-monitor.html',
+            //     previewId: 'preview-voice'
+            // }
+        ];
+
+        function createOverlayCard(overlay) {
+            return `
+                <div class="overlay-card glass p-8 rounded-[2.5rem] flex flex-col">
+                    <div class="preview-box mb-4">
+                        <iframe id="${overlay.previewId}" src="${overlay.path}"></iframe>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between px-4 pb-4 pt-2">
+                        <h3 class="text-xl font-bold mb-1">${overlay.title}</h3>
+                        <p class="text-gray-400 text-sm mb-4">${overlay.description}</p>
+                        <div class="flex gap-2 mt-auto">
+                            <button 
+                                class="copy-obs flex-1 h-12 rounded-full bg-purple-600 text-white font-bold text-sm shadow-lg shadow-purple-900/20 hover:bg-purple-500 hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
+                                data-overlay="${overlay.id}">
+                                Copy OBS URL
+                            </button>
+                            <button 
+                                class="open-overlay h-12 w-12 rounded-full glass border-white/10 text-white font-bold text-lg hover:bg-white hover:text-black active:scale-95 transition-all duration-200 flex items-center justify-center"
+                                data-overlay="${overlay.id}" title="Open in new tab">
+                                ↗️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const authData = StorageService.getAuthData();
+            const grid = document.getElementById('overlay-grid');
+            
+            // Render all cards
+            grid.innerHTML = OVERLAYS.map(overlay => {
+                const card = createOverlayCard(overlay);
+                // Add noChat=true to previews to prevent dashboard from sending chat messages
+                return card.replace(`src="${overlay.path}"`, `src="${overlay.path}?noChat=true"`);
+            }).join('');
+
+            const navUser = document.getElementById('nav-user');
+            const userDisplay = document.getElementById('user-display');
+            const heroBtn = document.getElementById('logged-out-hero');
+            
+            // Customizer Elements
+            const customizer = document.getElementById('customizer');
+            const openBtn = document.getElementById('open-customizer');
+            const closeBtn = document.getElementById('close-customizer');
+            const saveBtn = document.getElementById('save-settings');
+            const colorSwatches = document.querySelectorAll('.color-swatch');
+            const fontSizeInput = document.getElementById('font-size');
+
+            // State
+            let currentSettings = StorageService.get('overlay_settings', {
+                themeColor: '#9147ff',
+                fontSize: 16
+            });
+
+            // Initialize UI with saved settings
+            fontSizeInput.value = currentSettings.fontSize;
+            updateSwatches(currentSettings.themeColor);
+
+            if (authData.token && authData.username) {
+                navUser.classList.remove('hidden');
+                userDisplay.textContent = `@${authData.username}`;
+                heroBtn.innerHTML = `
+                    <div class="inline-flex gap-4">
+                        <button onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})" class="px-8 py-4 rounded-2xl bg-white text-black font-bold hover:bg-gray-200 transition-all">Go to My Dashboard</button>
+                    </div>
+                `;
+            }
+
+            // Customizer Logic
+            openBtn.onclick = () => customizer.classList.remove('translate-x-full');
+            closeBtn.onclick = () => customizer.classList.add('translate-x-full');
+
+            colorSwatches.forEach(swatch => {
+                swatch.onclick = () => {
+                    currentSettings.themeColor = swatch.dataset.color;
+                    updateSwatches(currentSettings.themeColor);
+                };
+            });
+
+            saveBtn.onclick = () => {
+                currentSettings.fontSize = fontSizeInput.value;
+                StorageService.set('overlay_settings', currentSettings);
+                saveBtn.textContent = '✅ Saved!';
+                setTimeout(() => {
+                    saveBtn.textContent = 'Save Changes';
+                    customizer.classList.add('translate-x-full');
+                    // Refresh previews
+                    document.querySelectorAll('iframe').forEach(f => {
+                        const url = new URL(f.src);
+                        url.searchParams.set('themeColor', currentSettings.themeColor.replace('#', ''));
+                        url.searchParams.set('fontSize', currentSettings.fontSize);
+                        url.searchParams.set('noChat', 'true');
+                        f.src = url.href;
+                    });
+                }, 1000);
+            };
+
+            function updateSwatches(activeColor) {
+                colorSwatches.forEach(s => {
+                    if(s.dataset.color === activeColor) s.classList.add('border-2', 'border-white');
+                    else s.classList.remove('border-2', 'border-white');
+                });
+            }
+
+            function getOverlayUrl(type) {
+                const overlay = OVERLAYS.find(o => o.id === type);
+                if (!overlay) return '';
+
+                const url = new URL(overlay.path, window.location.origin);
+                if (authData.token) {
+                    url.searchParams.append('token', authData.token.replace('oauth:', ''));
+                    url.searchParams.append('username', authData.username);
+                    url.searchParams.append('channel', authData.username);
+                }
+                
+                // Add customizations to the URL
+                url.searchParams.append('themeColor', currentSettings.themeColor.replace('#', ''));
+                url.searchParams.append('fontSize', currentSettings.fontSize);
+                
+                return url.href;
+            }
+
+            document.querySelectorAll('.copy-obs').forEach(btn => {
+                btn.onclick = () => {
+                    if (!authData.token) {
+                        window.location.href = '/auth/oauth.html';
+                        return;
+                    }
+                    
+                    const url = getOverlayUrl(btn.dataset.overlay);
+                    
+                    navigator.clipboard.writeText(url).then(() => {
+                        const original = btn.textContent;
+                        btn.textContent = '✅ Copied!';
+                        btn.style.background = '#4ade80';
+                        btn.style.color = '#000';
+                        setTimeout(() => {
+                            btn.textContent = original;
+                            btn.style.background = '';
+                            btn.style.color = '';
+                        }, 2000);
+                    });
+                };
+            });
+
+            document.querySelectorAll('.open-overlay').forEach(btn => {
+                btn.onclick = () => {
+                    const url = getOverlayUrl(btn.dataset.overlay);
+                    window.open(url, '_blank');
+                };
+            });
+
+            document.getElementById('logout-btn')?.addEventListener('click', () => {
+                StorageService.clearAuthData();
+                location.reload();
+            });
+        });
+    </script>
   </body>
 </html>
