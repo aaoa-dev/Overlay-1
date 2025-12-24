@@ -1,0 +1,168 @@
+/* alerts/cursor-welcome.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+.cursor-container {
+    position: fixed;
+    pointer-events: auto;
+    z-index: 9999;
+    /* Split transitions with different beziers create a curved path for the main slide-in */
+    transition: 
+        left 2.2s cubic-bezier(0.45, 0, 0.55, 1), 
+        top 2.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+        opacity 2.2s ease-in-out;
+    cursor: pointer;
+    /* GPU optimization hints */
+    will-change: transform, opacity;
+}
+
+/* New visual wrapper for nested exit animations */
+.cursor-visual {
+    transition: transform 2.2s cubic-bezier(0.45, 0, 0.55, 1);
+    will-change: transform;
+}
+
+.cursor-visual-inner {
+    transition: transform 2.2s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 2.2s ease-in-out;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.cursor-svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+.cursor-path {
+    color: var(--user-color, var(--theme-color, #A259FF));
+}
+
+.cursor-bubble {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    background: var(--user-color, var(--theme-color, #A259FF));
+    color: white;
+    padding: 4px 12px;
+    border-radius: 0px 12px 12px 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.875rem; /* Using rem for global scaling */
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.welcome-card {
+    position: absolute;
+    top: 40px;
+    left: 12px;
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    width: 200px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    color: #1e1e1e;
+    font-family: 'Inter', sans-serif;
+    will-change: transform, opacity;
+}
+
+.welcome-card.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Final fade out of the card */
+.welcome-card.fade-out {
+    opacity: 0 !important;
+    transform: translateY(-10px) scale(0.95) !important;
+}
+
+.welcome-card h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+}
+
+.welcome-card p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.welcome-card .visit-badge {
+    display: inline-block;
+    background: #F3F4F6;
+    color: #374151;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 12px;
+    border: 1px solid #E5E7EB;
+}
+
+/* UI Preview Panel */
+#previewPanel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(15, 23, 42, 0.95);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10000;
+    border: 1px solid rgba(255,255,255,0.1);
+    width: 200px;
+}
+
+/* Only enable expensive backdrop-filter when explicitly requested */
+#previewPanel[data-show-panel="fancy"] {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+.preview-btn {
+    background: #3B82F6;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.preview-btn:hover {
+    background: #2563EB;
+    transform: translateY(-1px);
+}
+
+.preview-btn.secondary {
+    background: #4B5563;
+}
+
+.preview-btn.secondary:hover {
+    background: #374151;
+}
+
+.preview-title {
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    opacity: 0.7;
+}
+

@@ -79,6 +79,26 @@ The project has undergone a significant refactor to improve organization, centra
 - **Legacy Links**: Updated legacy `auth/connect.html` links to the new `auth/oauth.html` in `vertical-chat.html`.
 - **Global Theme Support**: Ensured all 8 widgets (including new ones like Active Chatters and Signature Alerts) correctly inherit global theme color and font size from the dashboard.
 
+## Session Log: CursorWelcome Alert (Dec 24, 2025)
+
+### 1. New Alert Type: CursorWelcome
+- **Decision**: Created a new automated alert type that mimics a Figma cursor.
+- **Reasoning**: To provide a modern, playful way to welcome viewers that fits the "workspace" aesthetic of the stream.
+- **Implementation**:
+    - **Files**: `alerts/cursor-welcome.html`, `alerts/cursor-welcome.js`, `alerts/cursor-welcome.css`.
+    - **Logic**: Uses `TwitchService` to listen for chat and `StorageService` for visit counts.
+    - **Automated Flow**: The cursor slides in, automatically reveals a user card, then the cursor itself slides out while the card remains for a few seconds before fading away.
+
+### 2. Randomization & Animation
+- **Decision**: Implemented random entry sides (Top, Bottom, Left, Right) and random destination coordinates.
+- **Reasoning**: To keep the overlay dynamic and unpredictable, matching the "cursor" theme where viewers appear to be "joining" the workspace.
+- **Action**: Used JS-driven position calculations combined with CSS cubic-bezier transitions for a high-quality feel.
+
+### 3. Integrated Preview System
+- **Decision**: Added a dedicated preview panel to `cursor-welcome.html`.
+- **Reasoning**: Allows the user to easily test the alert's behavior (New, Returning, Milestone) and reset visit states without needing a live Twitch event.
+- **Action**: Included buttons that trigger global `testCursorAlert` and `resetVisitStates` functions.
+
 ## Summary of Deleted Files
 - `public/services/*` (duplicates)
 - `public/components/*` (duplicates)

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CursorWelcome Alerts</title>
+    <!-- Tailwind Output -->
+    <link rel="stylesheet" href="../output.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="cursor-welcome.css">
+    <!-- TMI.js for Twitch Connectivity -->
+    <script src="../src/vendor/tmi.js" type="text/javascript"></script>
+</head>
+<body class="bg-transparent overflow-hidden h-screen w-screen">
+    <!-- Overlay Container for Cursors -->
+    <div id="cursorContainer" class="fixed inset-0 pointer-events-none"></div>
+
+    <!-- SVG Template (reused via cloneNode for better performance) -->
+    <template id="cursorSvgTemplate">
+        <svg class="cursor-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <filter id="cursorShadow" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                    <feOffset dy="1.28571"/>
+                    <feGaussianBlur stdDeviation="1.92856"/>
+                    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0"/>
+                    <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+                    <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+                </filter>
+                <clipPath id="cursorClip">
+                    <rect width="24" height="24" fill="white"/>
+                </clipPath>
+            </defs>
+            <g clip-path="url(#cursorClip)">
+                <g filter="url(#cursorShadow)">
+                    <path class="cursor-path" fill-rule="evenodd" clip-rule="evenodd" d="M2.56492 2.56492C3.09968 2.03015 3.89766 1.8573 4.60578 2.12285L18.7486 7.4264C19.5391 7.72283 20.0449 8.49896 19.9969 9.34183C19.9488 10.1847 19.3582 10.8984 18.5392 11.1031L12.5903 12.5903L11.1031 18.5392C10.8984 19.3582 10.1847 19.9488 9.34183 19.9969C8.49896 20.0449 7.72283 19.5391 7.4264 18.7486L2.12285 4.60578C1.8573 3.89766 2.03015 3.09968 2.56492 2.56492Z" fill="currentColor"/>
+                    <path d="M3.0957 3.0957C3.4225 2.7689 3.91003 2.66292 4.34277 2.8252L18.4854 8.12891C18.9682 8.31007 19.2772 8.78394 19.248 9.29883C19.2187 9.8139 18.8579 10.2508 18.3574 10.376L12.4082 11.8623C12.1396 11.9295 11.9295 12.1396 11.8623 12.4082L10.376 18.3574C10.2508 18.8579 9.8139 19.2187 9.29883 19.248C8.78394 19.2772 8.31007 18.9682 8.12891 18.4854L2.8252 4.34277C2.66292 3.91003 2.7689 3.4225 3.0957 3.0957Z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+                </g>
+            </g>
+        </svg>
+    </template>
+
+    <!-- Preview Panel for Testing (Visible for manual triggers) -->
+    <div id="previewPanel" data-show-panel="true">
+        <div class="preview-title">CursorWelcome Preview</div>
+        <button class="preview-btn" onclick="testCursorAlert('new')">Test New Viewer</button>
+        <button class="preview-btn" onclick="testCursorAlert('returning')">Test Returning</button>
+        <button class="preview-btn" onclick="testCursorAlert('milestone')">Test Milestone</button>
+        <button class="preview-btn secondary" onclick="resetVisitStates()">Reset Visit States</button>
+        <div class="text-[10px] text-gray-400 mt-2 italic text-center">
+            Cursors will automatically reveal their cards
+        </div>
+    </div>
+
+    <!-- Main Logic -->
+    <script type="module" src="cursor-welcome.js"></script>
+</body>
+</html>
+
