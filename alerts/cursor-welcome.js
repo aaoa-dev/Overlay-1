@@ -7,6 +7,7 @@ import { TwitchService } from '../src/services/TwitchService.js';
 import { StorageService } from '../src/services/StorageService.js';
 import { ErrorHandler } from '../src/utils/ErrorHandler.js';
 import { MessageHandler } from '../src/handlers/MessageHandler.js';
+import { GlobalCommandBus } from '../src/commands/GlobalCommandBus.js';
 
 class CursorWelcomeManager {
     constructor() {
@@ -425,6 +426,26 @@ class CursorWelcomeManager {
             ErrorHandler.handle(error, 'cursor_welcome_handle_visit', { username });
         }
     }
+
+    /**
+     * Reset all user visit states (called by !reset command)
+     */
+    reset() {
+        try {
+            // Reset all hasChattedThisStream flags
+            Object.keys(this.userData).forEach(username => {
+                if (this.userData[username]) {
+                    this.userData[username].hasChattedThisStream = false;
+                }
+            });
+            
+            this.flushSave(); // Force immediate save
+            
+            ErrorHandler.info('CursorWelcome: User states reset');
+        } catch (error) {
+            ErrorHandler.handle(error, 'cursor_welcome_reset');
+        }
+    }
 }
 
 /**
@@ -460,6 +481,17 @@ async function init() {
             const previewPanel = document.getElementById('previewPanel');
             if (previewPanel) previewPanel.style.display = 'none';
         }
+
+        // Set up global command bus for cross-widget communication
+        const commandBus = new GlobalCommandBus(twitchService);
+        
+        // Subscribe to !reset command (listens to broadcasts from other widgets)
+        commandBus.subscribe('!reset', (context) => {
+            manager.reset();
+            ErrorHandler.info('CursorWelcome: Reset triggered via command bus', {
+                username: context.username
+            });
+        });
 
         // Listen for chat messages to detect visits
         messageHandler.registerHandler('cursor-welcome', async (channel, tags, message) => {

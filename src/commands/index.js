@@ -1,7 +1,7 @@
-import {check} from './check.js';
-import {chatters} from './chatters.js';
+/**
+ * Commands Module Index
+ * Centralized export for command system
+ */
 
-export {
-    check, 
-    chatters
-};
+export { GlobalCommandBus } from './GlobalCommandBus.js';
+export { CommandRegistry } from './CommandRegistry.js';  // Legacy - use GlobalCommandBus instead

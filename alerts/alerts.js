@@ -6,7 +6,7 @@
 import { TwitchService } from '../src/services/TwitchService.js';
 import { StorageService } from '../src/services/StorageService.js';
 import { StreamStatsService } from '../src/services/StreamStatsService.js';
-import { CommandRegistry } from '../src/commands/CommandRegistry.js';
+import { GlobalCommandBus } from '../src/commands/GlobalCommandBus.js';
 import { MessageHandler } from '../src/handlers/MessageHandler.js';
 import { Alert, AlertQueue } from '../src/components/Alert.js';
 import { ErrorHandler } from '../src/utils/ErrorHandler.js';
@@ -295,16 +295,18 @@ async function init() {
             }
         });
 
-        // Set up command registry
-        const commands = new CommandRegistry(twitchService);
+        // Set up global command bus
+        const commands = new GlobalCommandBus(twitchService);
 
-        // Register !reset command
+        // Register !reset command (broadcasts to all widgets)
         commands.register('!reset', async (context) => {
             alertsManager.reset();
+            streamStats.reset();
             await context.reply(`All user states and stream stats have been reset! (Followers: 0, Subs: 0)`);
         }, {
             modOnly: true,
-            description: 'Reset all user states and stream stats'
+            description: 'Reset all user states and stream stats',
+            broadcast: true // Notify other widgets
         });
 
         // Register !stats command

@@ -15,10 +15,15 @@ The project follows a **Service-Based Architecture** to ensure reliability and m
 - **`MessageHandler.js`**: Coordinates multiple features listening to the same chat stream. It allows registering filters (e.g., "no commands") and multiple independent handlers.
 
 ### 3. Command System (`/src/commands`)
-- **`CommandRegistry.js`**: A declarative system for registering chat commands with built-in support for:
-  - Cooldowns (per-command)
-  - Permissions (Mod-only, Broadcaster-only)
+- **`GlobalCommandBus.js`**: A centralized command system with cross-widget communication:
+  - Cooldowns (per-command, per-user)
+  - Permissions (Mod-only, Broadcaster-only, Subscriber-only)
   - Parameter parsing
+  - **BroadcastChannel API** for cross-widget/tab communication
+  - Pub/sub pattern for widgets to react to commands
+- **`CommandRegistry.js`**: Legacy single-widget command system (deprecated, use GlobalCommandBus)
+
+See [`/src/commands/README.md`](src/commands/README.md) for detailed command system documentation.
 
 ### 4. Shared Components (`/src/components`)
 - **`ChatMessage.js`**: A reusable class for rendering Twitch messages with badges and emotes.

@@ -11,7 +11,7 @@ import { TwitchService } from '../src/services/TwitchService.js';
 import { MessageHandler } from '../src/handlers/MessageHandler.js';
 import { ChatterTracker } from '../src/commands/handlers/ChatterTracker.js';
 import { TemperatureConverter } from '../src/commands/handlers/TemperatureConverter.js';
-import { CommandRegistry } from '../src/commands/CommandRegistry.js';
+import { GlobalCommandBus } from '../src/commands/GlobalCommandBus.js';
 import { ErrorHandler } from '../src/utils/ErrorHandler.js';
 
 // Configuration
@@ -75,8 +75,8 @@ async function init() {
             }
         });
 
-        // 4. Set up Command Registry
-        const commands = new CommandRegistry(twitch);
+        // 4. Set up Global Command Bus
+        const commands = new GlobalCommandBus(twitch);
 
         // Register refresh command
         commands.register('!refresh', async (context) => {
@@ -84,7 +84,17 @@ async function init() {
             window.location.reload();
         }, {
             modOnly: true,
-            description: 'Refresh the overlay (mods only)'
+            description: 'Refresh the overlay (mods only)',
+            broadcast: true // Notify other widgets to refresh too
+        });
+
+        // Subscribe to !reset command from other widgets
+        commands.subscribe('!reset', (context) => {
+            ErrorHandler.info('Chatters: Reset triggered via command bus', {
+                username: context.username
+            });
+            // Reset chatter tracker
+            chatterTracker.clear();
         });
 
         // Register command handler
