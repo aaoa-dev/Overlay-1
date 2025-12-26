@@ -57,15 +57,15 @@ async function init() {
 
         // 2. Set up Chatter Tracker
         const chattersContainer = document.getElementById('chattersContainer');
-        const chatterTracker = new ChatterTracker(CHATTER_CONFIG);
+        const chatterTracker = new ChatterTracker(CHATTER_CONFIG, twitch.api);
         chatterTracker.setContainer(chattersContainer);
 
         // 3. Set up Message Handler
         const messageHandler = new MessageHandler(twitch);
 
         // Register chatter tracking
-        messageHandler.registerHandler('track_chatters', (channel, tags, message) => {
-            chatterTracker.track(tags);
+        messageHandler.registerHandler('track_chatters', async (channel, tags, message) => {
+            await chatterTracker.track(tags);
         });
 
         // Register temperature converter
@@ -86,6 +86,31 @@ async function init() {
             modOnly: true,
             description: 'Refresh the overlay (mods only)',
             broadcast: true // Notify other widgets to refresh too
+        });
+
+        // Register chatterPic command
+        commands.register('!chatterPic', async (context) => {
+            chatterTracker.setDisplayMode('pic');
+        }, {
+            modOnly: true,
+            description: 'Show profile pictures in bubbles (mods only)',
+            broadcast: true
+        });
+
+        // Register chatterLetter command
+        commands.register('!chatterLetter', async (context) => {
+            chatterTracker.setDisplayMode('letter');
+        }, {
+            modOnly: true,
+            description: 'Show first letter in bubbles (mods only)',
+            broadcast: true
+        });
+
+        // Subscribe to !chatterMode from other widgets
+        commands.subscribe('!chatterMode', (context) => {
+            if (context.payload && (context.payload === 'pic' || context.payload === 'letter')) {
+                chatterTracker.setDisplayMode(context.payload);
+            }
         });
 
         // Subscribe to !reset command from other widgets

@@ -65,11 +65,19 @@
 
     <script type="module">
         import { TwitchService } from '../src/services/TwitchService.js';
+        import { StreamStatsService } from '../src/services/StreamStatsService.js';
         import { ErrorHandler } from '../src/utils/ErrorHandler.js';
 
         const followerCountElement = document.getElementById('followerCount');
         let lastCount = -1;
         const twitch = new TwitchService();
+        const streamStats = new StreamStatsService();
+
+        // Get params from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const range = urlParams.get('range') || 'all'; // 'all', 'day', 'month', 'session'
+        const target = urlParams.get('target');
+        const showLabel = urlParams.get('label') !== 'false';
 
         async function init() {
             try {
@@ -85,15 +93,23 @@
 
         async function updateFollowers() {
             try {
-                const count = await twitch.api.fetchFollowerCount(twitch.authConfig.channelId);
+                const totalCount = await twitch.api.fetchFollowerCount(twitch.authConfig.channelId);
+                const subCount = await twitch.api.fetchSubscriberCount(twitch.authConfig.channelId).catch(() => 0);
+                streamStats.update(totalCount, subCount);
+
+                const displayCount = streamStats.getRelativeCount(totalCount, range, 'followers');
                 
-                if (count !== lastCount) {
-                    followerCountElement.textContent = count;
+                if (displayCount !== lastCount) {
+                    let text = displayCount;
+                    if (target) text = `${displayCount}/${target}`;
+                    
+                    followerCountElement.textContent = text;
+                    
                     if (lastCount !== -1) {
                         followerCountElement.classList.add('pulse');
                         setTimeout(() => followerCountElement.classList.remove('pulse'), 500);
                     }
-                    lastCount = count;
+                    lastCount = displayCount;
                 }
             } catch (error) {
                 ErrorHandler.handle(error, 'update_followers');

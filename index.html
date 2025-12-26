@@ -1,173 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overlay-1 | Pro Streaming Widgets</title>
+    <title>Overlay-1 | Professional Streaming Widgets</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="output.css">
     <style>
-        :root {
-            --twitch-purple: #9147ff;
-            --twitch-dark: #772ce8;
-            --bg-dark: #0e0e10;
-        }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-dark);
-            color: white;
-            overflow-x: hidden;
-        }
-        .hero-gradient {
-            background: radial-gradient(circle at top right, rgba(145, 71, 255, 0.15), transparent),
-                        radial-gradient(circle at bottom left, rgba(145, 71, 255, 0.1), transparent);
-        }
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .btn-twitch {
-            background: var(--twitch-purple);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-twitch:hover {
-            background: var(--twitch-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(145, 71, 255, 0.4);
-        }
-        .overlay-card {
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-        }
-        .overlay-card:hover {
-            border-color: var(--twitch-purple);
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .preview-box {
-            background: #000;
-            aspect-ratio: 16/9;
-            border-radius: 1.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            overflow: hidden;
+        .hero-glow {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% -20%, rgba(145, 71, 255, 0.15), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
         }
         .preview-box iframe {
-            width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.5); transform-origin: top left; width: 200%; height: 200%;
+            width: 200%;
+            height: 200%;
+            transform: scale(0.5);
+            transform-origin: top left;
+            border: none;
+            pointer-events: none;
         }
-        .overlay-grid {
-            display: grid;
-            grid-template-columns: repeat(1, minmax(0, 1fr));
-            gap: 2rem;
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        @media (min-width: 768px) {
-            .overlay-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
+        ::-webkit-scrollbar-track {
+            background: #0e0e10;
         }
-        @media (min-width: 1024px) {
-            .overlay-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+
+        /* Dropdown Styles */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            background: #18181b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 4px;
+            z-index: 50;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.2s ease-out;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .dropdown-item {
+            width: 100%;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            color: #a1a1aa;
+            transition: all 0.2s;
+        }
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
         }
     </style>
   </head>
-<body class="hero-gradient min-h-screen px-4 md:px-8">
+<body class="bg-twitch-bg text-zinc-100 font-sans min-h-screen selection:bg-twitch-purple/30 selection:text-twitch-purple">
+    <div class="hero-glow"></div>
+
     <!-- Navigation -->
-    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
-        <div class="flex items-center gap-2">
-            <div class="bg-purple-600 p-2 rounded-xl">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+    <nav class="sticky top-0 z-40 w-full border-b border-white/5 bg-twitch-bg/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-twitch-purple p-2 rounded-2xl shadow-lg shadow-twitch-purple/20">
+                    <i data-lucide="layers" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">OVERLAY-1</span>
             </div>
-            <span class="text-xl font-extrabold tracking-tight">OVERLAY-1</span>
-        </div>
-        <div id="nav-user" class="hidden flex items-center gap-4">
-            <span id="user-display" class="text-sm font-semibold opacity-70"></span>
-            <button id="logout-btn" class="text-xs opacity-50 hover:opacity-100">Logout</button>
+            
+            <div class="flex items-center gap-6">
+                <div id="nav-user" class="hidden flex items-center gap-4">
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span id="user-display" class="text-sm font-medium text-zinc-300"></span>
+                    </div>
+                    <button id="logout-btn" class="text-xs font-semibold text-zinc-500 hover:text-zinc-300 transition-colors">Logout</button>
+                </div>
+                <a href="https://github.com" target="_blank" class="text-zinc-400 hover:text-white transition-colors">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                </a>
+            </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <main class="max-w-7xl mx-auto px-6 pt-12 pb-24">
-        <div class="text-center mb-20">
-            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
-                Level up your stream<br>in one click.
+    <main class="max-w-7xl mx-auto px-6 py-20">
+        <div class="text-center mb-32 relative">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-twitch-purple/10 border border-twitch-purple/20 text-twitch-purple text-xs font-bold uppercase tracking-wider mb-8">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                Production Ready Widgets
+            </div>
+            <h1 class="text-6xl md:text-8xl font-black mb-8 leading-[1.1] tracking-tight">
+                Your stream,<br>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-twitch-purple via-purple-400 to-indigo-400">elevated.</span>
             </h1>
-            <p class="text-gray-400 text-lg mb-10 max-w-2xl mx-auto">
-                Beautiful, lightweight, and high-performance overlays for Twitch. No complex setup, no heavy browser sources.
+            <p class="text-zinc-400 text-xl mb-12 max-w-2xl mx-auto font-medium">
+                Professional-grade overlays that are lightweight, fast, and remarkably easy to set up. Zero configuration required.
             </p>
             
-            <div id="logged-out-hero">
-                <a href="/auth/oauth.html" class="btn-twitch inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-lg">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+            <div id="logged-out-hero" class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="/auth/oauth.html" class="group relative px-8 py-4 rounded-3xl bg-twitch-purple text-white font-bold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-twitch-purple/40 flex items-center gap-3">
+                    <i data-lucide="twitch" class="w-6 h-6"></i>
                     Connect with Twitch
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                 </a>
+                <button onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})" class="px-8 py-4 rounded-3xl bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 transition-all">
+                    Explore Widgets
+                </button>
             </div>
         </div>
 
         <!-- Gallery Section -->
-        <div id="gallery" class="pb-24">
-            <div class="flex justify-between items-end mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold mb-2">Overlay Gallery</h2>
-                    <p class="text-gray-400">Choose and customize your widgets</p>
-                </div>
-                <div class="flex gap-2">
-                    <button id="open-customizer" class="px-4 py-2 rounded-lg glass text-sm font-bold hover:bg-white hover:text-black transition-all">
-                        ⚙️ Global Settings
-                    </button>
-                </div>
+        <section id="gallery" class="scroll-mt-24">
+            <div class="mb-12">
+                <h2 class="text-4xl font-black mb-3">Widget Gallery</h2>
+                <p class="text-zinc-400 text-lg font-medium">Choose from our collection of unique, hand-crafted streaming tools.</p>
             </div>
 
-            <div id="overlay-grid" class="overlay-grid">
-                <!-- Cards are injected dynamically via script below -->
+            <div id="overlay-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Cards injected via JS -->
             </div>
-        </div>
+        </section>
     </main>
 
-    <!-- Customizer Sidebar -->
-    <div id="customizer" class="fixed inset-y-0 right-0 w-80 glass border-l border-white/10 p-8 transform translate-x-full transition-transform duration-300 z-50">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-xl font-bold">Customizer</h2>
-            <button id="close-customizer" class="text-gray-400 hover:text-white">✕</button>
-        </div>
-
-        <div class="space-y-6">
-            <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Theme Color</label>
-                <div class="grid grid-cols-5 gap-2">
-                    <button class="color-swatch w-8 h-8 rounded-full bg-purple-500 border-2 border-white" data-color="#9147ff"></button>
-                    <button class="color-swatch w-8 h-8 rounded-full bg-pink-500" data-color="#ff47b6"></button>
-                    <button class="color-swatch w-8 h-8 rounded-full bg-blue-500" data-color="#47a0ff"></button>
-                    <button class="color-swatch w-8 h-8 rounded-full bg-green-500" data-color="#47ff85"></button>
-                    <button class="color-swatch w-8 h-8 rounded-full bg-orange-500" data-color="#ff8547"></button>
-                </div>
+    <footer class="max-w-7xl mx-auto px-6 py-20 border-t border-white/5">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-2 opacity-50">
+                <i data-lucide="layers" class="w-5 h-5 text-twitch-purple"></i>
+                <span class="text-sm font-bold">OVERLAY-1</span>
             </div>
-
-            <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Font Size</label>
-                <input type="range" id="font-size" min="12" max="24" value="16" class="w-full accent-purple-500">
-                <div class="flex justify-between text-[10px] mt-1 text-gray-500">
-                    <span>Small</span>
-                    <span>Large</span>
-                </div>
-            </div>
-
-            <div class="pt-6 border-t border-white/10">
-                <button id="save-settings" class="w-full py-3 rounded-xl bg-white text-black font-bold hover:bg-gray-200 transition-all">
-                    Save Changes
-                </button>
+            <p class="text-zinc-500 text-sm">&copy; 2025 Overlay-1 Platform. Hand-crafted for creators.</p>
+            <div class="flex gap-6">
+                <a href="#" class="text-zinc-500 hover:text-zinc-300 transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                <a href="#" class="text-zinc-500 hover:text-zinc-300 transition-colors"><i data-lucide="instagram" class="w-5 h-5"></i></a>
             </div>
         </div>
-    </div>
-
-    <footer class="text-center py-12 border-t border-white/5 opacity-30 text-sm">
-        &copy; 2025 Overlay-1 Platform. Built for creators.
     </footer>
 
     <script type="module">
@@ -177,87 +171,134 @@
             {
                 id: 'chat',
                 title: 'Modern Chat',
-                description: 'Clean, pill-shaped design with smooth animations.',
+                description: 'Clean, minimalist design with smooth message transitions.',
                 path: '/chats/chat.html',
-                previewId: 'preview-chat'
+                previewId: 'preview-chat',
+                icon: 'message-square'
             },
             {
                 id: 'thermal',
                 title: 'Thermal Receipt',
-                description: 'Retro-style scrolling receipt paper.',
+                description: 'Retro-style scrolling receipt chat for unique aesthetics.',
                 path: '/chats/vertical-chat.html',
-                previewId: 'preview-thermal'
+                previewId: 'preview-thermal',
+                icon: 'printer'
             },
             {
                 id: 'alerts',
                 title: 'Smart Alerts',
-                description: 'Welcome messages for your viewers.',
+                description: 'Polished welcome messages that greet your new viewers.',
                 path: '/alerts/alerts.html',
-                previewId: 'preview-alerts'
+                previewId: 'preview-alerts',
+                icon: 'bell'
             },
             {
                 id: 'chatters',
-                title: 'Active Chatters',
-                description: 'Real-time bubbles showing who is chatting.',
+                title: 'Active Bubbles',
+                description: 'Dynamic visual clusters showing who is currently active.',
                 path: '/widgets/chatters.html',
-                previewId: 'preview-chatters'
+                previewId: 'preview-chatters',
+                icon: 'users'
             },
             {
                 id: 'signature',
                 title: 'Signature Alerts',
-                description: 'Hand-drawn signature style for new followers/subs.',
+                description: 'Elegant hand-drawn style for follows and subscriptions.',
                 path: '/alerts/signature-alerts.html',
-                previewId: 'preview-signature'
+                previewId: 'preview-signature',
+                icon: 'pen-tool'
             },
             {
                 id: 'cursor-welcome',
-                title: 'CursorWelcome',
-                description: 'Figma-style cursor alerts that you can click to reveal info.',
+                title: 'Cursor Welcome',
+                description: 'Interactive Figma-style cursor alerts for your stream.',
                 path: '/alerts/cursor-welcome.html',
-                previewId: 'preview-cursor'
+                previewId: 'preview-cursor',
+                icon: 'mouse-pointer-2'
             },
             {
                 id: 'followers',
-                title: 'Follower Count',
-                description: 'Live counter showing your total follower goal.',
+                title: 'Follower Goal',
+                description: 'Progressive counter to track and celebrate your growth.',
                 path: '/widgets/followers.html',
-                previewId: 'preview-followers'
+                previewId: 'preview-followers',
+                icon: 'trending-up',
+                supportedRanges: [
+                    { id: 'all', label: 'All Time' },
+                    { id: 'day', label: 'Today' },
+                    { id: 'month', label: 'This Month' },
+                    { id: 'session', label: 'This Session' }
+                ]
             },
             {
                 id: 'subscribers',
-                title: 'Subscriber Count',
-                description: 'Live counter showing your total subscribers.',
+                title: 'Sub Counter',
+                description: 'Real-time subscriber tracking with goal milestones.',
                 path: '/widgets/subscribers.html',
-                previewId: 'preview-subscribers'
+                previewId: 'preview-subscribers',
+                icon: 'heart',
+                supportedRanges: [
+                    { id: 'all', label: 'All Time' },
+                    { id: 'day', label: 'Today' },
+                    { id: 'month', label: 'This Month' },
+                    { id: 'session', label: 'This Session' }
+                ]
             }
-            // {
-            //     id: 'voice',
-            //     title: 'AI Censorship Monitor',
-            //     description: 'Live speech-to-chat monitoring for your stream.',
-            //     path: '/widgets/voice-monitor.html',
-            //     previewId: 'preview-voice'
-            // }
         ];
 
         function createOverlayCard(overlay) {
+            const hasRanges = overlay.supportedRanges && overlay.supportedRanges.length > 0;
+            
             return `
-                <div class="overlay-card glass p-8 rounded-[2.5rem] flex flex-col">
-                    <div class="preview-box mb-4">
-                        <iframe id="${overlay.previewId}" src="${overlay.path}"></iframe>
+                <div class="group relative bg-zinc-900/40 border border-white/5 rounded-4xl p-6 transition-all duration-300 hover:bg-zinc-900/60 hover:border-twitch-purple/30 hover:-translate-y-2 flex flex-col overflow-hidden">
+                    <div class="preview-box relative aspect-video bg-black -mx-6 -mt-6 mb-6 overflow-hidden border-b border-white/5">
+                        <iframe id="${overlay.previewId}" src="${overlay.path}?noChat=true"></iframe>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                             <div class="w-full flex justify-center">
+                                <span class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold border border-white/10">Live Preview</span>
+                             </div>
+                        </div>
                     </div>
-                    <div class="flex-1 flex flex-col justify-between px-4 pb-4 pt-2">
-                        <h3 class="text-xl font-bold mb-1">${overlay.title}</h3>
-                        <p class="text-gray-400 text-sm mb-4">${overlay.description}</p>
-                        <div class="flex gap-2 mt-auto">
+                    <div class="flex-1 flex flex-col">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 rounded-xl bg-twitch-purple/10 text-twitch-purple">
+                                <i data-lucide="${overlay.icon}" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">${overlay.title}</h3>
+                        </div>
+                        <p class="text-zinc-400 text-sm mb-8 font-medium leading-relaxed">${overlay.description}</p>
+                        
+                        <div class="mt-auto relative grid grid-cols-5 gap-2">
+                            ${hasRanges ? `
+                                <div class="col-span-4 relative group/dropdown">
+                                    <button 
+                                        class="dropdown-trigger w-full h-12 rounded-2xl bg-twitch-purple text-white font-bold text-sm transition-all hover:bg-twitch-dark active:scale-95 flex items-center justify-center gap-2"
+                                        data-overlay="${overlay.id}">
+                                        <i data-lucide="copy" class="w-4 h-4"></i>
+                                        Copy OBS URL
+                                        <i data-lucide="chevron-up" class="w-3.5 h-3.5 ml-1"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <div class="px-3 py-2 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Select Range</div>
+                                        ${overlay.supportedRanges.map(range => `
+                                            <button class="dropdown-item range-select" data-overlay="${overlay.id}" data-range="${range.id}">
+                                                ${range.label}
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : `
+                                <button 
+                                    class="copy-obs col-span-4 h-12 rounded-2xl bg-twitch-purple text-white font-bold text-sm transition-all hover:bg-twitch-dark active:scale-95 flex items-center justify-center gap-2"
+                                    data-overlay="${overlay.id}">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                    Copy OBS URL
+                                </button>
+                            `}
                             <button 
-                                class="copy-obs flex-1 h-12 rounded-full bg-purple-600 text-white font-bold text-sm shadow-lg shadow-purple-900/20 hover:bg-purple-500 hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
-                                data-overlay="${overlay.id}">
-                                Copy OBS URL
-                            </button>
-                            <button 
-                                class="open-overlay h-12 w-12 rounded-full glass border-white/10 text-white font-bold text-lg hover:bg-white hover:text-black active:scale-95 transition-all duration-200 flex items-center justify-center"
+                                class="open-overlay h-12 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white hover:text-black transition-all active:scale-95 flex items-center justify-center"
                                 data-overlay="${overlay.id}" title="Open in new tab">
-                                ↗️
+                                <i data-lucide="external-link" class="w-5 h-5"></i>
                             </button>
                         </div>
                     </div>
@@ -266,85 +307,33 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
             const authData = StorageService.getAuthData();
             const grid = document.getElementById('overlay-grid');
             
             // Render all cards
-            grid.innerHTML = OVERLAYS.map(overlay => {
-                const card = createOverlayCard(overlay);
-                // Add noChat=true to previews to prevent dashboard from sending chat messages
-                return card.replace(`src="${overlay.path}"`, `src="${overlay.path}?noChat=true"`);
-            }).join('');
+            grid.innerHTML = OVERLAYS.map(createOverlayCard).join('');
+            lucide.createIcons(); // Refresh icons for injected content
 
             const navUser = document.getElementById('nav-user');
             const userDisplay = document.getElementById('user-display');
-            const heroBtn = document.getElementById('logged-out-hero');
+            const heroBtnContainer = document.getElementById('logged-out-hero');
             
-            // Customizer Elements
-            const customizer = document.getElementById('customizer');
-            const openBtn = document.getElementById('open-customizer');
-            const closeBtn = document.getElementById('close-customizer');
-            const saveBtn = document.getElementById('save-settings');
-            const colorSwatches = document.querySelectorAll('.color-swatch');
-            const fontSizeInput = document.getElementById('font-size');
-
-            // State
-            let currentSettings = StorageService.get('overlay_settings', {
-                themeColor: '#9147ff',
-                fontSize: 16
-            });
-
-            // Initialize UI with saved settings
-            fontSizeInput.value = currentSettings.fontSize;
-            updateSwatches(currentSettings.themeColor);
-
             if (authData.token && authData.username) {
                 navUser.classList.remove('hidden');
-                userDisplay.textContent = `@${authData.username}`;
-                heroBtn.innerHTML = `
-                    <div class="inline-flex gap-4">
-                        <button onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})" class="px-8 py-4 rounded-2xl bg-white text-black font-bold hover:bg-gray-200 transition-all">Go to My Dashboard</button>
-                    </div>
+                userDisplay.textContent = `${authData.username}`;
+                heroBtnContainer.innerHTML = `
+                    <button onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})" class="group px-8 py-4 rounded-3xl bg-white text-black font-bold text-lg hover:bg-zinc-200 transition-all flex items-center gap-3">
+                        <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+                        Open My Dashboard
+                        <i data-lucide="chevron-down" class="w-5 h-5 group-hover:translate-y-1 transition-transform"></i>
+                    </button>
                 `;
+                lucide.createIcons();
             }
 
-            // Customizer Logic
-            openBtn.onclick = () => customizer.classList.remove('translate-x-full');
-            closeBtn.onclick = () => customizer.classList.add('translate-x-full');
-
-            colorSwatches.forEach(swatch => {
-                swatch.onclick = () => {
-                    currentSettings.themeColor = swatch.dataset.color;
-                    updateSwatches(currentSettings.themeColor);
-                };
-            });
-
-            saveBtn.onclick = () => {
-                currentSettings.fontSize = fontSizeInput.value;
-                StorageService.set('overlay_settings', currentSettings);
-                saveBtn.textContent = '✅ Saved!';
-                setTimeout(() => {
-                    saveBtn.textContent = 'Save Changes';
-                    customizer.classList.add('translate-x-full');
-                    // Refresh previews
-                    document.querySelectorAll('iframe').forEach(f => {
-                        const url = new URL(f.src);
-                        url.searchParams.set('themeColor', currentSettings.themeColor.replace('#', ''));
-                        url.searchParams.set('fontSize', currentSettings.fontSize);
-                        url.searchParams.set('noChat', 'true');
-                        f.src = url.href;
-                    });
-                }, 1000);
-            };
-
-            function updateSwatches(activeColor) {
-                colorSwatches.forEach(s => {
-                    if(s.dataset.color === activeColor) s.classList.add('border-2', 'border-white');
-                    else s.classList.remove('border-2', 'border-white');
-                });
-            }
-
-            function getOverlayUrl(type) {
+            function getOverlayUrl(type, range = null) {
                 const overlay = OVERLAYS.find(o => o.id === type);
                 if (!overlay) return '';
 
@@ -355,41 +344,98 @@
                     url.searchParams.append('channel', authData.username);
                 }
                 
-                // Add customizations to the URL
-                url.searchParams.append('themeColor', currentSettings.themeColor.replace('#', ''));
-                url.searchParams.append('fontSize', currentSettings.fontSize);
+                if (range && range !== 'all') {
+                    url.searchParams.append('range', range);
+                }
                 
                 return url.href;
             }
 
-            document.querySelectorAll('.copy-obs').forEach(btn => {
-                btn.onclick = () => {
+            function copyToClipboard(url, btn) {
+                navigator.clipboard.writeText(url).then(() => {
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Copied!`;
+                    btn.classList.replace('bg-twitch-purple', 'bg-green-500');
+                    if (btn.classList.contains('text-white')) {
+                        btn.classList.replace('text-white', 'text-black');
+                    }
+                    lucide.createIcons();
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalHtml;
+                        btn.classList.replace('bg-green-500', 'bg-twitch-purple');
+                        if (btn.classList.contains('text-black')) {
+                            btn.classList.replace('text-black', 'text-white');
+                        }
+                        lucide.createIcons();
+                    }, 2000);
+                });
+            }
+
+            // Delegated click handling for dynamically created buttons
+            grid.onclick = (e) => {
+                const copyBtn = e.target.closest('.copy-obs');
+                const openBtn = e.target.closest('.open-overlay');
+                const dropdownTrigger = e.target.closest('.dropdown-trigger');
+                const rangeItem = e.target.closest('.range-select');
+                
+                // Close all other dropdowns
+                if (!dropdownTrigger) {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
+
+                if (dropdownTrigger) {
+                    const menu = dropdownTrigger.nextElementSibling;
+                    const isShowing = menu.classList.contains('show');
+                    
+                    // Close all menus first
+                    document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+                    
+                    if (!isShowing) {
+                        menu.classList.add('show');
+                    }
+                    return;
+                }
+
+                if (rangeItem) {
                     if (!authData.token) {
                         window.location.href = '/auth/oauth.html';
                         return;
                     }
                     
-                    const url = getOverlayUrl(btn.dataset.overlay);
+                    const url = getOverlayUrl(rangeItem.dataset.overlay, rangeItem.dataset.range);
+                    const trigger = rangeItem.closest('.group\\/dropdown').querySelector('.dropdown-trigger');
+                    copyToClipboard(url, trigger);
                     
-                    navigator.clipboard.writeText(url).then(() => {
-                        const original = btn.textContent;
-                        btn.textContent = '✅ Copied!';
-                        btn.style.background = '#4ade80';
-                        btn.style.color = '#000';
-                        setTimeout(() => {
-                            btn.textContent = original;
-                            btn.style.background = '';
-                            btn.style.color = '';
-                        }, 2000);
-                    });
-                };
-            });
-
-            document.querySelectorAll('.open-overlay').forEach(btn => {
-                btn.onclick = () => {
-                    const url = getOverlayUrl(btn.dataset.overlay);
+                    rangeItem.closest('.dropdown-menu').classList.remove('show');
+                    return;
+                }
+                
+                if (copyBtn) {
+                    if (!authData.token) {
+                        window.location.href = '/auth/oauth.html';
+                        return;
+                    }
+                    
+                    const url = getOverlayUrl(copyBtn.dataset.overlay);
+                    copyToClipboard(url, copyBtn);
+                }
+                
+                if (openBtn) {
+                    const url = getOverlayUrl(openBtn.dataset.overlay);
                     window.open(url, '_blank');
-                };
+                }
+            };
+
+            // Close dropdowns on click outside
+            window.addEventListener('click', (e) => {
+                if (!e.target.closest('.group\\/dropdown')) {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
             });
 
             document.getElementById('logout-btn')?.addEventListener('click', () => {

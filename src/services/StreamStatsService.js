@@ -1,6 +1,6 @@
 /**
  * Stream Stats Service
- * Tracks follower count, subscription count, and other stream statistics
+ * Tracks follower count, subscription count, and other stream statistics across different time ranges
  */
 
 import { StorageService } from './StorageService.js';
@@ -8,150 +8,194 @@ import { ErrorHandler } from '../utils/ErrorHandler.js';
 
 export class StreamStatsService {
     static STORAGE_KEYS = {
-        FOLLOWER_COUNT: 'stream_follower_count',
-        SUB_COUNT: 'stream_sub_count',
-        STATS_DATE: 'stream_stats_date'
+        BASELINES: 'stream_stats_baselines',
+        LAST_TOTALS: 'stream_stats_last_totals'
     };
 
     constructor() {
-        this.followerCount = 0;
-        this.subCount = 0;
-        this.statsDate = null;
+        this.baselines = {
+            day: { followers: 0, subs: 0, date: null },
+            month: { followers: 0, subs: 0, date: null },
+            session: { followers: 0, subs: 0 }
+        };
+        this.lastKnownTotals = { followers: 0, subs: 0 };
         this.load();
     }
 
     /**
-     * Load stats from storage
+     * Load baselines from storage
      */
     load() {
         try {
-            this.followerCount = StorageService.get(StreamStatsService.STORAGE_KEYS.FOLLOWER_COUNT, 0);
-            this.subCount = StorageService.get(StreamStatsService.STORAGE_KEYS.SUB_COUNT, 0);
-            this.statsDate = StorageService.get(StreamStatsService.STORAGE_KEYS.STATS_DATE);
-
-            // Reset if it's a new day
-            const today = new Date().toDateString();
-            if (this.statsDate !== today) {
-                ErrorHandler.info('New stream day detected, resetting stats');
-                this.reset();
-                this.statsDate = today;
-                this.save();
+            const stored = StorageService.get(StreamStatsService.STORAGE_KEYS.BASELINES);
+            if (stored) {
+                this.baselines = { ...this.baselines, ...stored };
             }
-
-            ErrorHandler.debug('Stream stats loaded', {
-                followers: this.followerCount,
-                subs: this.subCount,
-                date: this.statsDate
-            });
+            this.lastKnownTotals = StorageService.get(StreamStatsService.STORAGE_KEYS.LAST_TOTALS, { followers: 0, subs: 0 });
+            ErrorHandler.debug('Stream stats loaded', { baselines: this.baselines, lastTotals: this.lastKnownTotals });
         } catch (error) {
             ErrorHandler.handle(error, 'stream_stats_load');
         }
     }
 
     /**
-     * Save stats to storage
+     * Save baselines to storage
      */
     save() {
         try {
-            StorageService.set(StreamStatsService.STORAGE_KEYS.FOLLOWER_COUNT, this.followerCount);
-            StorageService.set(StreamStatsService.STORAGE_KEYS.SUB_COUNT, this.subCount);
-            StorageService.set(StreamStatsService.STORAGE_KEYS.STATS_DATE, this.statsDate);
-
-            ErrorHandler.debug('Stream stats saved', {
-                followers: this.followerCount,
-                subs: this.subCount
-            });
+            StorageService.set(StreamStatsService.STORAGE_KEYS.BASELINES, this.baselines);
+            StorageService.set(StreamStatsService.STORAGE_KEYS.LAST_TOTALS, this.lastKnownTotals);
         } catch (error) {
             ErrorHandler.handle(error, 'stream_stats_save');
         }
     }
 
     /**
-     * Increment follower count
-     * @returns {number} New follower count
+     * Update baselines with current counts
+     * @param {number} currentFollowers 
+     * @param {number} currentSubs 
      */
-    incrementFollowers() {
-        this.followerCount++;
+    update(currentFollowers, currentSubs) {
+        const now = new Date();
+        const today = now.toDateString();
+        const thisMonth = `${now.getFullYear()}-${now.getMonth()}`;
+        let changed = false;
+
+        this.lastKnownTotals = { followers: currentFollowers, subs: currentSubs };
+
+        // Initialize baselines if they are 0 (first time)
+        if (this.baselines.day.followers === 0 && currentFollowers > 0) {
+            this.baselines.day.followers = currentFollowers;
+            changed = true;
+        }
+        if (this.baselines.day.subs === 0 && currentSubs > 0) {
+            this.baselines.day.subs = currentSubs;
+            changed = true;
+        }
+        if (this.baselines.month.followers === 0 && currentFollowers > 0) {
+            this.baselines.month.followers = currentFollowers;
+            changed = true;
+        }
+        if (this.baselines.month.subs === 0 && currentSubs > 0) {
+            this.baselines.month.subs = currentSubs;
+            changed = true;
+        }
+
+        // Period change detection
+        if (this.baselines.day.date && this.baselines.day.date !== today) {
+            this.baselines.day = {
+                followers: currentFollowers,
+                subs: currentSubs,
+                date: today
+            };
+            changed = true;
+            ErrorHandler.info('New day baseline set', this.baselines.day);
+        } else if (!this.baselines.day.date) {
+            this.baselines.day.date = today;
+            changed = true;
+        }
+
+        if (this.baselines.month.date && this.baselines.month.date !== thisMonth) {
+            this.baselines.month = {
+                followers: currentFollowers,
+                subs: currentSubs,
+                date: thisMonth
+            };
+            changed = true;
+            ErrorHandler.info('New month baseline set', this.baselines.month);
+        } else if (!this.baselines.month.date) {
+            this.baselines.month.date = thisMonth;
+            changed = true;
+        }
+
+        // Session baseline
+        if (this.baselines.session.followers === 0 && currentFollowers > 0) {
+            this.baselines.session.followers = currentFollowers;
+            changed = true;
+        }
+        if (this.baselines.session.subs === 0 && currentSubs > 0) {
+            this.baselines.session.subs = currentSubs;
+            changed = true;
+        }
+
         this.save();
-        ErrorHandler.info('Follower count incremented', { count: this.followerCount });
-        return this.followerCount;
     }
 
     /**
-     * Increment subscription count
-     * @returns {number} New sub count
-     */
-    incrementSubs() {
-        this.subCount++;
-        this.save();
-        ErrorHandler.info('Sub count incremented', { count: this.subCount });
-        return this.subCount;
-    }
-
-    /**
-     * Get current follower count
+     * Get relative count based on range
+     * @param {number} currentTotal 
+     * @param {string} range - 'day', 'month', 'session', 'all'
+     * @param {string} type - 'followers' or 'subs'
      * @returns {number}
      */
-    getFollowerCount() {
-        return this.followerCount;
+    getRelativeCount(currentTotal, range, type) {
+        if (range === 'all' || !this.baselines[range]) {
+            return currentTotal;
+        }
+
+        const baseline = this.baselines[range][type] || 0;
+        return Math.max(0, currentTotal - baseline);
     }
 
     /**
-     * Get current subscription count
-     * @returns {number}
+     * Get current stats for a range
+     * @param {string} range - 'day', 'month', 'session', 'all'
+     * @returns {Object} { followers, subs, date }
      */
-    getSubCount() {
-        return this.subCount;
-    }
-
-    /**
-     * Set follower count manually
-     * @param {number} count - Follower count
-     */
-    setFollowerCount(count) {
-        this.followerCount = Math.max(0, count);
-        this.save();
-        ErrorHandler.info('Follower count set', { count: this.followerCount });
-    }
-
-    /**
-     * Set subscription count manually
-     * @param {number} count - Sub count
-     */
-    setSubCount(count) {
-        this.subCount = Math.max(0, count);
-        this.save();
-        ErrorHandler.info('Sub count set', { count: this.subCount });
-    }
-
-    /**
-     * Reset all stats to 0
-     */
-    reset() {
-        this.followerCount = 0;
-        this.subCount = 0;
-        this.save();
-        ErrorHandler.info('Stream stats reset');
-    }
-
-    /**
-     * Get stats summary
-     * @returns {Object} Stats summary
-     */
-    getStats() {
+    getStats(range = 'day') {
         return {
-            followers: this.followerCount,
-            subs: this.subCount,
-            date: this.statsDate
+            followers: this.getRelativeCount(this.lastKnownTotals.followers, range, 'followers'),
+            subs: this.getRelativeCount(this.lastKnownTotals.subs, range, 'subs'),
+            date: this.baselines.day.date
         };
     }
 
     /**
+     * Increment follower count (backward compatibility for alerts.js)
+     */
+    incrementFollowers() {
+        this.lastKnownTotals.followers++;
+        this.save();
+        return this.getStats('day').followers;
+    }
+
+    /**
+     * Increment sub count (backward compatibility for alerts.js)
+     */
+    incrementSubs() {
+        this.lastKnownTotals.subs++;
+        this.save();
+        return this.getStats('day').subs;
+    }
+
+    /**
      * Format stats as string
-     * @returns {string} Formatted stats
      */
     formatStats() {
-        return `📊 Stream Stats: ${this.followerCount} followers, ${this.subCount} subs today`;
+        const stats = this.getStats('day');
+        return `📊 Today's Stats: ${stats.followers} followers, ${stats.subs} subs`;
+    }
+
+    /**
+     * Reset baselines
+     */
+    reset() {
+        const now = new Date();
+        this.baselines.day = {
+            followers: this.lastKnownTotals.followers,
+            subs: this.lastKnownTotals.subs,
+            date: now.toDateString()
+        };
+        this.baselines.month = {
+            followers: this.lastKnownTotals.followers,
+            subs: this.lastKnownTotals.subs,
+            date: `${now.getFullYear()}-${now.getMonth()}`
+        };
+        this.baselines.session = {
+            followers: this.lastKnownTotals.followers,
+            subs: this.lastKnownTotals.subs
+        };
+        this.save();
+        ErrorHandler.info('Stream stats reset (baselines updated to current totals)');
     }
 }
-

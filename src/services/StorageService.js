@@ -11,7 +11,9 @@ export class StorageService {
         OAUTH_STATE: 'oauth_state',
         USER_VISITS: 'userVisits',
         CHATTERS: 'chatters',
-        STREAM_DATE: 'streamDate'
+        CHATTER_MODE: 'chatter_mode',
+        STREAM_DATE: 'streamDate',
+        STATS_BASELINES: 'stream_stats_baselines'
     };
 
     /**

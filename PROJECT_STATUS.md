@@ -99,6 +99,36 @@ The project has undergone a significant refactor to improve organization, centra
 - **Reasoning**: Allows the user to easily test the alert's behavior (New, Returning, Milestone) and reset visit states without needing a live Twitch event.
 - **Action**: Included buttons that trigger global `testCursorAlert` and `resetVisitStates` functions.
 
+## Session Log: Unified Design & Modernization (Dec 26, 2025)
+
+### 1. Unified Visual Language (Shadcn-like)
+- **Decision**: Redesign the entire dashboard and auth flow with a "friendly" and modern aesthetic.
+- **Reasoning**: The previous UI was inconsistent, mixing sharp and slightly rounded corners, with fragmented custom CSS.
+- **Implementation**:
+    - **Rounding**: Adopted large border radii (`rounded-4xl` for cards, `rounded-5xl` for main containers) across all main pages.
+    - **Glassmorphism**: Standardized background styles using translucent `zinc-900/50` with `backdrop-blur-xl` and subtle borders.
+    - **Palette**: Unified around Twitch Purple (`#9147ff`), deep dark backgrounds, and Zinc-based grays.
+
+### 2. Infrastructure & Typography
+- **Decision**: Standardize on **Plus Jakarta Sans** and **Lucide Icons**.
+- **Reasoning**: To provide a professional, cohesive look and feel that matches modern web development standards (Tailwind/Shadcn).
+- **Action**:
+    - Updated `tailwind.config.js` to include the new font family and extended border-radius utilities.
+    - Integrated Lucide Icons via CDN, replacing various manual SVGs.
+    - Refactored `index.html`, `auth/oauth.html`, and `auth/callback.html` to use these new standards.
+
+### 3. Tailwind CSS Refactor
+- **Decision**: Move away from custom CSS blocks in favor of Tailwind utility classes.
+- **Reasoning**: Increases maintainability and ensures style consistency.
+- **Action**:
+    - Completely rewrote the `index.html` structure and associated styles using Tailwind, then ran a full `css:build` to update `output.css`.
+    - **Card Padding Optimization**: Applied negative margins (`-mx-6 -mt-6`) to widget previews and enabled `overflow-hidden` on parent cards to create a flush, edge-to-edge preview effect.
+
+### 4. Interactive Feedback
+- **Decision**: Add smooth transitions and state-based feedback (Copy/Success).
+- **Reasoning**: Improves the user experience by providing clear confirmation of actions.
+- **Action**: Added hover lift effects to cards and "success" states for copy buttons that change color and icon when clicked.
+
 ## Summary of Deleted Files
 - `public/services/*` (duplicates)
 - `public/components/*` (duplicates)

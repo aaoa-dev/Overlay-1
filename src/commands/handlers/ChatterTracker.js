@@ -8,15 +8,42 @@ import { StorageService } from '../../services/StorageService.js';
 import { ErrorHandler } from '../../utils/ErrorHandler.js';
 
 export class ChatterTracker {
-    constructor(options = {}) {
+    constructor(options = {}, api = null) {
         this.chatters = [];
         this.maxChatters = options.maxChatters || 8;
         this.timeoutMs = options.timeoutMs || 60000; // 1 minute
         this.checkIntervalMs = options.checkIntervalMs || 2000; // 2 seconds
         this.containerElement = null;
+        this.api = api;
+        this.displayMode = StorageService.get(StorageService.KEYS.CHATTER_MODE, 'pic'); // 'pic' or 'letter'
         
         this.loadFromStorage();
         this.startCleanupTimer();
+    }
+
+    /**
+     * Set display mode
+     * @param {string} mode - 'pic' or 'letter'
+     */
+    setDisplayMode(mode) {
+        if (mode !== 'pic' && mode !== 'letter') return;
+        this.displayMode = mode;
+        StorageService.set(StorageService.KEYS.CHATTER_MODE, mode);
+        this.refreshUI();
+        ErrorHandler.info(`Chatter display mode changed to: ${mode}`);
+    }
+
+    /**
+     * Force refresh all chatter elements
+     */
+    refreshUI() {
+        if (!this.containerElement) return;
+        
+        // Clear container and rebuild based on current chatters and mode
+        this.containerElement.innerHTML = '';
+        this.chatters.forEach(chatter => {
+            this.addChatterElement(chatter);
+        });
     }
 
     /**
@@ -57,26 +84,65 @@ export class ChatterTracker {
      * Track a message (add or update chatter)
      * @param {Object} tags - Message tags
      */
-    track(tags) {
-        const username = tags.username;
-        const existingChatter = this.chatters.find(c => c.user === username);
+    async track(tags) {
+        const username = tags.username || tags['display-name']?.toLowerCase();
+        if (!username) return;
 
-        if (existingChatter) {
+        let chatter = this.chatters.find(c => c.user === username);
+
+        if (chatter) {
             // Update timestamp
-            existingChatter.timestamp = Date.now();
+            chatter.timestamp = Date.now();
         } else {
             // Add new chatter
-            this.chatters.push({
+            chatter = {
                 name: tags['display-name'],
                 user: username,
                 timestamp: Date.now(),
-                color: tags.color || '#ffffff'
-            });
+                color: tags.color || '#ffffff',
+                pfp: null
+            };
+            this.chatters.push(chatter);
+        }
+
+        // Fetch profile picture if missing and API is available
+        if (!chatter.pfp && this.api) {
+            try {
+                // We use a small cache or just rely on the API class if it has one
+                const userInfo = await this.api.fetchUserInfo(username);
+                if (userInfo && userInfo.profile_image_url) {
+                    chatter.pfp = userInfo.profile_image_url;
+                    // Update the element if it exists and we are in pic mode
+                    const element = document.getElementById(username);
+                    if (element && this.displayMode === 'pic') {
+                        this.applyProfilePicture(element, chatter.pfp);
+                    }
+                    this.saveToStorage();
+                }
+            } catch (error) {
+                ErrorHandler.debug('Failed to fetch profile picture', { username, error });
+            }
         }
 
         this.sort();
         this.saveToStorage();
         this.updateUI();
+    }
+
+    /**
+     * Apply profile picture to an element
+     * @param {HTMLElement} element - Chatter element
+     * @param {string} pfpUrl - Profile picture URL
+     */
+    applyProfilePicture(element, pfpUrl) {
+        if (!pfpUrl || this.displayMode !== 'pic') return;
+        
+        // Use background image for the bubble
+        element.style.backgroundImage = `url(${pfpUrl})`;
+        element.style.backgroundSize = 'cover';
+        element.style.backgroundPosition = 'center';
+        element.textContent = ''; // Clear the initial
+        element.classList.add('border-2', 'border-white/20');
     }
 
     /**
@@ -149,9 +215,16 @@ export class ChatterTracker {
 
         const element = document.createElement('div');
         element.id = chatter.user;
-        element.className = 'opacity-0 transition-all duration-1000 aspect-square h-auto w-0 flex justify-center align-middle items-center bg-[var(--chatter-color)] text-0 font-extrabold text-black rounded-full';
+        element.className = 'opacity-0 transition-all duration-1000 aspect-square h-auto w-0 flex justify-center align-middle items-center bg-[var(--chatter-color)] text-0 font-extrabold text-black rounded-full overflow-hidden';
         element.style.setProperty('--chatter-color', chatter.color || '#ffffff');
-        element.textContent = chatter.user[0].toUpperCase();
+        
+        if (this.displayMode === 'pic' && chatter.pfp) {
+            this.applyProfilePicture(element, chatter.pfp);
+        } else {
+            element.textContent = (chatter.name || chatter.user)[0].toUpperCase();
+            // Reset background in case it was a pic before
+            element.style.backgroundImage = 'none';
+        }
 
         this.containerElement.appendChild(element);
 
