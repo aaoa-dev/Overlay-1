@@ -228,23 +228,24 @@ class CursorWelcomeManager {
                 switch (state.phase) {
                     case 'slide-in':
                         if (now >= state.nextPhaseTime) {
-                            this.transitionToReveal(container, state);
+                            this.transitionToTyping(container, state);
                         }
                         break;
                     
-                    case 'revealed':
+                    case 'typing':
+                        // Typewriter is async, just wait for completion
+                        if (now >= state.nextPhaseTime) {
+                            this.transitionToDisplay(container, state);
+                        }
+                        break;
+                    
+                    case 'displaying':
                         if (now >= state.nextPhaseTime) {
                             this.transitionToExit(container, state);
                         }
                         break;
                     
                     case 'exiting':
-                        if (now >= state.nextPhaseTime) {
-                            this.transitionToFadeOut(container, state);
-                        }
-                        break;
-                    
-                    case 'fading':
                         if (now >= state.nextPhaseTime) {
                             this.removeContainer(container);
                         }
@@ -259,7 +260,7 @@ class CursorWelcomeManager {
     }
 
     /**
-     * Create and animate a cursor alert (optimized)
+     * Create and animate a cursor alert (optimized with typewriter)
      */
     spawn(username, displayName, color, count) {
         const start = this.getRandomStartPoint();
@@ -283,7 +284,7 @@ class CursorWelcomeManager {
         const svg = this.svgTemplate.content.cloneNode(true);
         cursorInner.appendChild(svg);
         
-        // Create bubble
+        // Create bubble (starts with just name)
         const bubble = document.createElement('div');
         bubble.className = 'cursor-bubble';
         bubble.textContent = displayName;
@@ -291,19 +292,12 @@ class CursorWelcomeManager {
         
         cursorVisual.appendChild(cursorInner);
         cursorContainer.appendChild(cursorVisual);
-        
-        // Create card
-        const card = document.createElement('div');
-        card.className = 'welcome-card';
-        card.innerHTML = `
-            <h3>${displayName}</h3>
-            <p>${count === 1 ? 'Welcome to the stream!' : 'Welcome back!'}</p>
-            <div class="visit-badge">Visit #${count}</div>
-        `;
-        cursorContainer.appendChild(card);
+
+        // Get message for typewriter
+        const message = this.getMessage(count);
 
         // Cache DOM references
-        const refs = { cursorVisual, cursorInner, card };
+        const refs = { cursorVisual, cursorInner, bubble, message };
 
         this.container.appendChild(cursorContainer);
         this.activeCursors.add(cursorContainer);
@@ -316,7 +310,8 @@ class CursorWelcomeManager {
             nextPhaseTime: now + 2500, // 2.4s slide + 100ms buffer
             endPosition: end,
             refs,
-            startTime: now
+            startTime: now,
+            displayName
         });
 
         // Start slide-in
@@ -329,19 +324,74 @@ class CursorWelcomeManager {
     }
 
     /**
-     * Transition to reveal phase (card appears, then cursor quickly exits)
+     * Get welcome message based on visit count
      */
-    transitionToReveal(container, state) {
-        if (!this.activeCursors.has(container)) return;
-        
-        state.refs.card.classList.add('visible');
-        state.phase = 'revealed';
-        // Cursor exits shortly after card reveals (500ms pause to see the card appear)
-        state.nextPhaseTime = Date.now() + 500;
+    getMessage(count) {
+        if (count === 1) {
+            return 'Welcome to the stream! 🎉';
+        } else if (count === 10) {
+            return '10 visits! You\'re awesome! 🎊';
+        } else if (count === 50) {
+            return '50 visits! Legend status! 👑';
+        } else if (count === 100) {
+            return '100 visits! ULTRA FAN! 🏆';
+        } else if (count >= 100) {
+            return `${count} visits! Incredible! 🌟`;
+        } else {
+            return 'Welcome back!';
+        }
     }
 
     /**
-     * Transition to exit phase (cursor slides out, card stays)
+     * Transition to typing phase (typewriter effect in bubble)
+     */
+    async transitionToTyping(container, state) {
+        if (!this.activeCursors.has(container)) return;
+        
+        const bubble = state.refs.bubble;
+        bubble.classList.add('typing');
+        
+        // Start typewriter effect
+        const separator = ': ';
+        const fullMessage = separator + state.refs.message;
+        const baseText = state.displayName;
+        
+        // Typewriter animation
+        const charDelay = 40; // 40ms per character
+        let currentIndex = 0;
+        
+        const typeInterval = setInterval(() => {
+            if (!this.activeCursors.has(container)) {
+                clearInterval(typeInterval);
+                return;
+            }
+            
+            if (currentIndex < fullMessage.length) {
+                bubble.textContent = baseText + fullMessage.substring(0, currentIndex + 1);
+                currentIndex++;
+            } else {
+                clearInterval(typeInterval);
+            }
+        }, charDelay);
+        
+        state.phase = 'typing';
+        // Wait for typing to complete + small buffer
+        state.nextPhaseTime = Date.now() + (fullMessage.length * charDelay) + 200;
+    }
+
+    /**
+     * Transition to display phase (message fully typed, keep visible)
+     */
+    transitionToDisplay(container, state) {
+        if (!this.activeCursors.has(container)) return;
+        
+        state.phase = 'displaying';
+        // Display for 3-5 seconds
+        state.nextPhaseTime = Date.now() + (3000 + Math.random() * 2000);
+    }
+
+    /**
+     * Transition to exit phase (everything slides out together)
      */
     transitionToExit(container, state) {
         if (!this.activeCursors.has(container)) return;
@@ -353,24 +403,13 @@ class CursorWelcomeManager {
 
         container.classList.add('cursor-exiting');
         
+        // Slide entire container out
         state.refs.cursorVisual.style.transform = `translateX(${exitX}px)`;
         state.refs.cursorInner.style.transform = `translateY(${exitY}px)`;
         state.refs.cursorInner.style.opacity = '0';
         
         state.phase = 'exiting';
-        // Card stays visible for 3-5 seconds after cursor exits
-        state.nextPhaseTime = Date.now() + 2200 + (3000 + Math.random() * 2000);
-    }
-
-    /**
-     * Transition to fade out phase (card fades out)
-     */
-    transitionToFadeOut(container, state) {
-        if (!this.activeCursors.has(container)) return;
-        
-        state.refs.card.classList.add('fade-out');
-        state.phase = 'fading';
-        state.nextPhaseTime = Date.now() + 1200;
+        state.nextPhaseTime = Date.now() + 1200; // 1.2s exit
     }
 
     /**
