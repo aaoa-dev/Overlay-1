@@ -8,8 +8,8 @@ const DEFAULT_CONFIG = {
         USERNAME: '',
         CHANNEL_NAME: '',
         CHANNEL_ID: '',
-        // Use environment variable if available, otherwise use a placeholder
-        CLIENT_ID: import.meta.env.VITE_TWITCH_CLIENT_ID || 'gp762nuuoqcoxypju8c569th9wz7q5', 
+        // Use environment variable if available, otherwise use your app's Client ID
+        CLIENT_ID: import.meta.env.VITE_TWITCH_CLIENT_ID || 'bjcukect75zxyty8w63shf7jakiyda', 
         SCOPES: [
             'chat:read', 
             'chat:edit',
