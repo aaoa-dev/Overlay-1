@@ -359,6 +359,77 @@
                     </div>
                 </section>
 
+                <!-- Sound Settings -->
+                <section class="settings-section">
+                    <h3 class="section-heading">Sounds</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Master Volume <span id="volume-value" class="value-display">50%</span></label>
+                        <input type="range" id="setting-volume" min="0" max="100" value="50" class="range-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Start Sound</label>
+                        <div class="flex gap-2">
+                            <select id="sound-start" class="select-input">
+                                <option value="none">None</option>
+                                <option value="ui-confirm">UI Confirm</option>
+                                <option value="soft-click">Soft Click</option>
+                                <option value="digital-start">Digital Start</option>
+                            </select>
+                            <button id="test-sound-start" class="settings-button" style="padding: 0 1rem;">▶</button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">End / Break Start Sound</label>
+                        <div class="flex gap-2">
+                            <select id="sound-end" class="select-input">
+                                <option value="none">None</option>
+                                <option value="bell">Digital Bell</option>
+                                <option value="chime">Modern Chime</option>
+                                <option value="alarm">Classic Alarm</option>
+                                <option value="success">Success Fanfare</option>
+                            </select>
+                            <button id="test-sound-end" class="settings-button" style="padding: 0 1rem;">▶</button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Long Break Start Sound</label>
+                        <div class="flex gap-2">
+                            <select id="sound-long-break" class="select-input">
+                                <option value="none">None</option>
+                                <option value="celesta">Celesta Sparkle</option>
+                                <option value="ambient-swell">Ambient Swell</option>
+                                <option value="level-up">Level Up</option>
+                            </select>
+                            <button id="test-sound-long-break" class="settings-button" style="padding: 0 1rem;">▶</button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Time Added (Lengthened)</label>
+                        <div class="flex gap-2">
+                            <select id="sound-add" class="select-input">
+                                <option value="none">None</option>
+                                <option value="pop">Bubble Pop</option>
+                                <option value="coin">Retro Coin</option>
+                                <option value="ding">Soft Ding</option>
+                                <option value="sparkle">Sparkle</option>
+                            </select>
+                            <button id="test-sound-add" class="settings-button" style="padding: 0 1rem;">▶</button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Time Removed (Shortened)</label>
+                        <div class="flex gap-2">
+                            <select id="sound-remove" class="select-input">
+                                <option value="none">None</option>
+                                <option value="swish">Swish</option>
+                                <option value="descend">Descend</option>
+                                <option value="error-buzz">Error Buzz</option>
+                            </select>
+                            <button id="test-sound-remove" class="settings-button" style="padding: 0 1rem;">▶</button>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Control Buttons -->
                 <section class="settings-section">
                     <h3 class="section-heading">Controls</h3>

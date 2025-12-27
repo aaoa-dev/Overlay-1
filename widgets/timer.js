@@ -11,6 +11,36 @@ const AVAILABLE_FONTS = [
     'Merriweather', 'PT Sans', 'Bebas Neue', 'Quicksand', 'Fira Sans'
 ];
 
+const SOUND_ASSETS = {
+    start: {
+        'ui-confirm': 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+        'soft-click': 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
+        'digital-start': 'https://assets.mixkit.co/active_storage/sfx/2705/2705-preview.mp3'
+    },
+    end: {
+        bell: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
+        chime: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
+        alarm: 'https://assets.mixkit.co/active_storage/sfx/1001/1001-preview.mp3',
+        success: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'
+    },
+    longBreak: {
+        celesta: 'https://assets.mixkit.co/active_storage/sfx/1940/1940-preview.mp3',
+        'ambient-swell': 'https://assets.mixkit.co/active_storage/sfx/2625/2625-preview.mp3',
+        'level-up': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3'
+    },
+    add: {
+        pop: 'https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3',
+        coin: 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3',
+        ding: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+        sparkle: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'
+    },
+    remove: {
+        swish: 'https://assets.mixkit.co/active_storage/sfx/2005/2005-preview.mp3',
+        descend: 'https://assets.mixkit.co/active_storage/sfx/2001/2000-preview.mp3',
+        'error-buzz': 'https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3'
+    }
+};
+
 class StreamTimer {
     constructor() {
         this.config = this.parseUrlParams();
@@ -18,6 +48,9 @@ class StreamTimer {
         this.currentSeconds = 0;
         this.isPaused = true;
         this.isSettingsMode = false;
+        
+        // Audio unlock state
+        this.audioUnlocked = false;
         
         // Pomodoro state
         this.pomodoroPhase = 'work'; // 'work' or 'break'
@@ -40,6 +73,29 @@ class StreamTimer {
         };
 
         this.init();
+        this.setupAudioUnlock();
+    }
+
+    setupAudioUnlock() {
+        // Function to unlock audio on first interaction
+        const unlock = () => {
+            if (this.audioUnlocked) return;
+            
+            // Play a silent sound to unlock
+            const audio = new Audio();
+            audio.play().then(() => {
+                this.audioUnlocked = true;
+                ErrorHandler.info('Audio unlocked for timer');
+                document.removeEventListener('click', unlock);
+                document.removeEventListener('keydown', unlock);
+            }).catch(() => {});
+        };
+
+        document.addEventListener('click', unlock);
+        document.addEventListener('keydown', unlock);
+        
+        // Also try to unlock immediately (works in some environments like OBS)
+        unlock();
     }
 
     parseUrlParams() {
@@ -94,6 +150,14 @@ class StreamTimer {
             fontSize: parseInt(params.get('fontSize')) || 64,
             color: params.get('color') || '#ffffff',
             theme: params.get('theme') || 'transparent',
+            
+            // Sounds
+            volume: parseInt(params.get('volume')) || 50,
+            soundStart: params.get('soundStart') || 'ui-confirm',
+            soundEnd: params.get('soundEnd') || 'bell',
+            soundLongBreak: params.get('soundLongBreak') || 'celesta',
+            soundAdd: params.get('soundAdd') || 'pop',
+            soundRemove: params.get('soundRemove') || 'swish',
             
             // Auth
             channelId: params.get('channelId') || '',
@@ -372,6 +436,7 @@ class StreamTimer {
         
         this.isPaused = false;
         this.lastDecayTime = Date.now();
+        this.playSound('start');
         
         this.timerInterval = setInterval(() => {
             this.tick();
@@ -383,12 +448,14 @@ class StreamTimer {
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
+            this.playSound('remove'); // Small feedback for pause/stop
         }
     }
 
     reset() {
         this.pause();
         this.initializeTimer();
+        this.playSound('remove');
     }
 
     tick() {
@@ -464,6 +531,7 @@ class StreamTimer {
     handleZero() {
         this.currentSeconds = 0;
         this.updateDisplay();
+        this.playSound('end');
         
         switch (this.config.atZero) {
             case 'stop':
@@ -491,14 +559,17 @@ class StreamTimer {
             if (this.pomodoroCompletedCycles % this.config.cyclesBeforeLong === 0) {
                 this.pomodoroPhase = 'longbreak';
                 this.currentSeconds = this.config.longBreakDuration * 60;
+                this.playSound('longBreak');
             } else {
                 this.pomodoroPhase = 'break';
                 this.currentSeconds = this.config.breakDuration * 60;
+                this.playSound('end'); // Use 'end' for regular break start
             }
         } else {
             // Break is over, back to work
             this.pomodoroPhase = 'work';
             this.currentSeconds = this.config.workDuration * 60;
+            this.playSound('start');
         }
         
         this.updateModeIndicator();
@@ -507,6 +578,7 @@ class StreamTimer {
 
     addTime(seconds) {
         this.currentSeconds += seconds;
+        this.playSound('add');
         this.showTimeAddition(seconds);
         this.elements.display.classList.add('pulse');
         setTimeout(() => this.elements.display.classList.remove('pulse'), 1000);
@@ -516,7 +588,32 @@ class StreamTimer {
     removeTime(seconds) {
         this.currentSeconds -= seconds;
         if (this.currentSeconds < 0) this.currentSeconds = 0;
+        this.playSound('remove');
         this.updateDisplay();
+    }
+
+    playSound(type) {
+        let soundName = 'none';
+        switch (type) {
+            case 'start': soundName = this.config.soundStart; break;
+            case 'end': soundName = this.config.soundEnd; break;
+            case 'longBreak': soundName = this.config.soundLongBreak; break;
+            case 'add': soundName = this.config.soundAdd; break;
+            case 'remove': soundName = this.config.soundRemove; break;
+        }
+
+        if (soundName === 'none') return;
+
+        const url = SOUND_ASSETS[type]?.[soundName];
+        if (!url) return;
+
+        const audio = new Audio(url);
+        audio.volume = this.config.volume / 100;
+        audio.play().catch(e => {
+            if (!this.isSettingsMode) {
+                console.warn('Audio play blocked. Interaction required.', e);
+            }
+        });
     }
 
     showTimeAddition(seconds) {
@@ -536,7 +633,7 @@ class StreamTimer {
     updateDisplay() {
         let hours = Math.floor(this.currentSeconds / 3600);
         let minutes = Math.floor((this.currentSeconds % 3600) / 60);
-        let seconds = this.currentSeconds % 60;
+        let seconds = Math.floor(this.currentSeconds % 60);
         
         // Handle negative time display for debugging
         if (this.currentSeconds < 0) {
@@ -730,6 +827,12 @@ class StreamTimer {
             this.reset();
             this.updateModeIndicator();
         });
+
+        document.getElementById('timer-name').addEventListener('input', (e) => {
+            this.config.timerName = e.target.value.trim();
+            this.saveSettings();
+            this.syncUrlWithSettings();
+        });
         
         // Basic duration inputs
         ['hours-input', 'minutes-input', 'seconds-input'].forEach(id => {
@@ -816,12 +919,6 @@ class StreamTimer {
             this.saveSettings();
             this.syncUrlWithSettings();
         });
-
-        document.getElementById('timer-name').addEventListener('input', (e) => {
-            this.config.timerName = e.target.value.trim();
-            this.saveSettings();
-            this.syncUrlWithSettings();
-        });
         
         ['max-time', 'min-time'].forEach(id => {
             document.getElementById(id).addEventListener('input', (e) => {
@@ -882,6 +979,50 @@ class StreamTimer {
                 this.syncUrlWithSettings();
             });
         });
+
+        // Sound settings
+        document.getElementById('setting-volume').addEventListener('input', (e) => {
+            this.config.volume = parseInt(e.target.value);
+            document.getElementById('volume-value').textContent = `${e.target.value}%`;
+            this.saveSettings();
+            this.syncUrlWithSettings();
+        });
+
+        document.getElementById('sound-start').addEventListener('change', (e) => {
+            this.config.soundStart = e.target.value;
+            this.saveSettings();
+            this.syncUrlWithSettings();
+        });
+
+        document.getElementById('sound-end').addEventListener('change', (e) => {
+            this.config.soundEnd = e.target.value;
+            this.saveSettings();
+            this.syncUrlWithSettings();
+        });
+
+        document.getElementById('sound-long-break').addEventListener('change', (e) => {
+            this.config.soundLongBreak = e.target.value;
+            this.saveSettings();
+            this.syncUrlWithSettings();
+        });
+
+        document.getElementById('sound-add').addEventListener('change', (e) => {
+            this.config.soundAdd = e.target.value;
+            this.saveSettings();
+            this.syncUrlWithSettings();
+        });
+
+        document.getElementById('sound-remove').addEventListener('change', (e) => {
+            this.config.soundRemove = e.target.value;
+            this.saveSettings();
+            this.syncUrlWithSettings();
+        });
+
+        document.getElementById('test-sound-start').addEventListener('click', () => this.playSound('start'));
+        document.getElementById('test-sound-end').addEventListener('click', () => this.playSound('end'));
+        document.getElementById('test-sound-long-break').addEventListener('click', () => this.playSound('longBreak'));
+        document.getElementById('test-sound-add').addEventListener('click', () => this.playSound('add'));
+        document.getElementById('test-sound-remove').addEventListener('click', () => this.playSound('remove'));
         
         // Copy URL button
         document.getElementById('copy-obs-url')?.addEventListener('click', () => {
@@ -987,6 +1128,15 @@ class StreamTimer {
         document.getElementById('font-size').value = this.config.fontSize;
         document.getElementById('font-size-value').textContent = this.config.fontSize;
         document.getElementById('color-picker').value = this.config.color;
+
+        // Sounds
+        document.getElementById('setting-volume').value = this.config.volume;
+        document.getElementById('volume-value').textContent = `${this.config.volume}%`;
+        document.getElementById('sound-start').value = this.config.soundStart;
+        document.getElementById('sound-end').value = this.config.soundEnd;
+        document.getElementById('sound-long-break').value = this.config.soundLongBreak;
+        document.getElementById('sound-add').value = this.config.soundAdd;
+        document.getElementById('sound-remove').value = this.config.soundRemove;
         
         // Theme
         document.querySelectorAll('[data-theme]').forEach(btn => {
@@ -1100,4 +1250,3 @@ if (document.readyState === 'loading') {
 } else {
     new StreamTimer();
 }
-
