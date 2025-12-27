@@ -1,6 +1,6 @@
 /* ========================================
    SETTINGS PANEL - Modern Glassmorphic Design
-   Matching the landing page aesthetic
+   Matching the landing page aesthetic with dark/light mode support
    ======================================== */
 
 /* Settings Trigger Button */
@@ -12,22 +12,22 @@
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: hsl(var(--foreground) / 0.1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
   border-radius: 1rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px hsl(var(--foreground) / 0.1);
 }
 
 .settings-trigger:hover {
-  background: rgba(168, 85, 247, 0.2);
-  border-color: rgba(168, 85, 247, 0.4);
+  background: hsl(var(--primary) / 0.2);
+  border-color: hsl(var(--primary) / 0.4);
   transform: scale(1.05);
-  box-shadow: 0 8px 12px rgba(168, 85, 247, 0.2);
+  box-shadow: 0 8px 12px hsl(var(--primary) / 0.2);
 }
 
 .settings-trigger:active {
@@ -39,14 +39,14 @@
   position: relative;
   width: 22rem;
   max-height: calc(100vh - 6rem);
-  background: rgba(18, 18, 20, 0.85);
+  background: hsl(var(--popover) / 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid hsl(var(--border));
   border-radius: 1.5rem;
   box-shadow: 
-    0 20px 25px -5px rgba(0, 0, 0, 0.3),
-    0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    0 20px 25px -5px hsl(var(--foreground) / 0.3),
+    0 10px 10px -5px hsl(var(--foreground) / 0.2);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -64,15 +64,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.3);
   flex-shrink: 0;
 }
 
 .settings-title {
   font-size: 1rem;
   font-weight: 700;
-  color: white;
+  color: hsl(var(--foreground));
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -84,17 +84,17 @@
   padding: 0.5rem 1rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: white;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: hsl(var(--destructive-foreground));
+  background: hsl(var(--destructive) / 0.1);
+  border: 1px solid hsl(var(--destructive) / 0.3);
   border-radius: 0.75rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .reset-button:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
+  background: hsl(var(--destructive) / 0.2);
+  border-color: hsl(var(--destructive) / 0.5);
   transform: translateY(-1px);
 }
 
@@ -114,23 +114,23 @@
 }
 
 .settings-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: hsl(var(--muted) / 0.3);
   border-radius: 10px;
 }
 
 .settings-content::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.5);
+  background: hsl(var(--primary) / 0.5);
   border-radius: 10px;
 }
 
 .settings-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.7);
+  background: hsl(var(--primary) / 0.7);
 }
 
 /* Settings Section */
 .settings-section {
   padding: 1rem 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .settings-section:last-child {
@@ -140,7 +140,7 @@
 .section-heading {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: rgb(168, 85, 247);
+  color: hsl(var(--primary));
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0 0 1rem 0;
@@ -162,14 +162,14 @@
   align-items: center;
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: hsl(var(--foreground) / 0.9);
   margin-bottom: 0.625rem;
 }
 
 .value-display {
   font-size: 0.75rem;
   font-weight: 600;
-  color: rgb(168, 85, 247);
+  color: hsl(var(--primary));
   font-variant-numeric: tabular-nums;
 }
 
@@ -178,31 +178,31 @@
   width: 100%;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
-  color: white;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
   border-radius: 0.75rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .select-input:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(168, 85, 247, 0.3);
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary) / 0.3);
 }
 
 .select-input:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgb(168, 85, 247);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
 }
 
 /* Range Input */
 .range-input {
   width: 100%;
   height: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: hsl(var(--muted) / 0.5);
   border-radius: 9999px;
   outline: none;
   cursor: pointer;
@@ -215,17 +215,17 @@
   appearance: none;
   width: 1.25rem;
   height: 1.25rem;
-  background: linear-gradient(135deg, rgb(168, 85, 247), rgb(147, 51, 234));
-  border: 2px solid white;
+  background: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
 }
 
 .range-input::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.5);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.5);
 }
 
 .range-input::-webkit-slider-thumb:active {
@@ -235,17 +235,17 @@
 .range-input::-moz-range-thumb {
   width: 1.25rem;
   height: 1.25rem;
-  background: linear-gradient(135deg, rgb(168, 85, 247), rgb(147, 51, 234));
-  border: 2px solid white;
+  background: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
 }
 
 .range-input::-moz-range-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.5);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.5);
 }
 
 .range-input::-moz-range-thumb:active {
@@ -258,15 +258,15 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
   border-radius: 0.75rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .color-input-wrapper:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(168, 85, 247, 0.3);
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary) / 0.3);
 }
 
 .color-input {
@@ -288,20 +288,161 @@
 
 .color-input::-webkit-color-swatch {
   border-radius: 0.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid hsl(var(--border));
 }
 
 .color-input::-moz-color-swatch {
   border-radius: 0.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid hsl(var(--border));
 }
 
 .color-value-text {
   font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', monospace;
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: hsl(var(--muted-foreground));
   text-transform: uppercase;
   font-weight: 500;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button-group-item {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button-group-item:hover {
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+.button-group-item.active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
+/* Settings Button */
+.settings-button {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-button:hover {
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary) / 0.3);
+  transform: translateY(-1px);
+}
+
+.settings-button:active {
+  transform: translateY(0);
+}
+
+/* Font Picker */
+.font-picker {
+  position: relative;
+}
+
+.font-picker-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.font-picker-trigger:hover {
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+.font-picker-arrow {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  transition: transform 0.2s;
+}
+
+.font-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  max-height: 16rem;
+  background: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px hsl(var(--foreground) / 0.3);
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  z-index: 200;
+}
+
+.font-picker-dropdown.active {
+  display: flex;
+}
+
+.font-search {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted) / 0.3);
+  border: none;
+  border-bottom: 1px solid hsl(var(--border));
+  outline: none;
+}
+
+.font-search::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.font-list {
+  overflow-y: auto;
+  max-height: 12rem;
+}
+
+.font-item {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.font-item:hover {
+  background: hsl(var(--muted) / 0.5);
+}
+
+.font-item.active {
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+  font-weight: 600;
 }
 
 /* OBS Hidden Logic */

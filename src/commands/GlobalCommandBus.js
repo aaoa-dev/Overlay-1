@@ -12,6 +12,7 @@ export class GlobalCommandBus {
         this.commands = new Map();
         this.listeners = new Map(); // Command -> Set of callbacks
         this.cooldowns = new Map();
+        this.instanceId = Math.random().toString(36).substring(2, 15);
         
         // BroadcastChannel for cross-widget communication
         this.channel = new BroadcastChannel('overlay-commands');
@@ -75,6 +76,9 @@ export class GlobalCommandBus {
      */
     setupCrossWidgetListener() {
         this.channel.onmessage = (event) => {
+            // Ignore messages from self to prevent double execution
+            if (event.data.senderId === this.instanceId) return;
+
             if (event.data.type === 'command') {
                 this.notifyListeners(event.data.trigger, event.data.context);
             }
@@ -178,6 +182,7 @@ export class GlobalCommandBus {
                 this.channel.postMessage({
                     type: 'command',
                     trigger,
+                    senderId: this.instanceId,
                     context: {
                         trigger,
                         username: context.username,
@@ -244,4 +249,3 @@ export class GlobalCommandBus {
         this.channel.close();
     }
 }
-

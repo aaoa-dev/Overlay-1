@@ -18,6 +18,7 @@ export default defineConfig({
         cursorWelcome: resolve(__dirname, 'alerts/cursor-welcome.html'),
         signatureAlerts: resolve(__dirname, 'alerts/signature-alerts.html'),
         counter: resolve(__dirname, 'widgets/counter.html'),
+        timer: resolve(__dirname, 'widgets/timer.html'),
         chatters: resolve(__dirname, 'widgets/chatters.html'),
         oauth: resolve(__dirname, 'auth/oauth.html'),
         callback: resolve(__dirname, 'auth/callback.html'),
