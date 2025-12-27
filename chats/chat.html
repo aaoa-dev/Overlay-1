@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../output.css" />
     <link rel="stylesheet" href="chat.css" />
     <script type="module" src="chat.js"></script>
@@ -10,6 +13,240 @@
   <body class="m-0 p-0 h-screen w-screen overflow-hidden bg-transparent">
     <div id="chatContainer">
       <!-- Chat messages will be injected here -->
+    </div>
+
+    <div class="fixed top-4 left-4 flex flex-col gap-2 z-20">
+      <button 
+        id="toggle-settings" 
+        class="settings-trigger"
+        title="Chat Settings"
+        aria-label="Open chat settings"
+        aria-expanded="false"
+        aria-controls="settings-panel"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+      </button>
+
+      <!-- Settings Panel -->
+      <div 
+        id="settings-panel" 
+        class="settings-panel hidden" 
+        role="dialog" 
+        aria-labelledby="settings-title"
+        aria-modal="false"
+      >
+        <!-- Header -->
+        <header class="settings-header">
+          <h2 id="settings-title" class="settings-title">Chat Settings</h2>
+          <button 
+            id="reset-settings" 
+            class="reset-button"
+            aria-label="Reset all settings to defaults"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Reset
+          </button>
+        </header>
+        
+        <!-- Settings Content -->
+        <div class="settings-content">
+          <!-- Appearance Section -->
+          <section class="settings-section" aria-labelledby="appearance-heading">
+            <h3 id="appearance-heading" class="section-heading">Appearance</h3>
+            
+            <div class="settings-group">
+              <label for="font-picker-trigger" class="control-label">Font Family</label>
+              <div id="font-picker" class="font-picker-container">
+                <button 
+                  id="font-picker-trigger" 
+                  class="font-picker-trigger"
+                  type="button"
+                  role="combobox"
+                  aria-controls="font-picker-dropdown"
+                  aria-expanded="false"
+                  aria-haspopup="listbox"
+                  aria-label="Select font family"
+                >
+                  <span id="current-font-name">Jakarta Sans</span>
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div 
+                  id="font-picker-dropdown" 
+                  class="font-picker-dropdown hidden" 
+                  role="listbox"
+                  aria-label="Font options"
+                >
+                  <!-- Groups and options will be injected here -->
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <span class="control-label" id="theme-label">Theme</span>
+              <div class="button-group" role="group" aria-labelledby="theme-label">
+                <button 
+                  id="theme-dark" 
+                  class="button-group-item active"
+                  type="button"
+                  aria-pressed="true"
+                  aria-label="Dark theme"
+                >
+                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                  Dark
+                </button>
+                <button 
+                  id="theme-light" 
+                  class="button-group-item"
+                  type="button"
+                  aria-pressed="false"
+                  aria-label="Light theme"
+                >
+                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  Light
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <label for="setting-style" class="control-label">Message Style</label>
+              <select id="setting-style" class="select-input">
+                <option value="pill">Pill (Rounded)</option>
+                <option value="box">Box (Square)</option>
+                <option value="bordered">Bordered</option>
+                <option value="transparent">Transparent</option>
+              </select>
+            </div>
+
+            <div class="settings-group checkbox-group">
+              <label for="setting-gradient" class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  id="setting-gradient" 
+                  class="checkbox-input"
+                  aria-describedby="gradient-description"
+                >
+                <span class="checkbox-text">Bottom Gradient</span>
+              </label>
+              <span id="gradient-description" class="sr-only">Add a gradient overlay at the bottom of the chat</span>
+            </div>
+          </section>
+
+          <!-- Sizing Section -->
+          <section class="settings-section" aria-labelledby="sizing-heading">
+            <h3 id="sizing-heading" class="section-heading">Sizing & Spacing</h3>
+            
+            <div class="settings-group">
+              <label for="setting-size" class="control-label">
+                Font Size
+                <span id="size-value" class="value-display">32px</span>
+              </label>
+              <input 
+                type="range" 
+                id="setting-size" 
+                min="12" 
+                max="100" 
+                value="32" 
+                class="range-input"
+                aria-valuemin="12"
+                aria-valuemax="100"
+                aria-valuenow="32"
+                aria-valuetext="32 pixels"
+              >
+            </div>
+
+            <div class="settings-group">
+              <label for="setting-spacing" class="control-label">
+                Message Spacing
+                <span id="spacing-value" class="value-display">10px</span>
+              </label>
+              <input 
+                type="range" 
+                id="setting-spacing" 
+                min="0" 
+                max="50" 
+                value="10" 
+                class="range-input"
+                aria-valuemin="0"
+                aria-valuemax="50"
+                aria-valuenow="10"
+                aria-valuetext="10 pixels"
+              >
+            </div>
+          </section>
+
+          <!-- Behavior Section -->
+          <section class="settings-section" aria-labelledby="behavior-heading">
+            <h3 id="behavior-heading" class="section-heading">Behavior</h3>
+            
+            <div class="settings-group checkbox-group">
+              <label for="setting-consecutive-names" class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  id="setting-consecutive-names" 
+                  class="checkbox-input"
+                  aria-describedby="consecutive-description"
+                >
+                <span class="checkbox-text">Show Name on Consecutive</span>
+              </label>
+              <span id="consecutive-description" class="sr-only">Display username even for consecutive messages from the same user</span>
+            </div>
+
+            <div class="settings-group checkbox-group">
+              <label for="setting-autohide" class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  id="setting-autohide" 
+                  class="checkbox-input"
+                  aria-controls="autohide-delay-container"
+                  aria-describedby="autohide-description"
+                >
+                <span class="checkbox-text">Auto-hide Messages</span>
+              </label>
+              <span id="autohide-description" class="sr-only">Automatically hide messages after a delay</span>
+            </div>
+
+            <div id="autohide-delay-container" class="settings-group hidden">
+              <label for="setting-delay" class="control-label">
+                Hide Delay
+                <span id="delay-value" class="value-display">15s</span>
+              </label>
+              <input 
+                type="range" 
+                id="setting-delay" 
+                min="5" 
+                max="120" 
+                value="15" 
+                class="range-input"
+                aria-valuemin="5"
+                aria-valuemax="120"
+                aria-valuenow="15"
+                aria-valuetext="15 seconds"
+              >
+            </div>
+
+            <div class="settings-group">
+              <label for="setting-animation" class="control-label">Animation</label>
+              <select id="setting-animation" class="select-input">
+                <option value="slide">Slide</option>
+                <option value="fade">Fade Only</option>
+                <option value="bounce">Bounce</option>
+                <option value="none">None</option>
+              </select>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
 
     <div class="fixed top-4 right-4 flex items-center gap-2 z-10">

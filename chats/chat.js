@@ -1,6 +1,241 @@
 // Import config
 import { config } from '../src/config.js';
 import tmi from '../src/vendor/tmi.js';
+
+// Default settings
+const defaultSettings = {
+  font: "Plus Jakarta Sans",
+  theme: 'dark',
+  size: 32,
+  style: 'pill',
+  gradient: false,
+  spacing: 10,
+  consecutiveNames: false,
+  autohide: false,
+  delay: 15,
+  animation: 'slide'
+};
+
+// Map of settings to URL parameters for shorter/cleaner URLs
+const settingToParam = {
+  font: 'font',
+  theme: 'theme',
+  size: 'sz',
+  style: 'st',
+  gradient: 'gr',
+  spacing: 'sp',
+  consecutiveNames: 'cn',
+  autohide: 'ah',
+  delay: 'dl',
+  animation: 'an'
+};
+const paramToSetting = Object.fromEntries(Object.entries(settingToParam).map(([k, v]) => [v, k]));
+
+// Current settings state
+let settings = { ...defaultSettings };
+
+// Track loaded Google Fonts to avoid duplicate links
+const loadedFonts = new Set(['Plus Jakarta Sans', 'Inter', 'Roboto', 'Montserrat', 'Poppins', 'Open Sans', 'Bangers', 'Fredoka', 'Bungee', 'Pacifico', 'Lobster', 'Anton', 'Bebas Neue', 'Playfair Display', 'Orbitron', 'Comfortaa', 'Press Start 2P', 'JetBrains Mono', 'Fira Code']);
+
+// Pre-load popular fonts for the dropdown preview
+function preLoadFonts() {
+  const fontList = Array.from(loadedFonts);
+  const families = fontList.map(f => `family=${f.replace(/\s+/g, '+')}:wght@400;700`).join('&');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
+  document.head.appendChild(link);
+}
+
+// Font picker data
+const fontGroups = [
+  {
+    label: "Modern Sans",
+    fonts: ["Plus Jakarta Sans", "Inter", "Roboto", "Montserrat", "Poppins", "Open Sans"]
+  },
+  {
+    label: "Display & Fun",
+    fonts: ["Bangers", "Fredoka", "Bungee", "Pacifico", "Lobster", "Anton", "Bebas Neue"]
+  },
+  {
+    label: "Stylized",
+    fonts: ["Playfair Display", "Orbitron", "Comfortaa", "Press Start 2P"]
+  },
+  {
+    label: "Monospace",
+    fonts: ["JetBrains Mono", "Fira Code", "monospace"]
+  }
+];
+
+// Initialize Custom Font Picker
+function initFontPicker() {
+  const trigger = document.getElementById('font-picker-trigger');
+  const dropdown = document.getElementById('font-picker-dropdown');
+  const currentName = document.getElementById('current-font-name');
+  if (!trigger || !dropdown) return;
+
+  // Render font options
+  dropdown.innerHTML = fontGroups.map(group => `
+    <div class="font-picker-group">
+      <div class="font-picker-group-label">${group.label}</div>
+      ${group.fonts.map(font => `
+        <div class="font-picker-option ${settings.font === font ? 'selected' : ''}" 
+             data-font="${font}" 
+             style="font-family: '${font}', sans-serif">
+          ${font === 'monospace' ? 'System Mono' : font}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+      // Revert preview to actual selected font
+      applySettings();
+    }
+  });
+
+  // Toggle dropdown
+  trigger.addEventListener('click', () => {
+    const isHidden = dropdown.classList.contains('hidden');
+    dropdown.classList.toggle('hidden');
+    trigger.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+  });
+  
+  // Keyboard navigation for dropdown
+  trigger.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        trigger.setAttribute('aria-expanded', 'true');
+        // Focus first option
+        const firstOption = dropdown.querySelector('.font-picker-option');
+        if (firstOption) firstOption.focus();
+      }
+    }
+  });
+
+  // Handle hover (preview), click (select), and keyboard navigation
+  dropdown.querySelectorAll('.font-picker-option').forEach((option, index) => {
+    const font = option.dataset.font;
+    
+    // Make options focusable
+    option.setAttribute('tabindex', '0');
+    option.setAttribute('role', 'option');
+    option.setAttribute('aria-selected', settings.font === font ? 'true' : 'false');
+    
+    // Figma-like hover preview
+    option.addEventListener('mouseenter', () => {
+      // Temporary override just for preview
+      const oldFont = settings.font;
+      settings.font = font;
+      applySettings();
+      settings.font = oldFont; // Reset state but leave UI preview
+    });
+
+    // Select on click
+    option.addEventListener('click', () => {
+      selectFont(font, option, currentName, dropdown);
+    });
+    
+    // Keyboard navigation
+    option.addEventListener('keydown', (e) => {
+      const options = Array.from(dropdown.querySelectorAll('.font-picker-option'));
+      const currentIndex = options.indexOf(option);
+      
+      switch(e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          if (currentIndex < options.length - 1) {
+            options[currentIndex + 1].focus();
+          }
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          if (currentIndex > 0) {
+            options[currentIndex - 1].focus();
+          } else {
+            trigger.focus();
+            dropdown.classList.add('hidden');
+            trigger.setAttribute('aria-expanded', 'false');
+          }
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          selectFont(font, option, currentName, dropdown);
+          trigger.focus();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          dropdown.classList.add('hidden');
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.focus();
+          break;
+        case 'Home':
+          e.preventDefault();
+          options[0].focus();
+          break;
+        case 'End':
+          e.preventDefault();
+          options[options.length - 1].focus();
+          break;
+      }
+    });
+  });
+  
+  // Helper function to select font
+  function selectFont(font, option, currentName, dropdown) {
+    settings.font = font;
+    if (currentName) currentName.textContent = font === 'monospace' ? 'System Mono' : font;
+    dropdown.querySelectorAll('.font-picker-option').forEach(opt => {
+      const isSelected = opt.dataset.font === font;
+      opt.classList.toggle('selected', isSelected);
+      opt.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    });
+    dropdown.classList.add('hidden');
+    trigger.setAttribute('aria-expanded', 'false');
+    saveSettings();
+    applySettings();
+    updateSettingsUI();
+  }
+}
+
+// Load Google Font dynamically if not already loaded
+function loadGoogleFont(fontName) {
+  if (!fontName || loadedFonts.has(fontName)) return;
+  
+  // Basic system fonts don't need loading
+  const systemFonts = ['sans-serif', 'serif', 'monospace', 'cursive', 'fantasy'];
+  if (systemFonts.includes(fontName.toLowerCase())) return;
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/\s+/g, '+')}:wght@400;700&display=swap`;
+  document.head.appendChild(link);
+  loadedFonts.add(fontName);
+}
+
+// Update URL parameters without reloading
+function syncUrlWithSettings() {
+  const currentUrl = new URL(window.location.href);
+  const params = currentUrl.searchParams;
+
+  Object.entries(settingToParam).forEach(([setting, param]) => {
+    const value = settings[setting];
+    if (value === defaultSettings[setting]) {
+      params.delete(param);
+    } else {
+      params.set(param, value);
+    }
+  });
+
+  window.history.replaceState({}, '', currentUrl.toString());
+}
+
 // Message display settings
 const MAX_MESSAGES = 30; // Maximum number of messages to show
 
@@ -35,7 +270,7 @@ function getUrlParams() {
   return params;
 }
 
-// Generate OBS URL with auth parameters
+// Generate OBS URL with auth and all settings
 function generateOBSUrl(token, username, channel) {
   if (!token || !username) {
     console.error('Missing required parameters for OBS URL');
@@ -43,22 +278,24 @@ function generateOBSUrl(token, username, channel) {
   }
   
   const currentUrl = new URL(window.location.href);
-  // Clear existing parameters
-  currentUrl.search = '';
-  
-  // Add necessary parameters
   const params = new URLSearchParams();
+  
+  // Auth params
   params.append('token', token);
   params.append('username', username);
-  
-  // Only add channel if it's different from username
   if (channel && channel !== username) {
     params.append('channel', channel);
   }
   
-  // Set the search parameters on the URL
-  currentUrl.search = params.toString();
+  // Settings params
+  Object.entries(settingToParam).forEach(([setting, param]) => {
+    const value = settings[setting];
+    if (value !== defaultSettings[setting]) {
+      params.set(param, value);
+    }
+  });
   
+  currentUrl.search = params.toString();
   return currentUrl.toString();
 }
 
@@ -107,28 +344,260 @@ const getAuthDetails = () => {
   };
 };
 
+// Load settings from URL params or localStorage
+function loadSettings() {
+  // 1. Start with defaults
+  settings = { ...defaultSettings };
+
+  // 2. Override with localStorage
+  const savedSettings = localStorage.getItem('chat_settings');
+  if (savedSettings) {
+    try {
+      const parsed = JSON.parse(savedSettings);
+      Object.assign(settings, parsed);
+    } catch (e) {
+      console.error('Failed to parse settings:', e);
+    }
+  }
+
+  // 3. Override with URL parameters (highest priority)
+  const urlParams = new URLSearchParams(window.location.search);
+  Object.entries(paramToSetting).forEach(([param, setting]) => {
+    if (urlParams.has(param)) {
+      let value = urlParams.get(param);
+      
+      // Convert types
+      if (typeof defaultSettings[setting] === 'number') value = parseInt(value);
+      if (typeof defaultSettings[setting] === 'boolean') value = value === 'true';
+      
+      settings[setting] = value;
+    }
+  });
+
+  applySettings();
+  updateSettingsUI();
+}
+
+// Save settings to localStorage and update URL
+function saveSettings() {
+  localStorage.setItem('chat_settings', JSON.stringify(settings));
+  syncUrlWithSettings();
+}
+
+// Update UI elements to match current settings
+function updateSettingsUI() {
+  const currentFontName = document.getElementById('current-font-name');
+  const sizeInput = document.getElementById('setting-size');
+  const sizeValue = document.getElementById('size-value');
+  const themeDark = document.getElementById('theme-dark');
+  const themeLight = document.getElementById('theme-light');
+  
+  const styleSelect = document.getElementById('setting-style');
+  const gradientCheck = document.getElementById('setting-gradient');
+  const spacingInput = document.getElementById('setting-spacing');
+  const spacingValue = document.getElementById('spacing-value');
+  const consecutiveCheck = document.getElementById('setting-consecutive-names');
+  const autohideCheck = document.getElementById('setting-autohide');
+  const delayInput = document.getElementById('setting-delay');
+  const delayValue = document.getElementById('delay-value');
+  const animationSelect = document.getElementById('setting-animation');
+
+  if (currentFontName) currentFontName.textContent = settings.font === 'monospace' ? 'System Mono' : settings.font;
+  if (sizeInput) sizeInput.value = settings.size;
+  if (sizeValue) sizeValue.textContent = `${settings.size}px`;
+  
+  if (styleSelect) styleSelect.value = settings.style;
+  if (gradientCheck) gradientCheck.checked = settings.gradient;
+  if (spacingInput) spacingInput.value = settings.spacing;
+  if (spacingValue) spacingValue.textContent = `${settings.spacing}px`;
+  if (consecutiveCheck) consecutiveCheck.checked = settings.consecutiveNames;
+  if (autohideCheck) autohideCheck.checked = settings.autohide;
+  if (delayInput) delayInput.value = settings.delay;
+  if (delayValue) delayValue.textContent = `${settings.delay}s`;
+  if (animationSelect) animationSelect.value = settings.animation;
+
+  // Show/hide dependent options
+  const autohideContainer = document.getElementById('autohide-delay-container');
+  if (autohideContainer) {
+    autohideContainer.classList.toggle('hidden', !settings.autohide);
+  }
+
+  if (themeDark && themeLight) {
+    if (settings.theme === 'dark') {
+      themeDark.classList.add('active');
+      themeDark.setAttribute('aria-pressed', 'true');
+      themeLight.classList.remove('active');
+      themeLight.setAttribute('aria-pressed', 'false');
+    } else {
+      themeLight.classList.add('active');
+      themeLight.setAttribute('aria-pressed', 'true');
+      themeDark.classList.remove('active');
+      themeDark.setAttribute('aria-pressed', 'false');
+    }
+  }
+}
+
+// Apply settings to the document
+function applySettings() {
+  const bodyClass = `m-0 p-0 h-screen w-screen overflow-hidden bg-transparent theme-${settings.theme} style-${settings.style} ${settings.gradient ? 'has-gradient' : ''}`;
+  document.body.className = bodyClass;
+  
+  // Load font if it's a Google Font
+  loadGoogleFont(settings.font);
+
+  // Remove existing settings style if any
+  const oldStyle = document.getElementById('dynamic-chat-settings');
+  if (oldStyle) oldStyle.remove();
+
+  const style = document.createElement('style');
+  style.id = 'dynamic-chat-settings';
+  style.textContent = `
+    body { 
+      font-family: '${settings.font}', sans-serif !important;
+      font-size: ${settings.size}px !important;
+    }
+    .chat-message {
+      font-size: ${settings.size}px !important;
+    }
+    .message-wrapper {
+      margin-left: ${settings.spacing}px !important;
+    }
+    .badge-container {
+      height: ${settings.size}px !important;
+    }
+    .badge {
+      min-width: ${settings.size}px !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Initialize settings panel event listeners
+function initSettingsPanel() {
+  const toggleBtn = document.getElementById('toggle-settings');
+  const resetBtn = document.getElementById('reset-settings');
+  const panel = document.getElementById('settings-panel');
+  
+  const inputs = {
+    font: 'setting-font',
+    size: 'setting-size',
+    style: 'setting-style',
+    gradient: 'setting-gradient',
+    spacing: 'setting-spacing',
+    consecutiveNames: 'setting-consecutive-names',
+    autohide: 'setting-autohide',
+    delay: 'setting-delay',
+    animation: 'setting-animation'
+  };
+
+  if (toggleBtn && panel) {
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden');
+      toggleBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+    });
+    
+    // Close panel with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.classList.contains('hidden')) {
+        panel.classList.add('hidden');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.focus();
+      }
+    });
+    
+    // Close panel when clicking outside
+    document.addEventListener('click', (e) => {
+      // Check if panel is visible and click is outside both panel and toggle button
+      if (!panel.classList.contains('hidden') && 
+          !panel.contains(e.target) && 
+          !toggleBtn.contains(e.target)) {
+        panel.classList.add('hidden');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Reset all chat settings to defaults?')) {
+        settings = { ...defaultSettings };
+        saveSettings();
+        applySettings();
+        updateSettingsUI();
+      }
+    });
+  }
+
+  // Generic change listener for all standard inputs
+  Object.entries(inputs).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const eventType = el.type === 'range' ? 'input' : 'change';
+    el.addEventListener(eventType, (e) => {
+      let value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      if (e.target.type === 'range') {
+        value = parseInt(value);
+        // Update ARIA attributes for range inputs
+        e.target.setAttribute('aria-valuenow', value);
+        
+        // Update aria-valuetext with appropriate units
+        if (id === 'setting-size' || id === 'setting-spacing') {
+          e.target.setAttribute('aria-valuetext', `${value} pixels`);
+        } else if (id === 'setting-delay') {
+          e.target.setAttribute('aria-valuetext', `${value} seconds`);
+        }
+      }
+      
+      settings[key] = value;
+      saveSettings();
+      applySettings();
+      updateSettingsUI();
+    });
+  });
+
+  const themeDark = document.getElementById('theme-dark');
+  const themeLight = document.getElementById('theme-light');
+
+  if (themeDark) {
+    themeDark.addEventListener('click', () => {
+      settings.theme = 'dark';
+      themeDark.setAttribute('aria-pressed', 'true');
+      themeDark.classList.add('active');
+      themeLight.setAttribute('aria-pressed', 'false');
+      themeLight.classList.remove('active');
+      saveSettings();
+      applySettings();
+      updateSettingsUI();
+    });
+  }
+
+  if (themeLight) {
+    themeLight.addEventListener('click', () => {
+      settings.theme = 'light';
+      themeLight.setAttribute('aria-pressed', 'true');
+      themeLight.classList.add('active');
+      themeDark.setAttribute('aria-pressed', 'false');
+      themeDark.classList.remove('active');
+      saveSettings();
+      applySettings();
+      updateSettingsUI();
+    });
+  }
+}
+
 // Check for authentication
 document.addEventListener('DOMContentLoaded', () => {
   const authDetails = getAuthDetails();
   
-  // Apply theme settings if available
-  const urlParams = new URLSearchParams(window.location.search);
-  const themeColor = urlParams.get('themeColor') ? `#${urlParams.get('themeColor')}` : null;
-  const fontSize = urlParams.get('fontSize');
-
-  if (themeColor || fontSize) {
-    const style = document.createElement('style');
-    let css = '';
-    if (themeColor) {
-      css += `.chat-message { border-left: 4px solid ${themeColor} !important; }\n`;
-      css += `.username { color: ${themeColor} !important; }\n`;
-    }
-    if (fontSize) {
-      css += `body { font-size: ${fontSize}px !important; }\n`;
-    }
-    style.textContent = css;
-    document.head.appendChild(style);
-  }
+  // Pre-load popular fonts for dropdown
+  preLoadFonts();
+  
+  // Load and apply settings (handles URL params + localStorage)
+  loadSettings();
+  initSettingsPanel();
+  initFontPicker();
 
   console.log('Auth details (sensitive data redacted):', {
     username: authDetails.username,
@@ -345,21 +814,23 @@ function displayMessage(tags, message, messageId) {
   
   const chatContainer = document.getElementById('chatContainer');
   const currentUserId = tags['user-id'];
+  
+  // Logic for consecutive messages from the same user
   const isSameUser = currentUserId && currentUserId === lastMessageSenderId;
+  const showUserInfo = !isSameUser || settings.consecutiveNames;
   
   // Create the message element
   const messageElement = document.createElement('div');
   messageElement.className = 'chat-message';
   messageElement.dataset.messageId = messageId;
   
-  // Only add badges and username if it's a different user than the last message
-  if (!isSameUser) {
+  // Only add badges and username if required
+  if (showUserInfo) {
     // Add badges if present
     if (tags.badges || tags['badges-raw']) {
       const badgeContainer = document.createElement('span');
       badgeContainer.className = 'badge-container';
       
-      // Parse badges from badges-raw if available, otherwise use badges object
       const badgeData = tags['badges-raw'] ? 
         tags['badges-raw'].split(',').map(badge => {
           const [type, version] = badge.split('/');
@@ -386,35 +857,30 @@ function displayMessage(tags, message, messageId) {
     messageElement.appendChild(usernameSpan);
   }
 
-  // Add message text with emote support
+  // Add message text with emote and image support
   const messageText = document.createElement('span');
   messageText.className = 'message-text';
+  
+  let processedMessage = message;
+
+  // 1. Handle Emotes
   if (tags.emotes) {
     const emotePositions = [];
-    
-    // Collect all emote positions
     Object.entries(tags.emotes).forEach(([id, positions]) => {
       positions.forEach(position => {
         const [start, end] = position.split('-').map(Number);
-        emotePositions.push({
-          start,
-          end,
-          id
-        });
+        emotePositions.push({ start, end, id });
       });
     });
 
-    // Sort positions to process from end to start
     emotePositions.sort((a, b) => b.start - a.start);
-
-    // Replace emotes with images
-    let processedMessage = message;
     emotePositions.forEach(({ start, end, id }) => {
-      // Use Twitch V2 emote API which supports animated emotes
       const emoteImg = `<img class="emote" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/3.0" />`;
       processedMessage = processedMessage.slice(0, start) + emoteImg + processedMessage.slice(end + 1);
     });
+  }
 
+  if (tags.emotes) {
     messageText.innerHTML = processedMessage;
   } else {
     messageText.textContent = message;
@@ -428,20 +894,34 @@ function displayMessage(tags, message, messageId) {
   messageWrapper.style.transformOrigin = 'right';
   messageWrapper.appendChild(messageElement);
   
-  // If we're already animating, wait for it to complete
-  if (isAnimating) {
+  // Handle Auto-hide
+  if (settings.autohide) {
+    setTimeout(() => {
+      messageWrapper.style.opacity = '0';
+      messageWrapper.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        if (messageWrapper.parentElement) {
+          messageWrapper.remove();
+        }
+      }, 400);
+    }, settings.delay * 1000);
+  }
+
+  // Animation logic
+  if (isAnimating && settings.animation !== 'none') {
     setTimeout(() => displayMessage(tags, message, messageId), 50);
     return;
   }
   
-  // Update the last message sender ID
   lastMessageSenderId = currentUserId;
-  
-  // Set animating flag
   isAnimating = true;
   
-  // First, position the new message wrapper outside the view
-  messageWrapper.style.transform = 'translateX(100%)';
+  // Initial state based on animation setting
+  if (settings.animation === 'slide') {
+    messageWrapper.style.transform = 'translateX(100%)';
+  } else if (settings.animation === 'bounce') {
+    messageWrapper.style.transform = 'scale(0) translateY(50px)';
+  }
   messageWrapper.style.opacity = '0';
   
   // Insert at the beginning (right side visually due to RTL container)
@@ -463,29 +943,30 @@ function displayMessage(tags, message, messageId) {
   // Get width of the message wrapper
   const wrapperWidth = messageWrapper.offsetWidth;
   // Add some margin to ensure visibility
-  const extraMargin = 10;
-  // Calculate slide distance
-  slideDistance = wrapperWidth + extraMargin;
+  slideDistance = wrapperWidth + settings.spacing;
   
   // Apply the initial offset to all existing messages
-  // (they're not being animated yet, just positioned)
-  Array.from(chatContainer.children).forEach(child => {
-    if (child !== messageWrapper) {
-      child.style.transition = 'none';
-      child.style.transform = `translateX(${slideDistance}px)`;
-    }
-  });
+  if (settings.animation === 'slide' || settings.animation === 'bounce') {
+    Array.from(chatContainer.children).forEach(child => {
+      if (child !== messageWrapper) {
+        child.style.transition = 'none';
+        child.style.transform = `translateX(${slideDistance}px)`;
+      }
+    });
+  }
   
   // Force a reflow before setting up the animation
   void chatContainer.offsetWidth;
   
   // Now set up all elements to animate together
   Array.from(chatContainer.children).forEach(child => {
-    child.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
+    const duration = settings.animation === 'bounce' ? '0.6s' : '0.4s';
+    const timing = settings.animation === 'bounce' ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' : 'ease-out';
+    child.style.transition = `transform ${duration} ${timing}, opacity ${duration} ${timing}`;
     
     if (child === messageWrapper) {
       // New message slides in
-      child.style.transform = 'translateX(0)';
+      child.style.transform = 'translateX(0) scale(1)';
       child.style.opacity = '1';
     } else {
       // Existing messages slide back to original position
@@ -496,7 +977,7 @@ function displayMessage(tags, message, messageId) {
   // Reset animation state after animation completes
   setTimeout(() => {
     isAnimating = false;
-  }, 400); // Match the duration of the animation
+  }, settings.animation === 'bounce' ? 600 : 400);
 }
 
 // Map badge types to their correct IDs
@@ -561,8 +1042,10 @@ globalThis.testMessage = (type = 'regular') => {
     'display-name': 'TestUser',
     'user-id': '123456',
     color: '#FF0000',
+    mod: true, // Allow images for testing
     badges: {
-      subscriber: '1'
+      subscriber: '1',
+      moderator: '1'
     }
   };
   
