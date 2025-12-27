@@ -143,3 +143,34 @@ The project has undergone a significant refactor to improve organization, centra
 - `Chat/` (renamed to `chats/`)
 - `Notification/` (consolidated into `alerts/`)
 - `Voice/` (consolidated into `widgets/`)
+
+## Session Log: Theme System & Dark/Light Mode (Dec 27, 2025)
+
+### 1. Theme-Aware UI (Shadcn Pattern)
+- **Decision**: Implement a theme system that reacts to the user's device preferences using Tailwind CSS and HSL variables, following the Shadcn/UI convention.
+- **Reasoning**: To provide a better user experience for both light and dark mode users while adhering to modern web design standards (Shadcn/UI pattern).
+- **Implementation**:
+    - **Variables**: Defined semantic HSL variables (`--background`, `--foreground`, `--primary`, etc.) for both `:root` (light) and `.dark` (dark) in `style.css`.
+    - **Tailwind Config**: Updated `tailwind.config.js` with `darkMode: 'class'` and mapped colors to the new HSL variables.
+    - **Detection**: Added a small blocking script in the `<head>` of `index.html` to prevent theme flashing by checking `localStorage` and `prefers-color-scheme`.
+
+### 2. Semantic CSS Refactor
+- **Decision**: Replace hardcoded color classes with semantic theme classes.
+- **Reasoning**: Decouples the UI from specific color values, allowing for easy theme switching and future customization.
+- **Action**:
+    - Refactored `index.html` to use `bg-background`, `text-foreground`, `bg-primary`, `border-border`, and `text-muted-foreground`.
+    - Updated the internal `<style>` block in `index.html` to use HSL variables for gradients, scrollbars, and dropdowns.
+    - Replaced `twitch-purple` and other hardcoded colors with `primary` and theme-aware variants.
+
+### 3. Integrated Build Process
+- **Decision**: Use the existing Tailwind build system to propagate theme changes.
+- **Action**: Successfully ran `npx tailwindcss -i ./style.css -o ./output.css --minify` to regenerate `output.css` with the new theme-aware utility classes and configurations.
+
+### 5. Card UI & Interaction Refinement
+- **Decision**: Simplify overlay cards by making the entire card a link and centralizing the action button.
+- **Reasoning**: Reduces visual clutter and provides a more intuitive "one-click to open" experience while keeping the specialized "Copy OBS URL" button easily accessible.
+- **Action**:
+    - Removed the dedicated "Open in new tab" icon button.
+    - Updated `createOverlayCard` to make the entire card `cursor-pointer` and theme-aware.
+    - Expanded the "Copy OBS URL" button to full width at the bottom of the card.
+    - Enhanced the grid click handler with sophisticated event delegation to distinguish between card clicks (open link) and button/dropdown clicks (copy/select range).
