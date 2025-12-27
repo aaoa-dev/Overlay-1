@@ -8,7 +8,7 @@ const statusDiv = document.getElementById('status');
 
 // FOR LOCAL DEV: This must match exactly what you put in the Twitch Dev Console
 const CLIENT_ID = config.settings.TWITCH.CLIENT_ID;
-const REDIRECT_URI = window.location.origin + '/auth/callback.html';
+const REDIRECT_URI = 'https://overlay.aaoa.live/auth/callback.html';
 
 document.addEventListener('DOMContentLoaded', () => {
     // If we're already logged in, redirect to home
