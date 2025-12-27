@@ -159,7 +159,7 @@
             </p>
             
             <div id="logged-out-hero" class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="/auth/oauth.html" class="group relative px-8 py-4 rounded-4xl bg-primary text-primary-foreground font-bold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-3">
+                <a href="auth/oauth.html" class="group relative px-8 py-4 rounded-4xl bg-primary text-primary-foreground font-bold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-3">
                     <i data-lucide="twitch" class="w-6 h-6"></i>
                     Connect with Twitch
                     <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
@@ -205,7 +205,7 @@
                 id: 'chat',
                 title: 'Modern Chat',
                 description: 'Clean, minimalist design with smooth message transitions.',
-                path: '/chats/chat.html',
+                path: 'chats/chat.html',
                 previewId: 'preview-chat',
                 icon: 'message-square'
             },
@@ -213,7 +213,7 @@
                 id: 'thermal',
                 title: 'Thermal Receipt',
                 description: 'Retro-style scrolling receipt chat for unique aesthetics.',
-                path: '/chats/vertical-chat.html',
+                path: 'chats/vertical-chat.html',
                 previewId: 'preview-thermal',
                 icon: 'printer'
             },
@@ -221,7 +221,7 @@
                 id: 'alerts',
                 title: 'Smart Alerts',
                 description: 'Polished welcome messages that greet your new viewers.',
-                path: '/alerts/alerts.html',
+                path: 'alerts/alerts.html',
                 previewId: 'preview-alerts',
                 icon: 'bell'
             },
@@ -229,7 +229,7 @@
                 id: 'chatters',
                 title: 'Active Bubbles',
                 description: 'Dynamic visual clusters showing who is currently active.',
-                path: '/widgets/chatters.html',
+                path: 'widgets/chatters.html',
                 previewId: 'preview-chatters',
                 icon: 'users'
             },
@@ -237,7 +237,7 @@
                 id: 'signature',
                 title: 'Signature Alerts',
                 description: 'Elegant hand-drawn style for follows and subscriptions.',
-                path: '/alerts/signature-alerts.html',
+                path: 'alerts/signature-alerts.html',
                 previewId: 'preview-signature',
                 icon: 'pen-tool'
             },
@@ -245,7 +245,7 @@
                 id: 'cursor-welcome',
                 title: 'Cursor Welcome',
                 description: 'Interactive Figma-style cursor alerts for your stream.',
-                path: '/alerts/cursor-welcome.html',
+                path: 'alerts/cursor-welcome.html',
                 previewId: 'preview-cursor',
                 icon: 'mouse-pointer-2'
             },
@@ -253,7 +253,7 @@
                 id: 'followers',
                 title: 'Follower Goal',
                 description: 'Progressive counter to track and celebrate your growth.',
-                path: '/widgets/followers.html',
+                path: 'widgets/followers.html',
                 previewId: 'preview-followers',
                 icon: 'trending-up',
                 supportedRanges: [
@@ -267,7 +267,7 @@
                 id: 'subscribers',
                 title: 'Sub Counter',
                 description: 'Real-time subscriber tracking with goal milestones.',
-                path: '/widgets/subscribers.html',
+                path: 'widgets/subscribers.html',
                 previewId: 'preview-subscribers',
                 icon: 'heart',
                 supportedRanges: [
@@ -372,7 +372,10 @@
                 const overlay = OVERLAYS.find(o => o.id === type);
                 if (!overlay) return '';
 
-                const url = new URL(overlay.path, window.location.origin);
+                // Create URL relative to the current page's directory
+                const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+                const url = new URL(overlay.path, baseUrl);
+                
                 if (authData.token) {
                     url.searchParams.append('token', authData.token.replace('oauth:', ''));
                     url.searchParams.append('username', authData.username);

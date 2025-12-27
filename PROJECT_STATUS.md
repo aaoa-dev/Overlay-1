@@ -166,11 +166,11 @@ The project has undergone a significant refactor to improve organization, centra
 - **Decision**: Use the existing Tailwind build system to propagate theme changes.
 - **Action**: Successfully ran `npx tailwindcss -i ./style.css -o ./output.css --minify` to regenerate `output.css` with the new theme-aware utility classes and configurations.
 
-### 5. Card UI & Interaction Refinement
-- **Decision**: Simplify overlay cards by making the entire card a link and centralizing the action button.
-- **Reasoning**: Reduces visual clutter and provides a more intuitive "one-click to open" experience while keeping the specialized "Copy OBS URL" button easily accessible.
+### 6. Custom Domain & GitHub Pages
+- **Decision**: Simplify hosting by using GitHub Pages with a custom subdomain `overlay.aaoa.live`.
+- **Reasoning**: Managing SSH keys and server directories is complex. GitHub Pages handles SSL certificates, high availability, and global distribution automatically.
 - **Action**:
-    - Removed the dedicated "Open in new tab" icon button.
-    - Updated `createOverlayCard` to make the entire card `cursor-pointer` and theme-aware.
-    - Expanded the "Copy OBS URL" button to full width at the bottom of the card.
-    - Enhanced the grid click handler with sophisticated event delegation to distinguish between card clicks (open link) and button/dropdown clicks (copy/select range).
+    - Created `public/CNAME` with `overlay.aaoa.live`.
+    - Set `base: '/'` in `vite.config.js` to support the root-level custom domain.
+    - Reverted to the reliable GitHub Actions deployment workflow.
+    - Provided clear DNS instructions for OVH.

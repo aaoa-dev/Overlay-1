@@ -3,8 +3,8 @@ import { resolve } from 'path';
 
 export default defineConfig({
   root: '.',
-  // For Cloudflare Pages, we typically use root base path '/'
-  // If you are deploying to a subfolder like /Overlay-1/, change this to '/Overlay-1/'
+  // GitHub Pages usually deploys to /repo-name/
+  // But for custom domains, we use '/'
   base: '/', 
   publicDir: 'public',
   
@@ -12,11 +12,14 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        chat: resolve(__dirname, 'Chat/chat.html'),
-        verticalChat: resolve(__dirname, 'Chat/vertical-chat.html'),
-        alerts: resolve(__dirname, 'alerts.html'),
-        followers: resolve(__dirname, 'followers.html'),
-        subscribers: resolve(__dirname, 'subscribers.html'),
+        chat: resolve(__dirname, 'chats/chat.html'),
+        verticalChat: resolve(__dirname, 'chats/vertical-chat.html'),
+        alerts: resolve(__dirname, 'alerts/alerts.html'),
+        cursorWelcome: resolve(__dirname, 'alerts/cursor-welcome.html'),
+        signatureAlerts: resolve(__dirname, 'alerts/signature-alerts.html'),
+        followers: resolve(__dirname, 'widgets/followers.html'),
+        subscribers: resolve(__dirname, 'widgets/subscribers.html'),
+        chatters: resolve(__dirname, 'widgets/chatters.html'),
         oauth: resolve(__dirname, 'auth/oauth.html'),
         callback: resolve(__dirname, 'auth/callback.html'),
       },

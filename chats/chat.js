@@ -160,7 +160,7 @@ function showAuthPrompt() {
     <div class="auth-message">
       <h2>Authentication Required</h2>
       <p>Please login with your Twitch account to display chat messages.</p>
-      <a href="/auth/oauth.html" class="auth-button">Login with Twitch</a>
+      <a href="../auth/oauth.html" class="auth-button">Login with Twitch</a>
       
       <div class="obs-instructions">
         <h3>Using in OBS?</h3>
