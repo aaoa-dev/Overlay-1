@@ -159,11 +159,11 @@
             </p>
             
             <div id="logged-out-hero" class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="https://id.twitch.tv/oauth2/authorize?client_id=bjcukect75zxyty8w63shf7jakiyda&redirect_uri=https://overlay.aaoa.live/auth/callback.html&response_type=token&scope=chat:read+chat:edit+channel:read:subscriptions" class="group relative px-8 py-4 rounded-4xl bg-primary text-primary-foreground font-bold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-3">
+                <button id="twitch-login-btn" class="group relative px-8 py-4 rounded-4xl bg-primary text-primary-foreground font-bold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-3">
                     <i data-lucide="twitch" class="w-6 h-6"></i>
                     Connect with Twitch
                     <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
-                </a>
+                </button>
                 <button onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})" class="px-8 py-4 rounded-4xl bg-secondary border border-border text-foreground font-bold text-lg hover:bg-accent transition-all">
                     Explore Widgets
                 </button>
@@ -199,6 +199,7 @@
 
     <script type="module">
         import { StorageService } from './src/services/StorageService.js';
+        import { config } from './src/config.js';
         
         const OVERLAYS = [
             {
@@ -355,6 +356,23 @@
             const userDisplay = document.getElementById('user-display');
             const heroBtnContainer = document.getElementById('logged-out-hero');
             
+            // Handle Login Click
+            const loginBtn = document.getElementById('twitch-login-btn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    const state = Math.random().toString(36).substring(2, 15);
+                    StorageService.set(StorageService.KEYS.OAUTH_STATE, state);
+                    
+                    const clientId = config.settings.TWITCH.CLIENT_ID;
+                    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback.html`);
+                    const scopes = encodeURIComponent(config.settings.TWITCH.SCOPES.join(' '));
+                    
+                    const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scopes}&state=${state}&force_verify=true`;
+                    
+                    window.location.href = authUrl;
+                });
+            }
+
             if (authData.token && authData.username) {
                 navUser.classList.remove('hidden');
                 userDisplay.textContent = `${authData.username}`;

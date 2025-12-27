@@ -166,11 +166,10 @@ The project has undergone a significant refactor to improve organization, centra
 - **Decision**: Use the existing Tailwind build system to propagate theme changes.
 - **Action**: Successfully ran `npx tailwindcss -i ./style.css -o ./output.css --minify` to regenerate `output.css` with the new theme-aware utility classes and configurations.
 
-### 6. Custom Domain & GitHub Pages
-- **Decision**: Simplify hosting by using GitHub Pages with a custom subdomain `overlay.aaoa.live`.
-- **Reasoning**: Managing SSH keys and server directories is complex. GitHub Pages handles SSL certificates, high availability, and global distribution automatically.
+### 7. Security Validation Fix
+- **Decision**: Restore JavaScript-based OAuth initiation to handle CSRF security tokens (state).
+- **Reasoning**: The direct HTML link to Twitch was missing the `state` parameter, causing the security validation in `callback.html` to fail.
 - **Action**:
-    - Created `public/CNAME` with `overlay.aaoa.live`.
-    - Set `base: '/'` in `vite.config.js` to support the root-level custom domain.
-    - Reverted to the reliable GitHub Actions deployment workflow.
-    - Provided clear DNS instructions for OVH.
+    - Reverted the "Connect with Twitch" button in `index.html` to a standard button.
+    - Added a module script to `index.html` that generates a random `state`, stores it in `localStorage`, and then redirects to Twitch.
+    - Updated `auth/oauth.js` to use dynamic `window.location.origin` for the redirect URI to ensure compatibility across all environments.
