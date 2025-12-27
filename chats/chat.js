@@ -1,5 +1,6 @@
 // Import config
 import { config } from '../src/config.js';
+import tmi from '../src/vendor/tmi.js';
 // Message display settings
 const MAX_MESSAGES = 30; // Maximum number of messages to show
 

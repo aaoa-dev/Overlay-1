@@ -7,6 +7,7 @@ import { StorageService } from './StorageService.js';
 import { TwitchAPI } from './TwitchAPI.js';
 import { ErrorHandler } from '../utils/ErrorHandler.js';
 import { config } from '../config.js';
+import tmi from '../vendor/tmi.js';
 
 export class TwitchService {
     constructor() {
@@ -57,13 +58,7 @@ export class TwitchService {
                 };
             }
 
-            // Check for tmi.js (it should be loaded via script tag)
-            const tmiClient = window.tmi || (typeof tmi !== 'undefined' ? tmi : null);
-            if (!tmiClient) {
-                throw new Error('tmi.js not loaded. Please ensure <script src=".../tmi.js"></script> is included in your HTML before initializing TwitchService.');
-            }
-
-            this.client = new tmiClient.Client(tmiOptions);
+            this.client = new tmi.Client(tmiOptions);
 
             // Connect to Twitch
             await this.client.connect();
