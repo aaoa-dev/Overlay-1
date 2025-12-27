@@ -254,7 +254,8 @@
                 id: 'followers',
                 title: 'Follower Goal',
                 description: 'Progressive counter to track and celebrate your growth.',
-                path: 'widgets/followers.html',
+                path: 'widgets/counter.html',
+                params: { type: 'followers', label: 'Followers' },
                 previewId: 'preview-followers',
                 icon: 'trending-up',
                 supportedRanges: [
@@ -268,7 +269,8 @@
                 id: 'subscribers',
                 title: 'Sub Counter',
                 description: 'Real-time subscriber tracking with goal milestones.',
-                path: 'widgets/subscribers.html',
+                path: 'widgets/counter.html',
+                params: { type: 'subs', label: 'Subscribers' },
                 previewId: 'preview-subscribers',
                 icon: 'heart',
                 supportedRanges: [
@@ -277,16 +279,39 @@
                     { id: 'month', label: 'This Month' },
                     { id: 'session', label: 'This Session' }
                 ]
+            },
+            {
+                id: 'custom-goal',
+                title: 'Custom Goal',
+                description: 'A highly configurable goal counter with custom labels and colors.',
+                path: 'widgets/counter.html',
+                params: { 
+                    type: 'followers', 
+                    label: 'Goal', 
+                    target: '100', 
+                    color: '#a855f7',
+                    theme: 'glow'
+                },
+                previewId: 'preview-custom',
+                icon: 'flag'
             }
         ];
 
         function createOverlayCard(overlay) {
             const hasRanges = overlay.supportedRanges && overlay.supportedRanges.length > 0;
+            let previewPath = overlay.path;
+            const previewUrl = new URL(overlay.path, window.location.origin + window.location.pathname);
+            previewUrl.searchParams.append('noChat', 'true');
+            if (overlay.params) {
+                Object.entries(overlay.params).forEach(([key, value]) => {
+                    previewUrl.searchParams.append(key, value);
+                });
+            }
             
             return `
                 <div class="overlay-card group relative bg-card border border-border rounded-5xl p-4 transition-all duration-300 hover:bg-accent/50 hover:border-primary/30 hover:-translate-y-2 flex flex-col overflow-hidden cursor-pointer" data-overlay-id="${overlay.id}">
                     <div class="preview-box relative aspect-video bg-black mb-6 rounded-3xl overflow-hidden border-b border-border">
-                        <iframe id="${overlay.previewId}" src="${overlay.path}?noChat=true"></iframe>
+                        <iframe id="${overlay.previewId}" src="${previewUrl.href}"></iframe>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
                              <div class="w-full flex justify-center">
                                 <span class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold border border-white/10 text-white">Live Preview</span>
@@ -398,6 +423,15 @@
                     url.searchParams.append('token', authData.token.replace('oauth:', ''));
                     url.searchParams.append('username', authData.username);
                     url.searchParams.append('channel', authData.username);
+                    if (authData.channelId) {
+                        url.searchParams.append('channelId', authData.channelId);
+                    }
+                }
+
+                if (overlay.params) {
+                    Object.entries(overlay.params).forEach(([key, value]) => {
+                        url.searchParams.append(key, value);
+                    });
                 }
                 
                 if (range && range !== 'all') {
