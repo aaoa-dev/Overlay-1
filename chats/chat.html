@@ -15,7 +15,8 @@
       <!-- Chat messages will be injected here -->
     </div>
 
-    <div class="fixed top-4 left-4 flex flex-col gap-2 z-20">
+    <!-- Settings Panel (hidden in OBS) -->
+    <div class="obs-hidden fixed top-4 left-4 flex flex-col gap-2 z-20">
       <button 
         id="toggle-settings" 
         class="settings-trigger"
@@ -249,7 +250,8 @@
       </div>
     </div>
 
-    <div class="fixed top-4 right-4 flex items-center gap-2 z-10">
+    <!-- Auth and Test Controls (hidden in OBS) -->
+    <div class="obs-hidden fixed top-4 right-4 flex items-center gap-2 z-10">
       <!-- Auth controls -->
       <a href="../auth/oauth.html" id="auth-link" class="bg-purple-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-purple-600 transition-colors text-sm inline-flex items-center gap-2">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="white">
@@ -266,7 +268,7 @@
       >
         <svg class="w-4 h-4 inline-block mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"></path>
         </svg>
         Copy OBS URL
       </button>
