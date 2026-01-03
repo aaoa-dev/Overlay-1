@@ -1,25 +1,36 @@
 /**
  * OBS Controls Stylesheet
  * 
- * This file defines the .obs-hidden class for controls that should be:
- * - Visible when viewing the page directly or using "Interact" in OBS
- * - Hidden when OBS captures the browser source
+ * This file defines the .obs-control class for controls that should:
+ * - Stay at 0% opacity (completely invisible) during normal operation
+ * - Fade to 100% opacity ONLY when the cursor is directly on top of them
  * 
- * Usage:
- * 1. Add class="obs-hidden" to any element you want hidden in OBS
- * 2. In OBS Browser Source settings, add this to the Custom CSS field:
- *    .obs-hidden { display: none !important; }
+ * This ensures a perfectly clean look in OBS while still allowing control via "Interact".
  */
 
-/* Default state: visible for development and interaction */
+/* Completely invisible by default */
+.obs-control {
+    opacity: 0 !important;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+}
+
+/* Only visible when directly hovering the specific control or its panel is active */
+.obs-control:hover,
+.obs-control:focus-within,
+.obs-control.active {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1.02);
+}
+
+/* Legacy support for .obs-hidden - now behaves like .obs-control */
 .obs-hidden {
-  /* Elements are visible by default */
-  /* OBS will hide them using custom CSS */
+    opacity: 0 !important;
+    transition: opacity 0.4s ease;
+    pointer-events: auto;
 }
 
-/* Optional: Add a visual indicator in development mode */
-.obs-hidden::before {
-  content: '';
-  /* You can add styling here if you want a visual indicator */
+.obs-hidden:hover,
+.obs-hidden:focus-within {
+    opacity: 1 !important;
 }
-

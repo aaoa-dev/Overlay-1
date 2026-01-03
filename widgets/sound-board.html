@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twitch Sound Board Management</title>
+    <link rel="stylesheet" href="../styles/obs-controls.css">
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -127,10 +128,8 @@
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 10px;
-            opacity: 0;
             transition: opacity 0.3s;
         }
-        body:hover #overlay-status { opacity: 1; }
 
         .settings-row {
             display: flex;
@@ -197,7 +196,7 @@
 
     <!-- Overlay View -->
     <div class="overlay-only">
-        <div id="overlay-status">Sound Board: Disconnected</div>
+        <div id="overlay-status" class="obs-control">Sound Board: Disconnected</div>
     </div>
 
     <script type="module" src="sound-board.js"></script>

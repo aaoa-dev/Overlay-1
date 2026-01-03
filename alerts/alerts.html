@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../output.css" />
     <link rel="stylesheet" href="alerts.css" />
+    <link rel="stylesheet" href="../styles/obs-controls.css" />
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script type="module" src="alerts.js"></script>
   </head>
@@ -14,7 +15,7 @@
     </div>
 
     <!-- Control buttons (hidden in OBS) -->
-    <div class="obs-hidden fixed bottom-4 right-4 flex gap-2 pointer-events-auto">
+    <div class="obs-control fixed bottom-4 right-4 flex gap-2 pointer-events-auto">
         <button 
           onclick="globalThis.resetUsedState()" 
           class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 transition-colors"

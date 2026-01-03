@@ -169,14 +169,10 @@ class StreamTimer {
 
     async init() {
         // Check if we're in OBS or settings mode
-        this.isSettingsMode = !window.obsstudio && document.querySelector('.obs-hidden');
+        this.isSettingsMode = !window.obsstudio && document.querySelector('.obs-control');
         
         if (this.isSettingsMode) {
             this.initializeSettingsPanel();
-        } else {
-            // We're in OBS, hide settings
-            const obsHidden = document.querySelectorAll('.obs-hidden');
-            obsHidden.forEach(el => el.style.display = 'none');
         }
 
         // Apply styling

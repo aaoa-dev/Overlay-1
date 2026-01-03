@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../output.css" />
     <link rel="stylesheet" href="../styles/components/settings.css" />
+    <link rel="stylesheet" href="../styles/obs-controls.css" />
     <style>
         * {
             margin: 0;
@@ -80,7 +81,7 @@
     </div>
 
     <!-- Settings Panel (hidden in OBS) -->
-    <div class="obs-hidden fixed top-4 left-4 flex flex-col gap-2 z-20">
+    <div class="obs-control fixed top-4 left-4 flex flex-col gap-2 z-20">
       <button 
         id="toggle-settings" 
         class="settings-trigger"
@@ -161,7 +162,7 @@
     </div>
 
     <!-- OBS Copy Button -->
-    <div class="obs-hidden fixed top-4 right-4 flex items-center gap-2 z-10">
+    <div class="obs-control fixed top-4 right-4 flex items-center gap-2 z-10">
       <button 
         id="copy-obs-url" 
         class="px-6 py-3 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-2"

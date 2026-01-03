@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signature Alerts</title>
+    <link rel="stylesheet" href="../styles/obs-controls.css">
     <style>
         body {
             margin: 0;
@@ -246,7 +247,7 @@
 </head>
 <body>
     <!-- Debug info -->
-    <div id="debug">Waiting for initialization...</div>
+    <div id="debug" class="obs-control">Waiting for initialization...</div>
 
     <div class="scale-container">
         <div class="modal">
@@ -313,7 +314,7 @@
         </div>
     </div>
 
-    <div class="test-controls">
+    <div class="obs-control test-controls">
         <input type="text" class="test-input" placeholder="Enter test message..." value="Welcome">
         <button class="test-button" onclick="testAnimationFromInput()">Test Animation</button>
         <button class="test-button" onclick="testFollow()">Test Follow</button>

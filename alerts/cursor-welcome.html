@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../output.css">
     <!-- Custom Styles -->
     <link rel="stylesheet" href="cursor-welcome.css">
+    <link rel="stylesheet" href="../styles/obs-controls.css">
 </head>
 <body class="bg-transparent overflow-hidden h-screen w-screen">
     <!-- Overlay Container for Cursors -->
@@ -40,7 +41,7 @@
     </template>
 
     <!-- Preview Panel for Testing (Visible for manual triggers) -->
-    <div id="previewPanel" data-show-panel="true">
+    <div id="previewPanel" class="obs-control" data-show-panel="true">
         <div class="preview-title">CursorWelcome Preview</div>
         <button class="preview-btn" onclick="testCursorAlert('new')">Test New Viewer</button>
         <button class="preview-btn" onclick="testCursorAlert('returning')">Test Returning</button>
