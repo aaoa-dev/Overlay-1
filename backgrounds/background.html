@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Background Source</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+        }
+        
+        .bokeh-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            display: none;
+        }
+
+        .bokeh-item {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            filter: blur(60px);
+            animation: move var(--duration, 20s) infinite alternate ease-in-out;
+            mix-blend-mode: screen;
+        }
+
+        @keyframes move {
+            0% { transform: translate(0, 0) scale(1); opacity: 0; }
+            20% { opacity: var(--max-opacity, 0.4); }
+            100% { transform: translate(var(--x, 100px), var(--y, 100px)) scale(1.2); opacity: var(--max-opacity, 0.4); }
+        }
+
+        .mesh-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            filter: blur(100px);
+            display: none;
+        }
+
+        .mesh-blob {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: mesh-move var(--speed, 20s) infinite alternate ease-in-out;
+        }
+
+        @keyframes mesh-move {
+            from { transform: translate(-20%, -20%) rotate(0deg); }
+            to { transform: translate(30%, 30%) rotate(360deg); }
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .glass-overlay {
+            position: fixed;
+            inset: 0;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+        }
+        .glass-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="mesh-container" class="mesh-container"></div>
+    <div id="bokeh-container" class="bokeh-container"></div>
+    <div id="glass-overlay" class="glass-overlay"></div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const meshContainer = document.getElementById('mesh-container');
+        const bokehContainer = document.getElementById('bokeh-container');
+        const glassOverlay = document.getElementById('glass-overlay');
+        
+        let width, height;
+        const params = new URLSearchParams(window.location.search);
+        
+        const type = params.get('type') || 'mesh';
+        const gridMode = params.get('gridMode') || 'regular';
+        const primaryColor = params.get('primary') || '#6366f1';
+        const secondaryColor = params.get('secondary') || '#a855f7';
+        const accentColor = params.get('accent') || '#ec4899';
+        const bgColor = params.get('bg') || 'transparent';
+        const speed = parseFloat(params.get('speed')) || 1;
+        const opacity = parseFloat(params.get('opacity')) || 1;
+        const glassEffect = params.get('glass') === 'true';
+
+        if (glassEffect) glassOverlay.classList.add('active');
+
+        function resize() {
+            width = canvas.width = window.innerWidth || 1920;
+            height = canvas.height = window.innerHeight || 1080;
+        }
+
+        window.addEventListener('resize', resize);
+        
+        // --- CSS Bokeh ---
+        function initBokeh() {
+            canvas.style.display = 'none';
+            bokehContainer.style.display = 'block';
+            bokehContainer.innerHTML = '';
+            document.body.style.backgroundColor = bgColor !== 'transparent' ? bgColor : '#000';
+            
+            const colors = [primaryColor, secondaryColor, accentColor];
+            const count = 15;
+            
+            for (let i = 0; i < count; i++) {
+                const item = document.createElement('div');
+                item.className = 'bokeh-item';
+                const size = Math.random() * 300 + 150;
+                const color = colors[i % colors.length];
+                
+                item.style.width = size + 'px';
+                item.style.height = size + 'px';
+                item.style.left = Math.random() * 100 + '%';
+                item.style.top = Math.random() * 100 + '%';
+                item.style.backgroundColor = color;
+                
+                item.style.setProperty('--x', (Math.random() * 400 - 200) + 'px');
+                item.style.setProperty('--y', (Math.random() * 400 - 200) + 'px');
+                item.style.setProperty('--duration', (15 / speed + Math.random() * 10) + 's');
+                item.style.setProperty('--max-opacity', (Math.random() * 0.4 + 0.1) * opacity);
+                item.style.animationDelay = (Math.random() * -20) + 's';
+                
+                bokehContainer.appendChild(item);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            if (bgColor !== 'transparent') {
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, width, height);
+            }
+
+            ctx.globalAlpha = opacity;
+
+            if (type === 'grid') {
+                const gridSize = 60;
+                const offset = (Date.now() / 50 * speed) % gridSize;
+                ctx.strokeStyle = primaryColor;
+                ctx.fillStyle = primaryColor;
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = 0.3 * opacity;
+                
+                ctx.beginPath();
+                if (gridMode === 'regular' || gridMode === 'vertical') {
+                    for (let x = offset; x < width; x += gridSize) {
+                        ctx.moveTo(x, 0); ctx.lineTo(x, height);
+                    }
+                }
+                if (gridMode === 'regular' || gridMode === 'horizontal') {
+                    for (let y = offset; y < height; y += gridSize) {
+                        ctx.moveTo(0, y); ctx.lineTo(width, y);
+                    }
+                }
+                if (gridMode === 'dotted') {
+                    const dotSize = 2;
+                    for (let x = offset; x < width; x += gridSize) {
+                        for (let y = offset; y < height; y += gridSize) {
+                            ctx.beginPath();
+                            ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                } else {
+                    ctx.stroke();
+                }
+            } else if (type === 'waves') {
+                const time = Date.now() / 1000 * speed;
+                [primaryColor, secondaryColor, accentColor].forEach((color, i) => {
+                    ctx.beginPath();
+                    ctx.moveTo(0, height);
+                    for (let x = 0; x < width; x += 10) {
+                        const y = height * 0.7 + Math.sin(x * 0.005 + time + i) * 50 + Math.cos(x * 0.01 + time * 0.5) * 20;
+                        ctx.lineTo(x, y);
+                    }
+                    ctx.lineTo(width, height);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = 0.3 * opacity;
+                    ctx.fill();
+                });
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        resize();
+        if (type === 'mesh') {
+            canvas.style.display = 'none';
+            meshContainer.style.display = 'block';
+            if (bgColor !== 'transparent') document.body.style.backgroundColor = bgColor;
+            const colors = [primaryColor, secondaryColor, accentColor];
+            for (let i = 0; i < 6; i++) {
+                const blob = document.createElement('div');
+                blob.className = 'mesh-blob';
+                blob.style.backgroundColor = colors[i % colors.length];
+                blob.style.left = Math.random() * 100 + '%';
+                blob.style.top = Math.random() * 100 + '%';
+                blob.style.animationDuration = (15 / speed + Math.random() * 10) + 's';
+                meshContainer.appendChild(blob);
+            }
+        } else if (type === 'bokeh') {
+            initBokeh();
+        } else {
+            draw();
+        }
+    </script>
+</body>
+</html>

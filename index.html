@@ -308,17 +308,45 @@
                 },
                 previewId: 'preview-timer',
                 icon: 'timer'
+            },
+            {
+                id: 'sound-board',
+                title: 'Sound Board',
+                description: 'Setup and play sounds automatically on chat triggers. Supports local files and URLs.',
+                path: 'widgets/sound-board.html',
+                previewId: 'preview-sound-board',
+                icon: 'volume-2'
+            },
+            {
+                id: 'backgrounds',
+                title: 'Animated Backgrounds',
+                description: 'High-quality animated backgrounds including mesh gradients, particles, and bokeh.',
+                path: 'backgrounds/generator.html',
+                previewId: 'preview-backgrounds',
+                icon: 'palette'
             }
         ];
 
         function createOverlayCard(overlay) {
+            const isSoundBoard = overlay.id === 'sound-board';
+            const isBackgrounds = overlay.id === 'backgrounds';
             const hasRanges = overlay.supportedRanges && overlay.supportedRanges.length > 0;
             let previewPath = overlay.path;
             const previewUrl = new URL(overlay.path, window.location.origin + window.location.pathname);
-            previewUrl.searchParams.append('noChat', 'true');
+            
+            if (isBackgrounds) {
+                // For background preview, use the actual background.html instead of generator
+                previewUrl.pathname = previewUrl.pathname.replace('generator.html', 'background.html');
+                previewUrl.searchParams.set('type', 'bokeh');
+            } else {
+                previewUrl.searchParams.append('noChat', 'true');
+                if (isSoundBoard) previewUrl.searchParams.append('overlay', 'true');
+            }
+            
+            // Apply all params to the URL
             if (overlay.params) {
                 Object.entries(overlay.params).forEach(([key, value]) => {
-                    previewUrl.searchParams.append(key, value);
+                    previewUrl.searchParams.set(key, value);
                 });
             }
             
@@ -341,9 +369,22 @@
                         </div>
                         <p class="text-muted-foreground text-sm mb-8 font-medium leading-relaxed">${overlay.description}</p>
                         
-                        <div class="mt-auto relative">
-                            ${hasRanges ? `
-                                <div class="relative group/dropdown">
+                        <div class="mt-auto relative flex gap-2">
+                            ${isSoundBoard ? `
+                                <button class="setup-btn flex-1 h-12 rounded-4xl bg-secondary text-foreground font-bold text-sm transition-all hover:bg-accent active:scale-95 flex items-center justify-center gap-2" data-overlay="${overlay.id}">
+                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                    Setup Sounds
+                                </button>
+                                <button class="copy-obs w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold text-sm transition-all hover:bg-primary/90 active:scale-95 flex items-center justify-center" data-overlay="${overlay.id}" title="Copy OBS URL">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            ` : (isBackgrounds ? `
+                                <button class="setup-btn w-full h-12 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:bg-primary/90 active:scale-95 flex items-center justify-center gap-2" data-overlay="${overlay.id}">
+                                    <i data-lucide="wand-2" class="w-4 h-4"></i>
+                                    Open Generator
+                                </button>
+                            ` : (hasRanges ? `
+                                <div class="relative group/dropdown flex-1">
                                     <button 
                                         class="dropdown-trigger w-full h-12 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:bg-primary/90 active:scale-95 flex items-center justify-center gap-2"
                                         data-overlay="${overlay.id}">
@@ -367,7 +408,7 @@
                                     <i data-lucide="copy" class="w-4 h-4"></i>
                                     Copy OBS URL
                                 </button>
-                            `}
+                            `))}
                         </div>
                     </div>
                 </div>
@@ -433,6 +474,10 @@
                 const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
                 const url = new URL(overlay.path, baseUrl);
                 
+                if (type === 'sound-board') {
+                    url.searchParams.append('overlay', 'true');
+                }
+
                 if (authData.token) {
                     url.searchParams.append('token', authData.token.replace('oauth:', ''));
                     url.searchParams.append('username', authData.username);
@@ -479,6 +524,7 @@
             // Delegated click handling for dynamically created buttons
             grid.onclick = (e) => {
                 const copyBtn = e.target.closest('.copy-obs');
+                const setupBtn = e.target.closest('.setup-btn');
                 const dropdownTrigger = e.target.closest('.dropdown-trigger');
                 const rangeItem = e.target.closest('.range-select');
                 const card = e.target.closest('.overlay-card');
@@ -488,6 +534,15 @@
                     document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
                         menu.classList.remove('show');
                     });
+                }
+
+                if (setupBtn) {
+                    const url = getOverlayUrl(setupBtn.dataset.overlay);
+                    // Remove overlay param for setup
+                    const setupUrl = new URL(url);
+                    setupUrl.searchParams.delete('overlay');
+                    window.open(setupUrl.href, '_blank');
+                    return;
                 }
 
                 if (dropdownTrigger) {

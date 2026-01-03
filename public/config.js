@@ -15,6 +15,18 @@ window.TWITCH_CONFIG = {
         },
         YOUTUBE: {
             CHANNEL_NAME: 'aaoa_streams'
+        },
+        SOUND_BOARD: {
+            enabled: true,
+            volume: 0.5,
+            triggers: [
+                {
+                    pattern: "!horn",
+                    sound: "https://www.myinstants.com/media/sounds/air-horn-club-sample_1.mp3",
+                    type: "command",
+                    cooldown: 1000
+                }
+            ]
         }
     }
 };

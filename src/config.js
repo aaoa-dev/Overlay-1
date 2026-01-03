@@ -18,6 +18,18 @@ const DEFAULT_CONFIG = {
     },
     YOUTUBE: {
         CHANNEL_NAME: ''
+    },
+    SOUND_BOARD: {
+        enabled: true,
+        volume: 0.5,
+        triggers: [
+            {
+                pattern: "!horn",
+                sound: "https://www.myinstants.com/media/sounds/air-horn-club-sample_1.mp3",
+                type: "command",
+                cooldown: 1000
+            }
+        ]
     }
 };
 
@@ -36,6 +48,11 @@ export const config = {
             ...DEFAULT_CONFIG.YOUTUBE,
             ...windowConfig.YOUTUBE,
             ...savedConfig.YOUTUBE
+        },
+        SOUND_BOARD: {
+            ...DEFAULT_CONFIG.SOUND_BOARD,
+            ...windowConfig.SOUND_BOARD,
+            ...savedConfig.SOUND_BOARD
         }
     }
 };
@@ -47,7 +64,8 @@ export const config = {
 export const saveConfig = (newConfig) => {
     const updatedConfig = {
         TWITCH: { ...config.settings.TWITCH, ...newConfig.TWITCH },
-        YOUTUBE: { ...config.settings.YOUTUBE, ...newConfig.YOUTUBE }
+        YOUTUBE: { ...config.settings.YOUTUBE, ...newConfig.YOUTUBE },
+        SOUND_BOARD: { ...config.settings.SOUND_BOARD, ...newConfig.SOUND_BOARD }
     };
     localStorage.setItem('app_config', JSON.stringify(updatedConfig));
     Object.assign(config.settings, updatedConfig);

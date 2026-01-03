@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Sound Board Management</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #8b5cf6;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Overlay Mode */
+        body.overlay-mode {
+            background: transparent !important;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .overlay-only { display: none; }
+        .config-only { display: block; }
+
+        body.overlay-mode .overlay-only { display: block; }
+        body.overlay-mode .config-only { display: none; }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        h1, h2 { margin-top: 0; }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            box-sizing: border-box;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        .btn-danger { background: var(--error); color: white; }
+        
+        .trigger-item {
+            display: grid;
+            grid-template-columns: 1.2fr 2fr 100px 100px 130px 80px 40px;
+            gap: 12px;
+            align-items: end;
+            padding: 16px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text); }
+        .btn-secondary:hover { background: var(--border); }
+
+        .trigger-list {
+            margin-top: 20px;
+        }
+
+        #status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 100;
+            display: none;
+        }
+
+        #overlay-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        body:hover #overlay-status { opacity: 1; }
+
+        .settings-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .settings-row > div { flex: 1; }
+
+        .file-input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="status"></div>
+
+    <!-- Management UI -->
+    <div class="container config-only">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <div>
+                <h1>Sound Board Setup</h1>
+                <p style="color: var(--text-muted);">Configure sounds to play on chat triggers.</p>
+            </div>
+            <button id="save-config" class="btn btn-primary" style="padding: 12px 32px; font-size: 16px;">Save Changes</button>
+        </header>
+
+        <div class="card">
+            <h2>Global Settings</h2>
+            <div class="settings-row">
+                <div class="form-group">
+                    <label>Global Volume (0-1)</label>
+                    <input type="number" id="global-volume" min="0" max="1" step="0.1" value="0.5">
+                </div>
+                <div class="form-group">
+                    <label>Enable Sound Board</label>
+                    <select id="board-enabled">
+                        <option value="true">Enabled</option>
+                        <option value="false">Disabled</option>
+                    </select>
+                </div>
+            </div>
+            <p class="help-text">Tip: Use local file paths like <code>C:/Sounds/alert.mp3</code> or URLs.</p>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Triggers</h2>
+                <button id="add-trigger" class="btn btn-primary">+ Add New</button>
+            </div>
+            
+            <div id="trigger-list" class="trigger-list">
+                <!-- Trigger items will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay View -->
+    <div class="overlay-only">
+        <div id="overlay-status">Sound Board: Disconnected</div>
+    </div>
+
+    <script type="module" src="sound-board.js"></script>
+</body>
+</html>

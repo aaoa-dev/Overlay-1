@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background Generator | Overlay-1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="../output.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+        }
+        .preview-pane {
+            flex: 1;
+            height: 100vh;
+            background: #000;
+            position: relative;
+        }
+        .preview-pane iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .controls-pane {
+            width: 420px;
+            height: 100vh;
+            background: hsl(var(--card));
+            border-left: 1px solid hsl(var(--border));
+            padding: 2rem;
+            overflow-y: auto;
+            z-index: 10;
+        }
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            cursor: pointer;
+            padding: 0;
+            overflow: hidden;
+            background: none;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 12px; }
+        
+        .control-group { margin-bottom: 2rem; }
+        .control-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .type-grid {
+            display: grid;
+            grid-template-cols: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        .type-btn {
+            padding: 1rem;
+            border-radius: 1.25rem;
+            border: 1px solid hsl(var(--border));
+            background: hsl(var(--secondary) / 0.5);
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s;
+        }
+        .type-btn:hover { background: hsl(var(--accent)); }
+        .type-btn.active {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border-color: hsl(var(--primary));
+            box-shadow: 0 10px 15px -3px hsl(var(--primary) / 0.3);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: hsl(var(--secondary));
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: hsl(var(--primary)); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        
+        select.custom-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid hsl(var(--border));
+            background: hsl(var(--secondary) / 0.5);
+            color: hsl(var(--foreground));
+            font-weight: 700;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground flex">
+    <div class="preview-pane">
+        <iframe id="preview-frame" src="background.html?type=mesh&primary=%236366f1&secondary=%23a855f7&accent=%23ec4899&bg=%23000000&speed=1&opacity=1"></iframe>
+        
+        <div class="absolute top-8 left-8 flex items-center gap-4 pointer-events-none">
+            <div class="bg-primary p-3 rounded-2xl shadow-xl shadow-primary/20">
+                <i data-lucide="palette" class="w-7 h-7 text-primary-foreground"></i>
+            </div>
+            <div>
+                <span class="text-2xl font-black tracking-tighter text-white drop-shadow-lg block">BG CREATE</span>
+                <span class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Professional Source Engine</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-pane">
+        <div class="mb-10">
+            <h1 class="text-3xl font-black tracking-tight mb-2">Editor</h1>
+            <p class="text-muted-foreground text-sm font-medium">Create high-quality animated backgrounds for your stream.</p>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Visual Style</label>
+            <div class="type-grid">
+                <button class="type-btn active" data-type="mesh"><i data-lucide="layout" class="w-4 h-4"></i> Mesh</button>
+                <button class="type-btn" data-type="bokeh"><i data-lucide="circle" class="w-4 h-4"></i> Bokeh</button>
+                <button class="type-btn" data-type="waves"><i data-lucide="waves" class="w-4 h-4"></i> Waves</button>
+                <button class="type-btn" data-type="grid"><i data-lucide="grid" class="w-4 h-4"></i> Grid</button>
+            </div>
+        </div>
+
+        <div class="control-group" id="grid-mode-group" style="display: none;">
+            <label class="control-label">Grid Mode</label>
+            <select id="grid-mode" class="custom-select">
+                <option value="regular">Regular Grid</option>
+                <option value="dotted">Dotted Grid</option>
+                <option value="vertical">Vertical Lines</option>
+                <option value="horizontal">Horizontal Lines</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Effects</label>
+            <div class="flex items-center justify-between p-4 rounded-2xl bg-secondary/30 border border-border">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl bg-primary/10 text-primary">
+                        <i data-lucide="layers" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold">Glassmorphism</div>
+                        <div class="text-[10px] text-muted-foreground font-bold uppercase">Frosted Glass Filter</div>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="glass-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Color Palette</label>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between p-3 px-4 rounded-2xl bg-secondary/20 border border-border">
+                    <span class="text-sm font-bold">Primary</span>
+                    <input type="color" id="primary-color" value="#6366f1">
+                </div>
+                <div class="flex items-center justify-between p-3 px-4 rounded-2xl bg-secondary/20 border border-border">
+                    <span class="text-sm font-bold">Secondary</span>
+                    <input type="color" id="secondary-color" value="#a855f7">
+                </div>
+                <div class="flex items-center justify-between p-3 px-4 rounded-2xl bg-secondary/20 border border-border">
+                    <span class="text-sm font-bold">Accent</span>
+                    <input type="color" id="accent-color" value="#ec4899">
+                </div>
+                <div class="flex items-center justify-between p-3 px-4 rounded-2xl bg-secondary/20 border border-border">
+                    <span class="text-sm font-bold">Base BG</span>
+                    <input type="color" id="bg-color" value="#000000">
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="flex justify-between items-center mb-4">
+                <label class="control-label mb-0">Animation Velocity</label>
+                <span id="speed-val" class="text-xs font-black text-primary bg-primary/10 px-2 py-1 rounded-lg">1.0x</span>
+            </div>
+            <input type="range" id="speed-range" min="0.1" max="5" step="0.1" value="1" class="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary">
+        </div>
+
+        <div class="control-group">
+            <div class="flex justify-between items-center mb-4">
+                <label class="control-label mb-0">Overall Opacity</label>
+                <span id="opacity-val" class="text-xs font-black text-primary bg-primary/10 px-2 py-1 rounded-lg">100%</span>
+            </div>
+            <input type="range" id="opacity-range" min="0.1" max="1" step="0.1" value="1" class="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary">
+        </div>
+
+        <div class="mt-12 space-y-3">
+            <button id="copy-url" class="w-full h-16 rounded-2xl bg-primary text-primary-foreground font-black text-lg transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl shadow-primary/25">
+                <i data-lucide="copy" class="w-6 h-6"></i>
+                Copy Browser Source
+            </button>
+            <button onclick="window.location.href='../index.html'" class="w-full h-12 rounded-2xl bg-secondary text-foreground font-bold text-sm transition-all hover:bg-accent flex items-center justify-center gap-2">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                Back to Gallery
+            </button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const previewFrame = document.getElementById('preview-frame');
+        const copyBtn = document.getElementById('copy-url');
+        const typeBtns = document.querySelectorAll('.type-btn');
+        const gridModeSelect = document.getElementById('grid-mode');
+        const gridModeGroup = document.getElementById('grid-mode-group');
+        const glassToggle = document.getElementById('glass-toggle');
+        const colorInputs = {
+            primary: document.getElementById('primary-color'),
+            secondary: document.getElementById('secondary-color'),
+            accent: document.getElementById('accent-color'),
+            bg: document.getElementById('bg-color')
+        };
+        const speedRange = document.getElementById('speed-range');
+        const opacityRange = document.getElementById('opacity-range');
+        const speedVal = document.getElementById('speed-val');
+        const opacityVal = document.getElementById('opacity-val');
+
+        let currentType = 'mesh';
+
+        // Initialize from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('type')) {
+            currentType = urlParams.get('type');
+            typeBtns.forEach(btn => {
+                if (btn.dataset.type === currentType) {
+                    typeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function updatePreview() {
+            speedVal.textContent = parseFloat(speedRange.value).toFixed(1) + 'x';
+            opacityVal.textContent = Math.round(opacityRange.value * 100) + '%';
+
+            gridModeGroup.style.display = currentType === 'grid' ? 'block' : 'none';
+
+            const params = new URLSearchParams({
+                type: currentType,
+                gridMode: gridModeSelect.value,
+                primary: colorInputs.primary.value,
+                secondary: colorInputs.secondary.value,
+                accent: colorInputs.accent.value,
+                bg: colorInputs.bg.value,
+                speed: speedRange.value,
+                opacity: opacityRange.value,
+                glass: glassToggle.checked
+            });
+            
+            previewFrame.src = `background.html?${params.toString()}`;
+        }
+
+        typeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                typeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentType = btn.dataset.type;
+                updatePreview();
+            });
+        });
+
+        gridModeSelect.addEventListener('change', updatePreview);
+        Object.values(colorInputs).forEach(input => input.addEventListener('input', updatePreview));
+        speedRange.addEventListener('input', updatePreview);
+        opacityRange.addEventListener('input', updatePreview);
+        glassToggle.addEventListener('change', updatePreview);
+
+        updatePreview();
+
+        copyBtn.addEventListener('click', () => {
+            const baseUrl = window.location.origin + window.location.pathname.replace('generator.html', 'background.html');
+            const params = new URLSearchParams({
+                type: currentType,
+                gridMode: gridModeSelect.value,
+                primary: colorInputs.primary.value,
+                secondary: colorInputs.secondary.value,
+                accent: colorInputs.accent.value,
+                bg: colorInputs.bg.value,
+                speed: speedRange.value,
+                opacity: opacityRange.value,
+                glass: glassToggle.checked
+            });
+            
+            const fullUrl = `${baseUrl}?${params.toString()}`;
+            
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = `<i data-lucide="check" class="w-6 h-6"></i> Copied URL!`;
+                copyBtn.classList.replace('bg-primary', 'bg-green-500');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.classList.replace('bg-green-500', 'bg-primary');
+                    lucide.createIcons();
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

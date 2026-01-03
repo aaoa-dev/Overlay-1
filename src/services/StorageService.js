@@ -13,7 +13,8 @@ export class StorageService {
         CHATTERS: 'chatters',
         CHATTER_MODE: 'chatter_mode',
         STREAM_DATE: 'streamDate',
-        STATS_BASELINES: 'stream_stats_baselines'
+        STATS_BASELINES: 'stream_stats_baselines',
+        SOUND_BOARD_CONFIG: 'sound_board_config'
     };
 
     /**
