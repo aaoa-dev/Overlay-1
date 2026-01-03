@@ -320,7 +320,7 @@
             {
                 id: 'backgrounds',
                 title: 'Animated Backgrounds',
-                description: 'High-quality animated backgrounds including mesh gradients, particles, and bokeh.',
+                description: 'High-quality animated backgrounds including mesh gradients, customizable grids, and bokeh.',
                 path: 'backgrounds/generator.html',
                 previewId: 'preview-backgrounds',
                 icon: 'palette'
@@ -331,8 +331,10 @@
             const isSoundBoard = overlay.id === 'sound-board';
             const isBackgrounds = overlay.id === 'backgrounds';
             const hasRanges = overlay.supportedRanges && overlay.supportedRanges.length > 0;
-            let previewPath = overlay.path;
-            const previewUrl = new URL(overlay.path, window.location.origin + window.location.pathname);
+            
+            // Correctly handle relative paths for GitHub Pages and different environments
+            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+            const previewUrl = new URL(overlay.path, baseUrl);
             
             if (isBackgrounds) {
                 // For background preview, use the actual background.html instead of generator
