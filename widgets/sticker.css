@@ -118,9 +118,7 @@ body {
   margin: -50%;
 }
 
-.sticker-wrapper.showing {
-  /* No wrapper animation - sticker stays stuck */
-}
+/* .sticker-wrapper.showing - No wrapper animation needed, sticker stays stuck */
 
 .sticker-wrapper.removing {
   animation: stickerDisappear 1.2s ease-in forwards;
@@ -571,6 +569,7 @@ body {
 
 /* Firefox */
 .input-with-unit input[type=number] {
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
@@ -729,6 +728,31 @@ body {
   border: none;
   cursor: pointer;
   padding: 4px;
+}
+
+/* Transfer Settings Section */
+.transfer-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.transfer-buttons .btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  font-size: 0.85rem;
+}
+
+.transfer-hint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  text-align: center;
+  margin: 0;
+  font-style: italic;
 }
 
 .settings-footer {

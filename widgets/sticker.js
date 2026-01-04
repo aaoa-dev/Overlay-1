@@ -300,6 +300,16 @@ class StickerOverlay {
             this.spawnSticker();
         });
         
+        // Export settings
+        document.getElementById('export-settings').addEventListener('click', () => {
+            this.exportSettings();
+        });
+        
+        // Import settings
+        document.getElementById('import-settings').addEventListener('click', () => {
+            this.importSettings();
+        });
+        
         // Initialize UI state
         this.updateSettingsUI();
     }
@@ -669,6 +679,93 @@ class StickerOverlay {
     closeSettings() {
         this.settingsPanel.classList.remove('open');
         this.obsControl.classList.remove('active');
+    }
+
+    /**
+     * Export settings to JSON file
+     */
+    exportSettings() {
+        try {
+            const settingsJSON = JSON.stringify(this.settings, null, 2);
+            const blob = new Blob([settingsJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sticker-overlay-settings-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            ErrorHandler.info('Settings exported successfully');
+        } catch (error) {
+            ErrorHandler.handle(error, 'export_settings');
+        }
+    }
+
+    /**
+     * Import settings from JSON file
+     */
+    importSettings() {
+        try {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const text = await file.text();
+                    const imported = JSON.parse(text);
+                    
+                    // Validate basic structure
+                    if (!imported.rules || !Array.isArray(imported.rules)) {
+                        throw new Error('Invalid settings file format');
+                    }
+                    
+                    // Update settings
+                    this.settings = {
+                        duration: imported.duration || 5,
+                        stickerSize: imported.stickerSize || 200,
+                        maxStickers: imported.maxStickers || 10,
+                        rules: imported.rules
+                    };
+                    
+                    // Save to localStorage
+                    this.saveSettingsToStorage();
+                    
+                    // Update UI
+                    this.updateSettingsUI();
+                    
+                    // Preload new images
+                    await this.preloadImages();
+                    
+                    ErrorHandler.info('Settings imported successfully');
+                    
+                    // Show feedback
+                    const importBtn = document.getElementById('import-settings');
+                    const originalHTML = importBtn.innerHTML;
+                    importBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Imported!';
+                    importBtn.style.background = '#4caf50';
+                    
+                    setTimeout(() => {
+                        importBtn.innerHTML = originalHTML;
+                        importBtn.style.background = '';
+                        lucide.createIcons();
+                    }, 2000);
+                } catch (error) {
+                    ErrorHandler.handle(error, 'import_settings_parse');
+                    alert('Failed to import settings. Please check the file format.');
+                }
+            };
+            
+            input.click();
+        } catch (error) {
+            ErrorHandler.handle(error, 'import_settings');
+        }
     }
 }
 
