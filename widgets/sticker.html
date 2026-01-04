@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sticker Overlay</title>
+    <link rel="stylesheet" href="../styles/obs-controls.css">
+    <link rel="stylesheet" href="sticker.css">
+</head>
+<body>
+  <!-- SVG Filters -->
+  <svg height="0" width="0">
+    <defs>
+      <filter id="pointLight">
+        <feGaussianBlur stdDeviation="1" result="blur" />
+        <feSpecularLighting result="spec" in="blur" specularExponent="100" specularConstant="0.1" lightingColor="white">
+          <fePointLight x="100" y="100" z="300" />
+        </feSpecularLighting>
+        <feComposite in="spec" in2="SourceGraphic" operator="screen" result="lit" />
+        <feComposite in="lit" in2="SourceAlpha" operator="in" />
+      </filter>
+
+      <filter id="pointLightFlipped">
+        <feGaussianBlur stdDeviation="10" result="blur" />
+        <feSpecularLighting result="spec" in="blur" specularExponent="100" specularConstant="0.7" lightingColor="white">
+          <fePointLight x="100" y="100" z="300" id="fePointLightFlipped" />
+        </feSpecularLighting>
+        <feComposite in="spec" in2="SourceGraphic" operator="screen" result="lit" />
+        <feComposite in="lit" in2="SourceAlpha" operator="in" />
+      </filter>
+
+      <filter id="dropShadow">
+        <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="black" flood-opacity="0.6" />
+      </filter>
+
+      <filter id="outerStroke">
+        <feMorphology operator="dilate" radius="3" in="SourceAlpha" result="expanded" />
+        <feColorMatrix in="expanded" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" result="whiteExpanded" />
+        <feComposite operator="xor" in="whiteExpanded" in2="SourceAlpha" result="outerStroke" />
+        <feComposite operator="over" in="SourceGraphic" in2="outerStroke" />
+      </filter>
+
+      <filter id="expandAndFill">
+        <feOffset dx="0" dy="0" in="SourceAlpha" result="shape" />
+        <feFlood flood-color="rgb(179, 179, 179)" result="flood" />
+        <feComposite operator="in" in="flood" in2="shape" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Stickers Container -->
+  <div id="stickers-container"></div>
+
+  <!-- Settings Button -->
+  <div class="obs-control">
+    <button id="settings-btn" class="settings-btn" aria-label="Open Settings">
+      <i data-lucide="settings" class="w-6 h-6"></i>
+    </button>
+  </div>
+
+  <!-- Settings Panel -->
+  <div id="settings-panel" class="settings-panel">
+    <div class="settings-header">
+      <div class="flex items-center gap-2">
+        <i data-lucide="sticker" class="text-primary"></i>
+        <h2>Sticker Overlay</h2>
+      </div>
+      <button id="close-settings" class="close-btn" aria-label="Close Settings">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    
+    <div class="settings-content">
+      <!-- Global Settings -->
+      <section class="settings-section">
+        <h3>Global Settings</h3>
+        <div class="global-settings-container">
+          <div class="form-group-horizontal">
+            <div class="form-label-with-icon">
+              <i data-lucide="clock" class="w-4 h-4"></i>
+              <label for="sticker-duration">Display Duration</label>
+            </div>
+            <div class="input-with-unit">
+              <input type="number" id="sticker-duration" min="1" max="60" value="5" />
+              <span>sec</span>
+            </div>
+          </div>
+          
+          <div class="form-group-horizontal">
+            <div class="form-label-with-icon">
+              <i data-lucide="maximize" class="w-4 h-4"></i>
+              <label for="sticker-size">Sticker Size</label>
+            </div>
+            <div class="input-with-unit">
+              <input type="number" id="sticker-size" min="50" max="500" value="200" />
+              <span>px</span>
+            </div>
+          </div>
+          
+          <div class="form-group-horizontal">
+            <div class="form-label-with-icon">
+              <i data-lucide="layers" class="w-4 h-4"></i>
+              <label for="max-stickers">Max Simultaneous</label>
+            </div>
+            <div class="input-with-unit">
+              <input type="number" id="max-stickers" min="1" max="50" value="10" />
+              <span>max</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Trigger Rules Section -->
+      <section class="settings-section">
+        <div class="flex justify-between items-center mb-4">
+          <h3>Trigger Rules</h3>
+          <button id="add-rule-btn" class="btn-icon-label">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Add Rule
+          </button>
+        </div>
+        
+        <div id="rules-list" class="rules-list">
+          <!-- Rules will be injected here -->
+        </div>
+      </section>
+
+      <!-- Save Button -->
+      <div class="settings-footer">
+        <button id="save-settings" class="btn btn-primary">Save Configuration</button>
+        <button id="test-sticker" class="btn btn-secondary">Test Random Trigger</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script type="module" src="sticker.js"></script>
+</body>
+</html>
+

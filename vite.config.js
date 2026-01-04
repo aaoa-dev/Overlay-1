@@ -54,6 +54,7 @@ export default defineConfig({
         chatters: resolve(__dirname, 'widgets/chatters.html'),
         voiceMonitor: resolve(__dirname, 'widgets/voice-monitor.html'),
         soundBoard: resolve(__dirname, 'widgets/sound-board.html'),
+        sticker: resolve(__dirname, 'widgets/sticker.html'),
         bgGenerator: resolve(__dirname, 'backgrounds/generator.html'),
         bgBackground: resolve(__dirname, 'backgrounds/background.html'),
         oauth: resolve(__dirname, 'auth/oauth.html'),
