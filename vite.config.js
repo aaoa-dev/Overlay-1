@@ -1,5 +1,35 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { copyFileSync, mkdirSync, readdirSync, existsSync } from 'fs';
+
+// Plugin to copy preview images to dist
+function copyPreviewsPlugin() {
+  return {
+    name: 'copy-previews',
+    closeBundle() {
+      const previewsDir = resolve(__dirname, 'previews');
+      const distPreviewsDir = resolve(__dirname, 'dist/previews');
+      
+      // Create dist/previews directory if it doesn't exist
+      if (!existsSync(distPreviewsDir)) {
+        mkdirSync(distPreviewsDir, { recursive: true });
+      }
+      
+      // Copy all files from previews to dist/previews
+      if (existsSync(previewsDir)) {
+        const files = readdirSync(previewsDir);
+        files.forEach(file => {
+          if (file !== '.gitkeep') {
+            const src = resolve(previewsDir, file);
+            const dest = resolve(distPreviewsDir, file);
+            copyFileSync(src, dest);
+            console.log(`Copied preview: ${file}`);
+          }
+        });
+      }
+    }
+  };
+}
 
 export default defineConfig({
   root: '.',
@@ -7,6 +37,8 @@ export default defineConfig({
   // But for custom domains, we use '/'
   base: '/', 
   publicDir: 'public',
+  
+  plugins: [copyPreviewsPlugin()],
   
   build: {
     rollupOptions: {

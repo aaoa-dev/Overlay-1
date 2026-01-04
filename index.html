@@ -47,13 +47,28 @@
             pointer-events: none;
             z-index: -1;
         }
-        .preview-box iframe {
-            width: 200%;
-            height: 200%;
-            transform: scale(0.5);
-            transform-origin: top left;
-            border: none;
-            pointer-events: none;
+        .preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .preview-box:hover img {
+            transform: scale(1.05);
+        }
+        .preview-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05));
+        }
+        .preview-fallback i {
+            width: 64px;
+            height: 64px;
+            color: hsl(var(--primary));
+            opacity: 0.5;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar {
@@ -332,33 +347,24 @@
             const isBackgrounds = overlay.id === 'backgrounds';
             const hasRanges = overlay.supportedRanges && overlay.supportedRanges.length > 0;
             
-            // Correctly handle relative paths for GitHub Pages and different environments
-            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            const previewUrl = new URL(overlay.path, baseUrl);
-            
-            if (isBackgrounds) {
-                // For background preview, use the actual background.html instead of generator
-                previewUrl.pathname = previewUrl.pathname.replace('generator.html', 'background.html');
-                previewUrl.searchParams.set('type', 'bokeh');
-            } else {
-                previewUrl.searchParams.append('noChat', 'true');
-                if (isSoundBoard) previewUrl.searchParams.append('overlay', 'true');
-            }
-            
-            // Apply all params to the URL
-            if (overlay.params) {
-                Object.entries(overlay.params).forEach(([key, value]) => {
-                    previewUrl.searchParams.set(key, value);
-                });
-            }
+            // Preview image path
+            const previewImagePath = `previews/${overlay.id}.png`;
             
             return `
                 <div class="overlay-card group relative bg-card border border-border rounded-5xl p-4 transition-all duration-300 hover:bg-accent/50 hover:border-primary/30 hover:-translate-y-2 flex flex-col overflow-hidden cursor-pointer" data-overlay-id="${overlay.id}">
                     <div class="preview-box relative aspect-video bg-black mb-6 rounded-3xl overflow-hidden border-b border-border">
-                        <iframe id="${overlay.previewId}" src="${previewUrl.href}"></iframe>
+                        <img 
+                            id="${overlay.previewId}" 
+                            src="${previewImagePath}" 
+                            alt="${overlay.title} preview"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        />
+                        <div class="preview-fallback" style="display: none;">
+                            <i data-lucide="${overlay.icon}"></i>
+                        </div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
                              <div class="w-full flex justify-center">
-                                <span class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold border border-white/10 text-white">Live Preview</span>
+                                <span class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold border border-white/10 text-white">Preview</span>
                              </div>
                         </div>
                     </div>
