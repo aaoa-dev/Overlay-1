@@ -10,8 +10,8 @@ import { ErrorHandler } from '../src/utils/ErrorHandler.js';
 
 // Configuration
 const CONFIG = {
-    maxMessages: 20,
-    messageTimeout: 30000, // 30 seconds before old messages fade
+    maxMessages: 100,
+    messageTimeout: 0, // 0 = never disappear
     autoScroll: true,
     filterCommands: true
 };
@@ -173,20 +173,24 @@ class VerticalChatDisplay {
     cleanupOldMessages() {
         const now = Date.now();
 
-        // Remove messages older than timeout or exceeding max count
+        // Remove messages exceeding max count
         while (this.messages.length > CONFIG.maxMessages) {
             const oldest = this.messages.shift();
-            this.removeMessage(oldest.element);
+            if (oldest && oldest.element) {
+                this.removeMessage(oldest.element);
+            }
         }
 
-        // Remove timed out messages
-        this.messages = this.messages.filter(msg => {
-            if (now - msg.timestamp > CONFIG.messageTimeout) {
-                this.removeMessage(msg.element);
-                return false;
-            }
-            return true;
-        });
+        // Remove timed out messages (only if messageTimeout > 0)
+        if (CONFIG.messageTimeout > 0) {
+            this.messages = this.messages.filter(msg => {
+                if (now - msg.timestamp > CONFIG.messageTimeout) {
+                    this.removeMessage(msg.element);
+                    return false;
+                }
+                return true;
+            });
+        }
     }
 
     /**
