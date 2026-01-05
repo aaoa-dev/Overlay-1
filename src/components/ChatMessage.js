@@ -117,20 +117,59 @@ export class ChatMessage {
         const messageText = document.createElement('span');
         messageText.className = 'message-text';
 
+        // 1. Process 3rd Party Emotes first on raw text (before escaping)
+        // to avoid issues with escaped characters in emote codes
+        let processedMessage = this.message;
+        
+        // 2. Escape HTML for security
+        processedMessage = this.escapeHtml(processedMessage);
+
+        // 3. Process Twitch Emotes
+        // Twitch emotes use offsets, so we process them on the original text 
+        // but insert into the HTML-escaped text.
         if (this.tags.emotes && Object.keys(this.tags.emotes).length > 0) {
-            messageText.innerHTML = this.processEmotes();
-        } else {
-            messageText.textContent = this.message;
+            processedMessage = this.processTwitchEmotes(processedMessage);
         }
 
+        // 4. Process 3rd Party Emotes (after Twitch emotes, avoiding HTML tags)
+        if (this.options.emoteService) {
+            processedMessage = this.process3rdPartyEmotes(processedMessage);
+        }
+
+        // 5. Process Image Links (Broadcaster, Mod, VIP only)
+        if (this.options.allowImageLinks && this.isPrivileged()) {
+            processedMessage = this.processImageLinks(processedMessage);
+        }
+
+        messageText.innerHTML = processedMessage;
         parent.appendChild(messageText);
     }
 
     /**
-     * Process emotes in message
-     * @returns {string} HTML with emote images
+     * Process 3rd party emotes safely
      */
-    processEmotes() {
+    process3rdPartyEmotes(html) {
+        // Split by HTML tags to only replace text outside of tags
+        const parts = html.split(/(<[^>]*>)/g);
+        return parts.map(part => {
+            if (part.startsWith('<')) return part;
+            return this.options.emoteService.processText(part);
+        }).join('');
+    }
+
+    /**
+     * Escape HTML special characters
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * Process Twitch emotes in message
+     */
+    processTwitchEmotes(escapedMessage) {
         const emotePositions = [];
 
         // Collect all emote positions
@@ -144,13 +183,67 @@ export class ChatMessage {
         // Sort by start position (descending) to replace from end to start
         emotePositions.sort((a, b) => b.start - a.start);
 
-        let processedMessage = this.message;
+        let processed = this.message; // Start with raw message for correct offsets
+        
+        // Replace emotes with placeholders
         emotePositions.forEach(({ start, end, id }) => {
-            const emoteImg = `<img class="emote" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/3.0" />`;
-            processedMessage = processedMessage.slice(0, start) + emoteImg + processedMessage.slice(end + 1);
+            const emoteImg = `__EMOTE_${id}__`;
+            processed = this.replaceRange(processed, start, end + 1, emoteImg);
         });
 
-        return processedMessage;
+        // Escape the message with placeholders
+        processed = this.escapeHtml(processed);
+
+        // Replace placeholders with actual <img> tags
+        emotePositions.forEach(({ id }) => {
+            const placeholder = this.escapeHtml(`__EMOTE_${id}__`);
+            const emoteImg = `<img class="emote" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/3.0" alt="twitch emote" />`;
+            processed = processed.split(placeholder).join(emoteImg);
+        });
+
+        return processed;
+    }
+
+    /**
+     * Replace a range in a string
+     */
+    replaceRange(s, start, end, substitute) {
+        return s.substring(0, start) + substitute + s.substring(end);
+    }
+
+    /**
+     * Process image links
+     */
+    processImageLinks(text) {
+        // Only match URLs outside of HTML attributes
+        const imageRegex = /(^|\s)(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?\S+)?)/gi;
+        return text.replace(imageRegex, (match, space, url) => {
+            return `${space}<img class="chat-image" src="${url}" alt="user image" onerror="this.style.display='none'" />`;
+        });
+    }
+
+    /**
+     * Check if user has special privileges
+     */
+    isPrivileged() {
+        if (!this.tags) return false;
+        
+        // Handle test tags or raw tags
+        const badges = this.tags.badges || {};
+        
+        const isBroadcaster = badges.broadcaster === '1';
+        const isMod = this.tags.mod === true || badges.moderator === '1';
+        const isVip = badges.vip === '1';
+
+        return isBroadcaster || isMod || isVip;
+    }
+
+    /**
+     * Process emotes in message (Legacy/Internal)
+     * @returns {string} HTML with emote images
+     */
+    processEmotes() {
+        return this.processTwitchEmotes(this.escapeHtml(this.message));
     }
 
     /**

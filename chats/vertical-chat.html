@@ -124,17 +124,26 @@
             line-height: 1.4;
             word-break: break-word;
             color: black;
-            /* Apply grayscale to all content including emojis */
+            /* Apply grayscale to all content including emojis and user images */
             filter: grayscale(100%);
+        }
+
+        .chat-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0.5rem 0;
+            border: 1px solid #eee;
+            image-rendering: pixelated; /* Thermal printer feel */
         }
 
         /* Grayscale emotes */
         .emote {
             display: inline-block;
             vertical-align: middle;
-            height: 1.25rem;
+            height: 1.5rem;
             margin: 0 0.125rem;
-            filter: grayscale(100%) contrast(1.2);
+            filter: contrast(1.2);
         }
 
         /* Auth controls - thermal printer style */
@@ -201,39 +210,69 @@
     </div>
 
     <!-- Test Controls - Thermal Printer Style (hidden in OBS) -->
-    <div class="obs-control fixed bottom-4 right-4 flex gap-2 z-50" style="font-family: 'Courier Prime', 'Courier New', monospace;">
-        <button 
-            onclick="window.testMessage('regular')" 
-            style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-            onmouseover="this.style.background='black'; this.style.color='white';"
-            onmouseout="this.style.background='white'; this.style.color='black';"
-        >
-            Test Msg
-        </button>
-        <button 
-            onclick="window.testMessage('long')" 
-            style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-            onmouseover="this.style.background='black'; this.style.color='white';"
-            onmouseout="this.style.background='white'; this.style.color='black';"
-        >
-            Test Long
-        </button>
-        <button 
-            onclick="window.testMessage('sequence')" 
-            style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-            onmouseover="this.style.background='black'; this.style.color='white';"
-            onmouseout="this.style.background='white'; this.style.color='black';"
-        >
-            Sequence
-        </button>
-        <button 
-            onclick="window.testMessage('clear')" 
-            style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-            onmouseover="this.style.background='black'; this.style.color='white';"
-            onmouseout="this.style.background='white'; this.style.color='black';"
-        >
-            Clear
-        </button>
+    <div class="obs-control fixed bottom-4 right-4 flex flex-col gap-2 z-50" style="font-family: 'Courier Prime', 'Courier New', monospace;">
+        <!-- Toggles -->
+        <div class="flex gap-2 mb-2">
+            <label class="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.3)] cursor-pointer hover:bg-black hover:text-white transition-all text-[10px] font-bold uppercase">
+                <input type="checkbox" id="toggle-emotes" checked class="accent-black">
+                3rd Party Emotes
+            </label>
+            <label class="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.3)] cursor-pointer hover:bg-black hover:text-white transition-all text-[10px] font-bold uppercase">
+                <input type="checkbox" id="toggle-images" checked class="accent-black">
+                Images (Privileged)
+            </label>
+        </div>
+        
+        <div class="flex gap-2">
+            <button 
+                onclick="window.testMessage('regular')" 
+                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
+                onmouseover="this.style.background='black'; this.style.color='white';"
+                onmouseout="this.style.background='white'; this.style.color='black';"
+            >
+                Test Msg
+            </button>
+            <button 
+                onclick="window.testMessage('long')" 
+                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
+                onmouseover="this.style.background='black'; this.style.color='white';"
+                onmouseout="this.style.background='white'; this.style.color='black';"
+            >
+                Test Long
+            </button>
+            <button 
+                onclick="window.testMessage('image')" 
+                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
+                onmouseover="this.style.background='black'; this.style.color='white';"
+                onmouseout="this.style.background='white'; this.style.color='black';"
+            >
+                Test Image
+            </button>
+            <button 
+                onclick="window.testMessage('emotes')" 
+                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
+                onmouseover="this.style.background='black'; this.style.color='white';"
+                onmouseout="this.style.background='white'; this.style.color='black';"
+            >
+                Test Emotes
+            </button>
+            <button 
+                onclick="window.testMessage('sequence')" 
+                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
+                onmouseover="this.style.background='black'; this.style.color='white';"
+                onmouseout="this.style.background='white'; this.style.color='black';"
+            >
+                Sequence
+            </button>
+            <button 
+                onclick="window.testMessage('clear')" 
+                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
+                onmouseover="this.style.background='black'; this.style.color='white';"
+                onmouseout="this.style.background='white'; this.style.color='black';"
+            >
+                Clear
+            </button>
+        </div>
     </div>
 
     <!-- Chat Container -->

@@ -6,6 +6,7 @@
 import { TwitchService } from '../src/services/TwitchService.js';
 import { MessageHandler } from '../src/handlers/MessageHandler.js';
 import { ChatMessage } from '../src/components/ChatMessage.js';
+import { EmoteService } from '../src/services/EmoteService.js';
 import { ErrorHandler } from '../src/utils/ErrorHandler.js';
 
 // Configuration
@@ -13,14 +14,17 @@ const CONFIG = {
     maxMessages: 100,
     messageTimeout: 0, // 0 = never disappear
     autoScroll: true,
-    filterCommands: true
+    filterCommands: true,
+    allow3rdPartyEmotes: true,
+    allowImageLinks: true
 };
 
 class VerticalChatDisplay {
-    constructor(container, twitchService) {
+    constructor(container, twitchService, emoteService) {
         this.container = container;
         this.receiptPaper = document.getElementById('receiptPaper');
         this.twitchService = twitchService;
+        this.emoteService = emoteService;
         this.messages = [];
         this.lastMessageSenderId = null;
         this.isPrinting = false;
@@ -42,7 +46,9 @@ class VerticalChatDisplay {
             // Create message component
             const chatMessage = new ChatMessage(tags, message, {
                 showUserInfo: !isSameUser,
-                badgeUrlResolver: (type, version) => this.twitchService.getBadgeUrl(type, version)
+                badgeUrlResolver: (type, version) => this.twitchService.getBadgeUrl(type, version),
+                emoteService: CONFIG.allow3rdPartyEmotes ? this.emoteService : null,
+                allowImageLinks: CONFIG.allowImageLinks
             });
 
             // Check if should filter
@@ -121,47 +127,16 @@ class VerticalChatDisplay {
             const header = document.createElement('div');
             header.className = 'message-header';
 
-            // Add badges
-            const badges = chatMessage.parseBadges();
-            if (badges.length > 0) {
-                const badgeContainer = document.createElement('span');
-                badgeContainer.className = 'badge-container';
-
-                badges.forEach(({ type, version }) => {
-                    const badgeImg = document.createElement('img');
-                    badgeImg.className = 'badge';
-                    badgeImg.src = chatMessage.options.badgeUrlResolver(type, version);
-                    badgeImg.alt = type;
-                    badgeImg.onerror = () => {
-                        ErrorHandler.warn('Badge failed to load', { type, version });
-                    };
-                    badgeContainer.appendChild(badgeImg);
-                });
-
-                header.appendChild(badgeContainer);
-            }
-
-            // Add username
-            const username = document.createElement('span');
-            username.className = 'username';
-            username.style.color = chatMessage.tags.color || '#ffffff';
-            username.textContent = chatMessage.tags['display-name'] || chatMessage.tags.username;
-            header.appendChild(username);
+            // Use ChatMessage component to render badges and username
+            chatMessage.renderBadges(header);
+            chatMessage.renderUsername(header);
 
             messageElement.appendChild(header);
         }
 
-        // Add message text
-        const messageText = document.createElement('div');
-        messageText.className = 'message-text';
+        // Add message text using ChatMessage component (handles Twitch emotes, 3rd party emotes, and image links)
+        chatMessage.renderMessage(messageElement);
 
-        if (chatMessage.tags.emotes && Object.keys(chatMessage.tags.emotes).length > 0) {
-            messageText.innerHTML = chatMessage.processEmotes();
-        } else {
-            messageText.textContent = chatMessage.message;
-        }
-
-        messageElement.appendChild(messageText);
         wrapper.appendChild(messageElement);
 
         return wrapper;
@@ -237,6 +212,11 @@ async function init() {
             username: twitchService.getUsername()
         });
 
+        // Initialize Emote Service (7TV, BTTV, FFZ)
+        const emoteService = new EmoteService();
+        const authConfig = twitchService.getAuthConfig();
+        await emoteService.initialize(authConfig.channelId);
+
         // Fetch badges
         await twitchService.fetchBadges();
 
@@ -259,7 +239,7 @@ async function init() {
         // Initialize chat display
         const chatContainer = document.getElementById('chatContainer');
         const receiptPaper = document.getElementById('receiptPaper');
-        const chatDisplay = new VerticalChatDisplay(chatContainer, twitchService);
+        const chatDisplay = new VerticalChatDisplay(chatContainer, twitchService, emoteService);
 
         // Set up message handler
         const messageHandler = new MessageHandler(twitchService);
@@ -278,6 +258,24 @@ async function init() {
 
         ErrorHandler.info('Vertical chat initialized successfully');
 
+        // Connect UI toggles
+        const emoteToggle = document.getElementById('toggle-emotes');
+        const imageToggle = document.getElementById('toggle-images');
+
+        if (emoteToggle) {
+            emoteToggle.addEventListener('change', (e) => {
+                CONFIG.allow3rdPartyEmotes = e.target.checked;
+                ErrorHandler.info(`3rd party emotes ${CONFIG.allow3rdPartyEmotes ? 'enabled' : 'disabled'}`);
+            });
+        }
+
+        if (imageToggle) {
+            imageToggle.addEventListener('change', (e) => {
+                CONFIG.allowImageLinks = e.target.checked;
+                ErrorHandler.info(`Image links ${CONFIG.allowImageLinks ? 'enabled' : 'disabled'}`);
+            });
+        }
+
         // Test button functionality
         window.testMessage = (type = 'regular') => {
             const testTags = {
@@ -285,7 +283,7 @@ async function init() {
                 'user-id': '123456',
                 'message-id': Date.now().toString(),
                 color: '#FF6B6B',
-                badges: { subscriber: '1' },
+                badges: { broadcaster: '1' }, // Added broadcaster badge for testing image links
                 username: 'testuser'
             };
 
@@ -302,6 +300,11 @@ async function init() {
                 chatDisplay.displayMessage(testTags, 'This is a test message in vertical chat! 👋');
             } else if (type === 'long') {
                 chatDisplay.displayMessage(testTags, 'This is a much longer message to test word wrapping and how the vertical chat handles messages that span multiple lines. It should wrap nicely and remain readable! 🎉');
+            } else if (type === 'image') {
+                chatDisplay.displayMessage(testTags, 'Check out this cool image: https://placehold.co/400x200.png');
+            } else if (type === 'emotes') {
+                // Using DanSexy (FFZ Global) and SourPls (BTTV Global) for guaranteed tests
+                chatDisplay.displayMessage(testTags, 'Testing 3rd party emotes: EZ Clapped DanSexy SourPls');
             } else if (type === 'sequence') {
                 chatDisplay.displayMessage(testTags, 'First message from TestUser');
                 

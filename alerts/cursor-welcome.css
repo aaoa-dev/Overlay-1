@@ -28,8 +28,8 @@
 }
 
 .cursor-svg {
-    width: 24px;
-    height: 24px;
+    width: 48px;
+    height: 48px;
     display: block;
 }
 
@@ -39,22 +39,22 @@
 
 .cursor-bubble {
     position: absolute;
-    left: 12px;
-    top: 12px;
+    left: 24px;
+    top: 24px;
     background: var(--user-color, var(--theme-color, #A259FF));
     color: white;
-    padding: 6px 12px; /* Same padding as typing state */
-    border-radius: 0px 12px 12px 12px;
+    padding: 12px 24px; /* Same padding as typing state */
+    border-radius: 0px 24px 24px 24px;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 0.875rem; /* Using rem for global scaling */
+    font-size: 1.75rem; /* Using rem for global scaling */
     line-height: 1; /* Tight line height for single line */
-    height: 28px; /* Fixed height - NEVER changes */
+    height: 56px; /* Fixed height - NEVER changes */
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
     min-width: fit-content;
-    max-width: 80px; /* Start compact */
+    max-width: 160px; /* Start compact */
     display: flex;
     align-items: center; /* Vertically center text */
     box-sizing: border-box; /* Include padding in height calculation */
@@ -63,7 +63,7 @@
 }
 
 .cursor-bubble.typing {
-    max-width: 350px; /* Allow expansion for message */
+    max-width: 700px; /* Allow expansion for message */
     /* Height and padding stay EXACTLY the same */
 }
 
