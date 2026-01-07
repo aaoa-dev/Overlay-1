@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polaroid Alerts</title>
+    <link rel="stylesheet" href="../output.css">
+    <link rel="stylesheet" href="../styles/components/settings.css">
+    <link rel="stylesheet" href="polaroid-alerts.css">
+    <link rel="stylesheet" href="../styles/obs-controls.css">
+    <script>
+        // Immediate theme initialization to prevent FOUC
+        (function() {
+            const getTheme = () => {
+                const saved = localStorage.getItem('theme');
+                if (saved && saved !== 'system') return saved;
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            };
+            const applyTheme = (theme) => {
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+            };
+            applyTheme(getTheme());
+        })();
+    </script>
+</head>
+<body class="m-0 p-0 h-screen w-screen overflow-hidden bg-transparent">
+    <div id="alertContainer" class="polaroid-container pointer-events-none">
+        <!-- Polaroid alerts will be injected here -->
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="obs-control fixed top-4 left-4 flex flex-col gap-2 z-20">
+        <button 
+            id="toggle-settings" 
+            class="settings-trigger"
+            title="Alert Settings"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543-.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+        </button>
+
+        <div id="settings-panel" class="settings-panel hidden">
+            <header class="settings-header">
+                <h2 class="settings-title">Polaroid Settings</h2>
+                <button id="reset-settings" class="reset-button">Reset</button>
+            </header>
+
+            <div class="settings-content">
+                <section class="settings-section">
+                    <h3 class="section-heading">Enabled Alerts</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Follows <input type="checkbox" id="enable-follow" checked></label>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Subscriptions <input type="checkbox" id="enable-sub" checked></label>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Resubs <input type="checkbox" id="enable-resub" checked></label>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Gift Subs <input type="checkbox" id="enable-gift" checked></label>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Raids <input type="checkbox" id="enable-raid" checked></label>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Cheers <input type="checkbox" id="enable-cheer" checked></label>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Display</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Duration (ms) <span id="duration-value" class="value-display">5000</span></label>
+                        <input type="range" id="alert-duration" min="2000" max="15000" step="500" value="5000" class="range-input">
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- OBS Copy Button -->
+    <div class="obs-control fixed top-4 right-4 flex items-center gap-2 z-10">
+        <button 
+            id="copy-obs-url" 
+            class="px-6 py-3 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-2"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            Copy OBS URL
+        </button>
+    </div>
+
+    <!-- Control buttons (hidden in OBS) -->
+    <div class="obs-control fixed bottom-4 left-4 flex flex-wrap gap-2 pointer-events-auto p-4 bg-black/50 rounded-xl backdrop-blur-sm">
+        <button 
+            id="test-follow"
+            onclick="globalThis.testPolaroid('follow')" 
+            class="bg-pink-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-pink-600 transition-colors text-sm font-bold"
+        >
+            Test Follow
+        </button>
+        <button 
+            id="test-sub"
+            onclick="globalThis.testPolaroid('sub')" 
+            class="bg-purple-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition-colors text-sm font-bold"
+        >
+            Test Sub
+        </button>
+        <button 
+            id="test-resub"
+            onclick="globalThis.testPolaroid('resub')" 
+            class="bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-indigo-600 transition-colors text-sm font-bold"
+        >
+            Test Resub
+        </button>
+        <button 
+            id="test-gift"
+            onclick="globalThis.testPolaroid('gift')" 
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-600 transition-colors text-sm font-bold"
+        >
+            Test Gift
+        </button>
+        <button 
+            id="test-raid"
+            onclick="globalThis.testPolaroid('raid')" 
+            class="bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-orange-600 transition-colors text-sm font-bold"
+        >
+            Test Raid
+        </button>
+        <button 
+            id="test-cheer"
+            onclick="globalThis.testPolaroid('cheer')" 
+            class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-yellow-600 transition-colors text-sm font-bold"
+        >
+            Test Cheer
+        </button>
+    </div>
+
+    <script type="module" src="polaroid-alerts.js"></script>
+</body>
+</html>
+
