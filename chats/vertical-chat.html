@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../output.css">
+    <link rel="stylesheet" href="../styles/components/settings.css" />
     <link rel="stylesheet" href="../styles/obs-controls.css">
     <script type="module" src="vertical-chat.js"></script>
     <style>
@@ -15,6 +16,81 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        /* Thermal Printer Theme Overrides for Settings */
+        .thermal-settings {
+            --popover: 0 0% 100%;
+            --border: 0 0% 0%;
+            --foreground: 0 0% 0%;
+            --muted: 0 0% 90%;
+            --primary: 0 0% 0%;
+            --primary-foreground: 0 0% 100%;
+            --destructive: 0 100% 50%;
+            --destructive-foreground: 0 0% 100%;
+        }
+
+        .thermal-settings .settings-panel {
+            border: 3px solid black;
+            border-radius: 0;
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+            font-family: 'Courier Prime', 'Courier New', monospace;
+        }
+
+        .thermal-settings .settings-header {
+            border-bottom: 3px solid black;
+            background: white;
+            border-radius: 0;
+        }
+
+        .thermal-settings .settings-title {
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .thermal-settings .reset-button {
+            border: 2px solid black;
+            border-radius: 0;
+            background: white;
+            color: black;
+            text-transform: uppercase;
+        }
+
+        .thermal-settings .reset-button:hover {
+            background: black;
+            color: white;
+        }
+
+        .thermal-settings .select-input,
+        .thermal-settings .color-input-wrapper {
+            border: 2px solid black;
+            border-radius: 0;
+            background: white;
+        }
+
+        .thermal-settings .range-input::-webkit-slider-thumb {
+            background: black;
+            border: 2px solid white;
+            border-radius: 0;
+        }
+
+        .thermal-settings .section-heading {
+            color: black;
+            border-bottom: 1px solid black;
+            padding-bottom: 0.25rem;
+        }
+
+        .thermal-settings .settings-trigger {
+            border: 2px solid black;
+            border-radius: 0;
+            background: white;
+            color: black;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+        }
+
+        .thermal-settings .settings-trigger:hover {
+            background: black;
+            color: white;
         }
 
         body {
@@ -200,29 +276,103 @@
 </head>
 <body>
     <!-- Auth Controls (hidden in OBS) -->
-    <div class="obs-control auth-controls">
+    <div class="obs-control auth-controls thermal-settings">
+        <!-- Settings Toggle Button -->
+        <button 
+            id="toggle-settings" 
+            class="settings-trigger"
+            title="Chat Settings"
+            aria-label="Open chat settings"
+            aria-expanded="false"
+            aria-controls="settings-panel"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+        </button>
+
         <a href="../auth/oauth.html" id="auth-link" class="auth-button">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="white" width="16" height="16">
                 <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
             </svg>
-            <span id="auth-status">Connect with Twitch</span>
+            <span id="auth-status">Connect</span>
         </a>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel hidden absolute top-14 right-0">
+            <header class="settings-header">
+                <h2 class="settings-title">Chat Settings</h2>
+                <button id="reset-settings" class="reset-button">Reset</button>
+            </header>
+            
+            <div class="settings-content">
+                <!-- Appearance Section -->
+                <section class="settings-section">
+                    <h3 class="section-heading">Appearance</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Font Size <span id="size-value" class="value-display">14px</span></label>
+                        <input type="range" id="setting-size" min="8" max="40" step="1" value="14" class="range-input">
+                    </div>
+                </section>
+
+                <!-- Behavior Section -->
+                <section class="settings-section">
+                    <h3 class="section-heading">Behavior</h3>
+                    <div class="settings-group">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="setting-emotes" checked class="accent-black">
+                            <span class="text-sm font-medium">3rd Party Emotes</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Image Permissions Section -->
+                <section class="settings-section">
+                    <h3 class="section-heading">Image Permissions</h3>
+                    <p class="text-[10px] mb-3 opacity-70 italic">Allow these users to post image links:</p>
+                    <div class="flex flex-col gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="perm-mod" checked class="accent-black">
+                            <span class="text-sm font-medium">Moderators</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="perm-vip" checked class="accent-black">
+                            <span class="text-sm font-medium">VIPs</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="perm-t3" class="accent-black">
+                            <span class="text-sm font-medium">Tier 3 Subs</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="perm-t2" class="accent-black">
+                            <span class="text-sm font-medium">Tier 2 Subs</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="perm-t1" class="accent-black">
+                            <span class="text-sm font-medium">Tier 1 Subs</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- OBS Section -->
+                <section class="settings-section">
+                    <button 
+                        id="copy-obs-url" 
+                        class="w-full py-3 bg-black text-white font-bold text-sm uppercase flex items-center justify-center gap-2 hover:bg-gray-800 transition-all"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                        </svg>
+                        Copy OBS URL
+                    </button>
+                </section>
+            </div>
+        </div>
     </div>
 
     <!-- Test Controls - Thermal Printer Style (hidden in OBS) -->
     <div class="obs-control fixed bottom-4 right-4 flex flex-col gap-2 z-50" style="font-family: 'Courier Prime', 'Courier New', monospace;">
-        <!-- Toggles -->
-        <div class="flex gap-2 mb-2">
-            <label class="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.3)] cursor-pointer hover:bg-black hover:text-white transition-all text-[10px] font-bold uppercase">
-                <input type="checkbox" id="toggle-emotes" checked class="accent-black">
-                3rd Party Emotes
-            </label>
-            <label class="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.3)] cursor-pointer hover:bg-black hover:text-white transition-all text-[10px] font-bold uppercase">
-                <input type="checkbox" id="toggle-images" checked class="accent-black">
-                Images (Privileged)
-            </label>
-        </div>
-        
         <div class="flex gap-2">
             <button 
                 onclick="window.testMessage('regular')" 

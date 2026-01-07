@@ -226,6 +226,11 @@ export class ChatMessage {
      * Check if user has special privileges
      */
     isPrivileged() {
+        // Use custom check if provided
+        if (typeof this.options.isPrivilegedCheck === 'function') {
+            return this.options.isPrivilegedCheck(this.tags);
+        }
+
         if (!this.tags) return false;
         
         // Handle test tags or raw tags

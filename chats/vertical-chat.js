@@ -9,15 +9,24 @@ import { ChatMessage } from '../src/components/ChatMessage.js';
 import { EmoteService } from '../src/services/EmoteService.js';
 import { ErrorHandler } from '../src/utils/ErrorHandler.js';
 
-// Configuration
-const CONFIG = {
+// Configuration & Default Settings
+const defaultSettings = {
     maxMessages: 100,
     messageTimeout: 0, // 0 = never disappear
     autoScroll: true,
     filterCommands: true,
     allow3rdPartyEmotes: true,
-    allowImageLinks: true
+    fontSize: 14,
+    perms: {
+        mod: true,
+        vip: true,
+        t3: false,
+        t2: false,
+        t1: false
+    }
 };
+
+let CONFIG = { ...defaultSettings };
 
 class VerticalChatDisplay {
     constructor(container, twitchService, emoteService) {
@@ -28,6 +37,36 @@ class VerticalChatDisplay {
         this.messages = [];
         this.lastMessageSenderId = null;
         this.isPrinting = false;
+    }
+
+    /**
+     * Check if user has special privileges based on current settings
+     */
+    isPrivilegedCheck(tags) {
+        if (!tags) return false;
+        const badges = tags.badges || {};
+        
+        // Broadcaster always has permission
+        if (badges.broadcaster === '1') return true;
+        
+        // Check other permissions based on settings
+        if (CONFIG.perms.mod && (tags.mod === true || badges.moderator === '1')) return true;
+        if (CONFIG.perms.vip && badges.vip === '1') return true;
+        
+        // Subscriber tiers - Twitch uses versions like 1000, 2000, 3000 for tiers in some contexts,
+        // but often the subscriber badge version is just months.
+        // However, we'll check for the common tier indicators.
+        if (badges.subscriber) {
+            const version = parseInt(badges.subscriber);
+            if (CONFIG.perms.t3 && version >= 3000) return true;
+            if (CONFIG.perms.t2 && version >= 2000) return true;
+            if (CONFIG.perms.t1 && version >= 1000) return true;
+            
+            // If it's just a regular sub and T1 is allowed, or if they have any sub badge
+            if (CONFIG.perms.t1) return true;
+        }
+        
+        return false;
     }
 
     /**
@@ -48,7 +87,8 @@ class VerticalChatDisplay {
                 showUserInfo: !isSameUser,
                 badgeUrlResolver: (type, version) => this.twitchService.getBadgeUrl(type, version),
                 emoteService: CONFIG.allow3rdPartyEmotes ? this.emoteService : null,
-                allowImageLinks: CONFIG.allowImageLinks
+                allowImageLinks: true, // We control this via isPrivilegedCheck
+                isPrivilegedCheck: (tags) => this.isPrivilegedCheck(tags)
             });
 
             // Check if should filter
@@ -197,6 +237,112 @@ class VerticalChatDisplay {
 }
 
 /**
+ * Settings Management
+ */
+function loadSettings() {
+    // 1. Load from localStorage
+    const saved = localStorage.getItem('thermal_chat_settings');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            CONFIG = { ...defaultSettings, ...parsed, perms: { ...defaultSettings.perms, ...parsed.perms } };
+        } catch (e) {
+            console.error('Failed to parse settings', e);
+        }
+    }
+
+    // 2. Load from URL params (overrides localStorage)
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('fontSize')) CONFIG.fontSize = parseInt(params.get('fontSize'));
+    if (params.has('emotes')) CONFIG.allow3rdPartyEmotes = params.get('emotes') === 'true';
+    if (params.has('mod')) CONFIG.perms.mod = params.get('mod') === 'true';
+    if (params.has('vip')) CONFIG.perms.vip = params.get('vip') === 'true';
+    if (params.has('t3')) CONFIG.perms.t3 = params.get('t3') === 'true';
+    if (params.has('t2')) CONFIG.perms.t2 = params.get('t2') === 'true';
+    if (params.has('t1')) CONFIG.perms.t1 = params.get('t1') === 'true';
+
+    applySettings();
+    updateUIFromConfig();
+}
+
+function saveSettings() {
+    localStorage.setItem('thermal_chat_settings', JSON.stringify(CONFIG));
+    syncUrlWithSettings();
+}
+
+function applySettings() {
+    // Update global font size
+    let style = document.getElementById('dynamic-thermal-settings');
+    if (!style) {
+        style = document.createElement('style');
+        style.id = 'dynamic-thermal-settings';
+        document.head.appendChild(style);
+    }
+    style.textContent = `
+        .chat-message { font-size: ${CONFIG.fontSize}px !important; }
+        .message-text { font-size: ${CONFIG.fontSize}px !important; }
+        .username { font-size: ${CONFIG.fontSize}px !important; }
+    `;
+}
+
+function syncUrlWithSettings() {
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+
+    params.set('fontSize', CONFIG.fontSize);
+    params.set('emotes', CONFIG.allow3rdPartyEmotes);
+    params.set('mod', CONFIG.perms.mod);
+    params.set('vip', CONFIG.perms.vip);
+    params.set('t3', CONFIG.perms.t3);
+    params.set('t2', CONFIG.perms.t2);
+    params.set('t1', CONFIG.perms.t1);
+
+    window.history.replaceState({}, '', url.toString());
+}
+
+function updateUIFromConfig() {
+    const sizeInput = document.getElementById('setting-size');
+    const sizeValue = document.getElementById('size-value');
+    const emoteToggle = document.getElementById('setting-emotes');
+    const modPerm = document.getElementById('perm-mod');
+    const vipPerm = document.getElementById('perm-vip');
+    const t3Perm = document.getElementById('perm-t3');
+    const t2Perm = document.getElementById('perm-t2');
+    const t1Perm = document.getElementById('perm-t1');
+
+    if (sizeInput) sizeInput.value = CONFIG.fontSize;
+    if (sizeValue) sizeValue.textContent = `${CONFIG.fontSize}px`;
+    if (emoteToggle) emoteToggle.checked = CONFIG.allow3rdPartyEmotes;
+    if (modPerm) modPerm.checked = CONFIG.perms.mod;
+    if (vipPerm) vipPerm.checked = CONFIG.perms.vip;
+    if (t3Perm) t3Perm.checked = CONFIG.perms.t3;
+    if (t2Perm) t2Perm.checked = CONFIG.perms.t2;
+    if (t1Perm) t1Perm.checked = CONFIG.perms.t1;
+}
+
+function copyOBSUrl(twitchService) {
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    
+    // Ensure auth data is included
+    const auth = twitchService.getAuthConfig();
+    if (auth.token) params.set('token', auth.token);
+    if (auth.username) params.set('username', auth.username);
+    if (auth.channelId) params.set('channelId', auth.channelId);
+
+    const copyBtn = document.getElementById('copy-obs-url');
+    navigator.clipboard.writeText(url.toString()).then(() => {
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = 'COPIED!';
+        copyBtn.style.background = '#22c55e';
+        setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+            copyBtn.style.background = 'black';
+        }, 2000);
+    });
+}
+
+/**
  * Initialize the vertical chat
  */
 async function init() {
@@ -207,12 +353,10 @@ async function init() {
         const twitchService = new TwitchService();
         await twitchService.initialize();
 
-        ErrorHandler.info('Twitch service initialized', {
-            channel: twitchService.getChannel(),
-            username: twitchService.getUsername()
-        });
+        // Load settings before creating display
+        loadSettings();
 
-        // Initialize Emote Service (7TV, BTTV, FFZ)
+        // Initialize Emote Service
         const emoteService = new EmoteService();
         const authConfig = twitchService.getAuthConfig();
         await emoteService.initialize(authConfig.channelId);
@@ -220,25 +364,8 @@ async function init() {
         // Fetch badges
         await twitchService.fetchBadges();
 
-        // Apply theme settings if available
-        const theme = twitchService.authConfig.theme;
-        if (theme && (theme.color || theme.fontSize)) {
-            const style = document.createElement('style');
-            let css = '';
-            if (theme.color) {
-                css += `.chat-message::after { background: repeating-linear-gradient(to right, ${theme.color} 0px, ${theme.color} 5px, transparent 5px, transparent 10px) !important; }\n`;
-                css += `.username { color: ${theme.color} !important; }\n`;
-            }
-            if (theme.fontSize) {
-                css += `body { font-size: ${theme.fontSize}px !important; }\n`;
-            }
-            style.textContent = css;
-            document.head.appendChild(style);
-        }
-
         // Initialize chat display
         const chatContainer = document.getElementById('chatContainer');
-        const receiptPaper = document.getElementById('receiptPaper');
         const chatDisplay = new VerticalChatDisplay(chatContainer, twitchService, emoteService);
 
         // Set up message handler
@@ -252,29 +379,63 @@ async function init() {
         // Start message handling
         messageHandler.start();
 
+        // UI Event Listeners
+        const toggleBtn = document.getElementById('toggle-settings');
+        const panel = document.getElementById('settings-panel');
+        const resetBtn = document.getElementById('reset-settings');
+        const copyBtn = document.getElementById('copy-obs-url');
+
+        if (toggleBtn && panel) {
+            toggleBtn.addEventListener('click', () => {
+                panel.classList.toggle('hidden');
+                toggleBtn.setAttribute('aria-expanded', !panel.classList.contains('hidden'));
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!panel.classList.contains('hidden') && !panel.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    panel.classList.add('hidden');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                CONFIG = { ...defaultSettings, perms: { ...defaultSettings.perms } };
+                saveSettings();
+                applySettings();
+                updateUIFromConfig();
+            });
+        }
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => copyOBSUrl(twitchService));
+        }
+
+        // Input listeners
+        document.getElementById('setting-size')?.addEventListener('input', (e) => {
+            CONFIG.fontSize = parseInt(e.target.value);
+            document.getElementById('size-value').textContent = `${CONFIG.fontSize}px`;
+            applySettings();
+            saveSettings();
+        });
+
+        document.getElementById('setting-emotes')?.addEventListener('change', (e) => {
+            CONFIG.allow3rdPartyEmotes = e.target.checked;
+            saveSettings();
+        });
+
+        ['mod', 'vip', 't3', 't2', 't1'].forEach(id => {
+            document.getElementById(`perm-${id}`)?.addEventListener('change', (e) => {
+                CONFIG.perms[id] = e.target.checked;
+                saveSettings();
+            });
+        });
+
         // Make available globally for debugging
         window.chatDisplay = chatDisplay;
         window.twitchService = twitchService;
-
-        ErrorHandler.info('Vertical chat initialized successfully');
-
-        // Connect UI toggles
-        const emoteToggle = document.getElementById('toggle-emotes');
-        const imageToggle = document.getElementById('toggle-images');
-
-        if (emoteToggle) {
-            emoteToggle.addEventListener('change', (e) => {
-                CONFIG.allow3rdPartyEmotes = e.target.checked;
-                ErrorHandler.info(`3rd party emotes ${CONFIG.allow3rdPartyEmotes ? 'enabled' : 'disabled'}`);
-            });
-        }
-
-        if (imageToggle) {
-            imageToggle.addEventListener('change', (e) => {
-                CONFIG.allowImageLinks = e.target.checked;
-                ErrorHandler.info(`Image links ${CONFIG.allowImageLinks ? 'enabled' : 'disabled'}`);
-            });
-        }
 
         // Test button functionality
         window.testMessage = (type = 'regular') => {
@@ -283,7 +444,7 @@ async function init() {
                 'user-id': '123456',
                 'message-id': Date.now().toString(),
                 color: '#FF6B6B',
-                badges: { broadcaster: '1' }, // Added broadcaster badge for testing image links
+                badges: { broadcaster: '1' },
                 username: 'testuser'
             };
 
@@ -296,45 +457,35 @@ async function init() {
                 username: 'anotheruser'
             };
 
+            const subTags = {
+                'display-name': 'Subscriber',
+                'user-id': '555555',
+                'message-id': (Date.now() + 2).toString(),
+                color: '#9147ff',
+                badges: { subscriber: '3000' },
+                username: 'subscriber'
+            };
+
             if (type === 'regular') {
                 chatDisplay.displayMessage(testTags, 'This is a test message in vertical chat! 👋');
             } else if (type === 'long') {
-                chatDisplay.displayMessage(testTags, 'This is a much longer message to test word wrapping and how the vertical chat handles messages that span multiple lines. It should wrap nicely and remain readable! 🎉');
+                chatDisplay.displayMessage(testTags, 'This is a much longer message to test word wrapping and how the vertical chat handles messages that span multiple lines.');
             } else if (type === 'image') {
-                chatDisplay.displayMessage(testTags, 'Check out this cool image: https://placehold.co/400x200.png');
+                chatDisplay.displayMessage(subTags, 'Test image: https://placehold.co/400x200.png');
             } else if (type === 'emotes') {
-                // Using DanSexy (FFZ Global) and SourPls (BTTV Global) for guaranteed tests
                 chatDisplay.displayMessage(testTags, 'Testing 3rd party emotes: EZ Clapped DanSexy SourPls');
             } else if (type === 'sequence') {
                 chatDisplay.displayMessage(testTags, 'First message from TestUser');
-                
-                setTimeout(() => {
-                    chatDisplay.displayMessage(testTags, 'Second message from same user (no header)');
-                }, 1000);
-                
-                setTimeout(() => {
-                    chatDisplay.displayMessage(secondUserTags, 'Message from different user (has header)');
-                }, 2000);
-                
-                setTimeout(() => {
-                    chatDisplay.displayMessage(testTags, 'Back to TestUser (header returns)');
-                }, 3000);
+                setTimeout(() => chatDisplay.displayMessage(testTags, 'Second message from same user'), 1000);
             } else if (type === 'clear') {
                 chatDisplay.clear();
             }
         };
 
+        ErrorHandler.info('Vertical chat initialized successfully');
+
     } catch (error) {
         ErrorHandler.handle(error, 'vertical_chat_init');
-        
-        // Show error in UI
-        const chatContainer = document.getElementById('chatContainer');
-        chatContainer.innerHTML = `
-            <div style="color: white; background: rgba(239, 68, 68, 0.9); padding: 1rem; border-radius: 0.5rem; margin: 1rem;">
-                <strong>Error:</strong> ${error.message}<br>
-                <small>Check console for details</small>
-            </div>
-        `;
     }
 }
 
@@ -346,4 +497,3 @@ if (document.readyState === 'loading') {
 }
 
 export { VerticalChatDisplay };
-

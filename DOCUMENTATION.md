@@ -1,5 +1,30 @@
 # Project Documentation: Overlay-1
 
+## Session: January 7, 2026
+
+### Changes Made
+
+#### Thermal Chat Settings Panel
+- **Decision:** Implement a comprehensive settings panel for the Thermal Receipt chat.
+- **Reasoning:** Users need the ability to customize font size, behavior, and permissions (especially for image links) without manual code changes or complex URL editing.
+- **Implementation:**
+    - **UI:** Added a settings button next to the Twitch auth button in the top-right corner.
+    - **Panel:** Created a fly-out panel with controls for:
+        - Font size (8px to 40px range).
+        - 3rd Party Emotes toggle.
+        - Granular image permissions for Moderators, VIPs, and all three subscriber tiers (T1, T2, T3).
+    - **Styling:** Applied a "Thermal Printer" aesthetic to the settings UI (black borders, white background, Courier font, shadow offsets) to maintain visual consistency.
+    - **Persistence:** Settings are automatically saved to `localStorage` and synchronized with URL parameters for easy sharing or permanent OBS links.
+    - **Copy OBS URL:** Added a one-click button to generate and copy a fully configured URL including authentication tokens and all UI preferences.
+
+#### Customizable Image Permissions
+- **Decision:** Allow streamers to define exactly who can share images in the thermal chat.
+- **Reasoning:** streamers wanted more control over image sharing beyond just "Broadcaster/Mod/VIP".
+- **Implementation:**
+    - Modified `src/components/ChatMessage.js` to accept a custom `isPrivilegedCheck` callback.
+    - Updated `chats/vertical-chat.js` to implement this callback using the new permission settings.
+    - Added logic to check for specific subscriber tier indicators (1000, 2000, 3000) in the Twitch badges.
+
 ## Session: January 5, 2026
 
 ### Changes Made
@@ -43,4 +68,4 @@ All requested features (message persistence, 3rd party emotes, and image links) 
 - **Widget Configuration:** Widgets use a `CONFIG` object for easy adjustment of behavioral parameters.
 - **Animations:** Thermal printer style uses a smooth sliding animation for the entire "receipt paper" unit to simulate a continuous printout.
 - **Message Management:** Old messages are removed from the DOM when the maximum limit is reached to prevent performance issues and memory leaks, while maintaining a smooth transition.
-
+- **Extensible Components:** `ChatMessage` is now more flexible, allowing individual widgets to inject their own privilege logic without duplicating the complex rendering and sanitization code.
