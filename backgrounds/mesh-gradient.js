@@ -7,12 +7,12 @@ import { ErrorHandler } from '../src/utils/ErrorHandler.js';
 const CONFIG = {
     colorCount: 6,
     baseColors: [
-        '#050505', // Deep Black
-        '#121212', // Very Dark
-        '#1e1e1e', // Dark
-        '#2a2a2a', // Mid Dark
-        '#383838', // Mid Gray
-        '#4a4a4a'  // Lightest Gray
+        '#333333', // Dark Gray
+        '#444444', // Medium Dark Gray
+        '#555555', // Medium Gray
+        '#666666', // Medium Light Gray
+        '#777777', // Light Gray
+        '#888888'  // Lighter Gray
     ],
     animationSpeed: 0.1,   // Slower, more calming motion
     transitionSpeed: 0.02, // Slower for softer transitions
