@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream End Stamp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../styles/components/settings.css" />
+    <link rel="stylesheet" href="../styles/obs-controls.css" />
+    <link rel="stylesheet" href="stamp.css" />
+</head>
+<body class="bg-transparent overflow-hidden">
+    <div id="stamp-container" class="stamp-container hidden">
+        <div class="stamp">
+            <div class="stamp-top">
+                <h1 id="stamp-main-title">AUTHENTIC DESIGN & HELP</h1>
+            </div>
+            <div class="stamp-main">
+                <div class="stamp-left">
+                    <div class="profile-circle">
+                        <img id="user-pfp" src="" alt="Profile Picture" crossorigin="anonymous">
+                    </div>
+                </div>
+                <div class="stamp-right">
+                    <div class="stamp-row">
+                        <div class="stamp-row-content">
+                            <span class="stamp-label">THIS IS STREAM #</span>
+                            <span id="stream-count" class="handwritten">0</span>
+                        </div>
+                    </div>
+                    <div class="stamp-row">
+                        <div class="stamp-row-content">
+                            <span class="stamp-label">FROM THE</span>
+                            <span id="studio-name" class="handwritten">AAOA STUDIO</span>
+                        </div>
+                    </div>
+                    <div class="stamp-row no-border">
+                        <div class="stamp-bottom-left">
+                            <span class="stamp-label label-small">QUALITY INSPECTED BY</span>
+                            <span id="inspector-name" class="handwritten">STREAMER</span>
+                        </div>
+                        <div class="stamp-bottom-right">
+                            <span class="stamp-label label-small">DATE</span>
+                            <div id="stamp-date" class="handwritten">DATE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel (hidden in OBS) -->
+    <div class="obs-control fixed top-4 left-4 flex flex-col gap-2 z-20">
+        <button 
+            id="toggle-settings" 
+            class="settings-trigger"
+            title="Stamp Settings"
+            aria-label="Open stamp settings"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+        </button>
+
+        <div id="settings-panel" class="settings-panel hidden">
+            <header class="settings-header">
+                <h2 class="settings-title">Stamp Settings</h2>
+                <button id="reset-settings" class="reset-button">Reset</button>
+            </header>
+            
+            <div class="settings-content">
+                <section class="settings-section">
+                    <h3 class="section-heading">Content</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Main Title</label>
+                        <input type="text" id="setting-title" class="select-input" value="AUTHENTIC DESIGN & HELP">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Studio Name</label>
+                        <input type="text" id="setting-studio" class="select-input" value="AAOA STUDIO">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Stream # (manual)</label>
+                        <input type="number" id="setting-stream-number" class="select-input" value="0">
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Appearance</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Stamp Color</label>
+                        <div class="flex items-center gap-2">
+                            <div class="color-input-wrapper flex-1">
+                                <input type="color" id="setting-color" class="color-input" value="#FF4C3B">
+                            </div>
+                            <button id="reset-color" class="px-3 py-1 text-xs bg-secondary hover:bg-accent rounded-md transition-colors">Default</button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Scale <span id="scale-value" class="value-display">100%</span></label>
+                        <input type="range" id="setting-scale" min="50" max="150" step="5" value="100" class="range-input">
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Actions</h3>
+                    <div class="settings-group">
+                        <button id="manual-trigger" class="w-full px-4 py-3 rounded-4xl bg-gradient-to-r from-primary to-purple-600 text-white font-bold text-sm transition-all hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2">
+                            Show Stamp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OBS Control Buttons -->
+    <div class="obs-control fixed top-4 right-4 flex items-center gap-2 z-10">
+        <button id="test-show" class="px-4 py-2 rounded-4xl bg-green-600 text-white font-bold text-sm transition-all hover:scale-105 hover:shadow-lg">Show</button>
+        <button id="test-hide" class="px-4 py-2 rounded-4xl bg-red-600 text-white font-bold text-sm transition-all hover:scale-105 hover:shadow-lg">Hide</button>
+        <button id="copy-obs-url" class="px-6 py-2 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:scale-105">Copy OBS URL</button>
+    </div>
+
+    <script type="module" src="stamp.js"></script>
+</body>
+</html>
