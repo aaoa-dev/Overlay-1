@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lower Third Overlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../styles/components/settings.css" />
+    <link rel="stylesheet" href="../styles/obs-controls.css" />
+    <link rel="stylesheet" href="lower-third.css" />
+</head>
+<body class="bg-transparent overflow-hidden">
+    <!-- Lower Third Container -->
+    <div id="lower-third-container" class="hidden">
+        <div id="lower-third" class="lower-third">
+            <div class="lower-third-content">
+                <div class="lower-third-username" id="username">Username</div>
+                <div class="lower-third-title" id="stream-title">Stream Title</div>
+                <div class="lower-third-meta" id="meta-info">Category</div>
+            </div>
+            <div class="lower-third-decoration"></div>
+        </div>
+    </div>
+
+    <!-- Settings Panel (hidden in OBS) -->
+    <div class="obs-control fixed top-4 left-4 flex flex-col gap-2 z-20">
+        <button 
+            id="toggle-settings" 
+            class="settings-trigger"
+            title="Lower Third Settings"
+            aria-label="Open lower third settings"
+            aria-expanded="false"
+            aria-controls="settings-panel"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+        </button>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel hidden">
+            <header class="settings-header">
+                <h2 class="settings-title">Lower Third Settings</h2>
+                <button id="reset-settings" class="reset-button">Reset</button>
+            </header>
+            
+            <div class="settings-content">
+                <!-- Display Section -->
+                <section class="settings-section">
+                    <h3 class="section-heading">Display Options</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Style</label>
+                        <select id="setting-style" class="select-input">
+                            <option value="modern">Modern</option>
+                            <option value="minimal">Minimal</option>
+                            <option value="bold">Bold</option>
+                            <option value="gradient">Gradient</option>
+                        </select>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Position</label>
+                        <select id="setting-position" class="select-input">
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="top-left">Top Left</option>
+                            <option value="top-right">Top Right</option>
+                        </select>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Custom Title (optional)</label>
+                        <input type="text" id="setting-custom-title" class="select-input" placeholder="Regex pattern or plain text">
+                        <p class="text-xs text-muted-foreground mt-1">Regex extracts from title, plain text overrides it. Empty = full title.</p>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Meta Info</label>
+                        <select id="setting-meta" class="select-input">
+                            <option value="category">Category</option>
+                            <option value="viewers">Viewer Count</option>
+                            <option value="uptime">Uptime</option>
+                            <option value="none">None</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Animation Section -->
+                <section class="settings-section">
+                    <h3 class="section-heading">Animation</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Animation Style</label>
+                        <select id="setting-animation" class="select-input">
+                            <option value="slide">Slide In</option>
+                            <option value="fade">Fade In</option>
+                            <option value="bounce">Bounce In</option>
+                            <option value="wipe">Wipe In</option>
+                        </select>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Display Duration <span id="duration-value" class="value-display">8s</span></label>
+                        <input type="range" id="setting-duration" min="3" max="30" step="1" value="8" class="range-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Auto Show Interval (min) <span id="interval-value" class="value-display">5m</span></label>
+                        <input type="range" id="setting-interval" min="0" max="15" step="1" value="5" class="range-input">
+                        <p class="text-xs text-muted-foreground mt-1">0 = Manual only</p>
+                    </div>
+                </section>
+
+                <!-- Appearance Section -->
+                <section class="settings-section">
+                    <h3 class="section-heading">Appearance</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Primary Color</label>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="setting-color" class="color-input" value="#8b5cf6">
+                            <span id="color-value" class="color-value-text">#8B5CF6</span>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Background Opacity <span id="opacity-value" class="value-display">90%</span></label>
+                        <input type="range" id="setting-opacity" min="0" max="100" step="5" value="90" class="range-input">
+                    </div>
+                </section>
+
+                <!-- Manual Control Section -->
+                <section class="settings-section">
+                    <h3 class="section-heading">Manual Control</h3>
+                    <div class="settings-group">
+                        <button id="manual-trigger" class="w-full px-4 py-3 rounded-4xl bg-gradient-to-r from-primary to-purple-600 text-white font-bold text-sm transition-all hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Trigger Lower Third Now
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- OBS Control Buttons -->
+    <div class="obs-control fixed top-4 right-4 flex items-center gap-2 z-10">
+        <button 
+            id="test-show" 
+            class="px-4 py-2 rounded-4xl bg-green-600 text-white font-bold text-sm transition-all hover:scale-105 hover:shadow-lg flex items-center gap-2"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Test Show
+        </button>
+        <button 
+            id="test-hide" 
+            class="px-4 py-2 rounded-4xl bg-red-600 text-white font-bold text-sm transition-all hover:scale-105 hover:shadow-lg flex items-center gap-2"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+            </svg>
+            Test Hide
+        </button>
+        <button 
+            id="copy-obs-url" 
+            class="px-6 py-2 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-2"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            Copy OBS URL
+        </button>
+    </div>
+
+    <script type="module" src="lower-third.js"></script>
+</body>
+</html>
+

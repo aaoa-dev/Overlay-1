@@ -23,12 +23,16 @@ const OVERLAYS = [
   { id: 'chatters', title: 'Active Bubbles', icon: '👥' },
   { id: 'signature', title: 'Signature Alerts', icon: '✍️' },
   { id: 'cursor-welcome', title: 'Cursor Welcome', icon: '🖱️' },
+  { id: 'polaroid-alerts', title: 'Polaroid Alerts', icon: '📷' },
   { id: 'followers', title: 'Follower Goal', icon: '📈' },
   { id: 'subscribers', title: 'Sub Counter', icon: '❤️' },
   { id: 'custom-goal', title: 'Custom Goal', icon: '🚩' },
   { id: 'timer', title: 'Stream Timer', icon: '⏱️' },
   { id: 'sound-board', title: 'Sound Board', icon: '🔊' },
   { id: 'backgrounds', title: 'Animated Backgrounds', icon: '🎨' },
+  { id: 'mesh-gradient', title: 'Reactive Mesh', icon: '🌊' },
+  { id: 'sticker', title: 'Sticker Overlay', icon: '🎯' },
+  { id: 'lower-third', title: 'Lower Third', icon: '📺' },
 ];
 
 function generateSVGPlaceholder(overlay) {
