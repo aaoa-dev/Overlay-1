@@ -189,19 +189,11 @@ class StreamEndStampWidget {
     }
 
     show() {
-        if (this.isVisible) return;
-        this.updateDate();
-        this.updateContent();
-        this.container.classList.remove('hidden');
-        this.container.classList.add('animate');
-        this.isVisible = true;
+        // No-op: stamp is always visible
     }
 
     hide() {
-        if (!this.isVisible) return;
-        this.container.classList.add('hidden');
-        this.container.classList.remove('animate');
-        this.isVisible = false;
+        // No-op: stamp is always visible
     }
 
     copyOBSUrl() {
