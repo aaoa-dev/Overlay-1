@@ -1,6 +1,30 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
-import { copyFileSync, mkdirSync, readdirSync, existsSync } from 'fs';
+import { resolve, relative, extname } from 'path';
+import { copyFileSync, mkdirSync, readdirSync, existsSync, statSync } from 'fs';
+
+// Helper to find all HTML files in the project
+function getHtmlInputs(dir, inputMap = {}) {
+  const items = readdirSync(dir);
+
+  items.forEach(item => {
+    const fullPath = resolve(dir, item);
+    const stat = statSync(fullPath);
+
+    if (stat.isDirectory()) {
+      // Skip node_modules, dist, and public
+      if (!['node_modules', 'dist', 'public', '.git'].includes(item)) {
+        getHtmlInputs(fullPath, inputMap);
+      }
+    } else if (item.endsWith('.html')) {
+      // Create a unique key for each HTML file
+      const relativePath = relative(__dirname, fullPath);
+      const name = relativePath.replace(/\.html$/, '').replace(/\//g, '_');
+      inputMap[name] = fullPath;
+    }
+  });
+
+  return inputMap;
+}
 
 // Plugin to copy preview images to dist
 function copyPreviewsPlugin() {
@@ -31,6 +55,8 @@ function copyPreviewsPlugin() {
   };
 }
 
+const htmlInputs = getHtmlInputs(__dirname);
+
 export default defineConfig({
   root: '.',
   // GitHub Pages usually deploys to /repo-name/
@@ -42,26 +68,7 @@ export default defineConfig({
   
   build: {
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        chat: resolve(__dirname, 'chats/chat.html'),
-        verticalChat: resolve(__dirname, 'chats/vertical-chat.html'),
-        alerts: resolve(__dirname, 'alerts/alerts.html'),
-        cursorWelcome: resolve(__dirname, 'alerts/cursor-welcome.html'),
-        signatureAlerts: resolve(__dirname, 'alerts/signature-alerts.html'),
-        polaroidAlerts: resolve(__dirname, 'alerts/polaroid-alerts.html'),
-        counter: resolve(__dirname, 'widgets/counter.html'),
-        timer: resolve(__dirname, 'widgets/timer.html'),
-        chatters: resolve(__dirname, 'widgets/chatters.html'),
-        voiceMonitor: resolve(__dirname, 'widgets/voice-monitor.html'),
-        soundBoard: resolve(__dirname, 'widgets/sound-board.html'),
-        sticker: resolve(__dirname, 'widgets/sticker.html'),
-        bgGenerator: resolve(__dirname, 'backgrounds/generator.html'),
-        bgBackground: resolve(__dirname, 'backgrounds/background.html'),
-        meshGradient: resolve(__dirname, 'backgrounds/mesh-gradient.html'),
-        oauth: resolve(__dirname, 'auth/oauth.html'),
-        callback: resolve(__dirname, 'auth/callback.html'),
-      },
+      input: htmlInputs,
     },
     outDir: 'dist',
     emptyOutDir: true,
