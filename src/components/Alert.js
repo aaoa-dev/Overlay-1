@@ -16,6 +16,7 @@ export class Alert {
         this.username = username;
         this.color = color || '#ffffff';
         this.visitCount = visitCount;
+        this.profilePictureUrl = options.profilePictureUrl || null;
         this.options = {
             duration: options.duration || 4000,
             slideInDuration: options.slideInDuration || 700,
@@ -57,17 +58,22 @@ export class Alert {
      */
     create() {
         const alert = document.createElement('div');
-        alert.className = 'alert-content fixed left-1/2 -translate-x-1/2 -top-20 transition-all duration-700';
+        alert.className = 'alert-content rounded-full fixed left-1/2 -translate-x-1/2 -top-20 transition-all duration-700';
         
         const message = this.getMessage();
         
-        alert.innerHTML = `
-            <div class="flex items-center rounded-full p-2 text-white shadow-lg bg-black h-16">
-                <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center" style="background-color: ${this.color}">
+        // Use profile picture if available, otherwise use letter avatar
+        const avatarHTML = this.profilePictureUrl 
+            ? `<img src="${this.profilePictureUrl}" alt="${this.username}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" />`
+            : `<div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center" style="background-color: ${this.color}">
                     <span class="text-2xl font-bold text-white">
                         ${this.username[0].toUpperCase()}
                     </span>
-                </div>
+                </div>`;
+        
+        alert.innerHTML = `
+            <div class="flex items-center rounded-full p-2 text-white bg-black h-16">
+                ${avatarHTML}
                 <div class="flex flex-col px-4 min-w-0">
                     <span class="font-bold truncate">${this.username}</span>
                     <span class="text-sm opacity-90 truncate">${message}</span>

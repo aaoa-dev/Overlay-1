@@ -29,6 +29,7 @@ class AlertsManager {
         this.alertQueue = new AlertQueue();
         this.userData = {};
         this.streamDate = null;
+        this.profilePictureCache = {}; // Cache for profile pictures
         
         this.loadUserData();
     }
@@ -86,6 +87,31 @@ class AlertsManager {
     }
 
     /**
+     * Fetch and cache user profile picture
+     */
+    async getProfilePicture(username) {
+        // Check cache first
+        if (this.profilePictureCache[username]) {
+            return this.profilePictureCache[username];
+        }
+
+        // Fetch from API if available
+        if (this.twitchService.api) {
+            try {
+                const userInfo = await this.twitchService.api.fetchUserInfo(username);
+                if (userInfo && userInfo.profile_image_url) {
+                    this.profilePictureCache[username] = userInfo.profile_image_url;
+                    return userInfo.profile_image_url;
+                }
+            } catch (error) {
+                ErrorHandler.debug('Failed to fetch profile picture', { username, error: error.message });
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Handle user visit
      */
     async handleVisit(username, displayName, color, tags) {
@@ -130,8 +156,11 @@ class AlertsManager {
                 }
             }
 
+            // Fetch profile picture
+            const profilePictureUrl = await this.getProfilePicture(username);
+
             // Queue alert
-            const alert = Alert.create(displayName, color, user.count);
+            const alert = Alert.create(displayName, color, user.count, { profilePictureUrl });
             this.alertQueue.add(alert, (alert) => {
                 // Trigger confetti for milestones
                 if (milestoneCount > 0) {
@@ -183,8 +212,11 @@ class AlertsManager {
                 await this.twitchService.say(message);
             }
 
+            // Fetch profile picture
+            const profilePictureUrl = await this.getProfilePicture(username);
+
             // Queue alert
-            const alert = Alert.create(displayName, color, user.count);
+            const alert = Alert.create(displayName, color, user.count, { profilePictureUrl });
             this.alertQueue.add(alert);
 
         } catch (error) {
@@ -362,11 +394,11 @@ async function init() {
         window.alertsManager = alertsManager;
         window.streamStats = streamStats;
 
-        // Define testing functions for the UI buttons
+        // Define testing functions for the UI buttons (no chat messages sent)
         globalThis.testAlert = (type) => {
             const testUsers = {
-                new: { username: 'test_new_user', displayName: 'NewUser123', color: '#ff4444', tags: { 'first-msg': true } },
-                returning: { username: 'test_returning_user', displayName: 'RegularViewer', color: '#4444ff', tags: { 'returning-chatter': true } },
+                new: { username: 'test_new_user', displayName: 'NewUser123', color: '#ff4444', count: 1 },
+                returning: { username: 'test_returning_user', displayName: 'RegularViewer', color: '#4444ff', count: 5 },
                 milestone10: { username: 'loyal_fan_10', displayName: 'LoyalFan10', color: '#44ff44', count: 10 },
                 milestone50: { username: 'loyal_fan_50', displayName: 'LoyalFan50', color: '#C0C0C0', count: 50 },
                 milestone100: { username: 'loyal_fan_100', displayName: 'LoyalFan100', color: '#FFD700', count: 100 }
@@ -375,15 +407,16 @@ async function init() {
             const testData = testUsers[type];
             if (!testData) return;
 
+            // Create alert directly without sending chat messages
+            const alert = Alert.create(testData.displayName, testData.color, testData.count);
+            
+            // Add to queue with confetti for milestones
             if (type.startsWith('milestone')) {
-                // Manually trigger milestone
-                const alert = Alert.create(testData.displayName, testData.color, testData.count);
                 alertsManager.alertQueue.add(alert, () => {
                     alertsManager.triggerConfetti(testData.count);
                 });
             } else {
-                // Simulate visit
-                alertsManager.handleVisit(testData.username, testData.displayName, testData.color, testData.tags);
+                alertsManager.alertQueue.add(alert);
             }
         };
 
