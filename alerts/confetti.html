@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="confetti.css" />
+    <link rel="stylesheet" href="../styles/obs-controls.css" />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script type="module" src="confetti.js"></script>
+  </head>
+  <body class="m-0 p-0 h-screen w-screen overflow-hidden bg-transparent">
+    <!-- Confetti canvas will be rendered by the library -->
+    <canvas id="confettiCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none"></canvas>
+
+    <!-- Control buttons (hidden in OBS) -->
+    <div class="obs-control fixed bottom-4 right-4 flex flex-col gap-2 pointer-events-auto">
+      <button 
+        onclick="globalThis.testConfetti('sub')" 
+        class="confetti-btn bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:bg-purple-700 transition-colors"
+      >
+        Test Sub
+      </button>
+      <button 
+        onclick="globalThis.testConfetti('giftsub')" 
+        class="confetti-btn bg-pink-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:bg-pink-700 transition-colors"
+      >
+        Test Gift Sub
+      </button>
+      <button 
+        onclick="globalThis.testConfetti('cheer')" 
+        class="confetti-btn bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg font-semibold shadow-lg hover:bg-yellow-600 transition-colors"
+      >
+        Test Cheer
+      </button>
+      <button 
+        onclick="globalThis.testConfetti('bigcheer')" 
+        class="confetti-btn bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:bg-orange-700 transition-colors"
+      >
+        Test Big Cheer (1000+)
+      </button>
+      <button 
+        onclick="globalThis.testConfetti('raid')" 
+        class="confetti-btn bg-red-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:bg-red-700 transition-colors"
+      >
+        Test Raid
+      </button>
+    </div>
+  </body>
+</html>

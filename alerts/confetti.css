@@ -1,0 +1,75 @@
+/* Confetti Overlay Styles */
+
+body {
+    background: transparent !important;
+}
+
+#confettiCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Test button styling to ensure visibility */
+.confetti-btn {
+    min-width: 180px;
+    cursor: pointer;
+    border: none !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 12px 16px !important;
+}
+
+.confetti-btn:active {
+    transform: scale(0.95);
+}
+
+/* Ensure specific button colors override any defaults */
+.bg-purple-600 {
+    background-color: #9333ea !important;
+    color: #ffffff !important;
+}
+
+.bg-purple-600:hover {
+    background-color: #7c3aed !important;
+}
+
+.bg-pink-600 {
+    background-color: #db2777 !important;
+    color: #ffffff !important;
+}
+
+.bg-pink-600:hover {
+    background-color: #be185d !important;
+}
+
+.bg-yellow-500 {
+    background-color: #eab308 !important;
+    color: #000000 !important;
+}
+
+.bg-yellow-500:hover {
+    background-color: #ca8a04 !important;
+}
+
+.bg-orange-600 {
+    background-color: #ea580c !important;
+    color: #ffffff !important;
+}
+
+.bg-orange-600:hover {
+    background-color: #c2410c !important;
+}
+
+.bg-red-600 {
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.bg-red-600:hover {
+    background-color: #b91c1c !important;
+}

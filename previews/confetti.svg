@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1280" height="720" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad-confetti" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd700;stop-opacity:0.3" />
+      <stop offset="50%" style="stop-color:#ff69b4;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#9147ff;stop-opacity:0.15" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1280" height="720" fill="#0a0a0a"/>
+  <rect width="1280" height="720" fill="url(#grad-confetti)"/>
+  
+  <!-- Confetti particles scattered around -->
+  <circle cx="200" cy="150" r="8" fill="#ffd700" opacity="0.8"/>
+  <rect x="450" y="100" width="12" height="12" fill="#ff69b4" opacity="0.8"/>
+  <circle cx="800" cy="200" r="6" fill="#9147ff" opacity="0.8"/>
+  <rect x="1000" y="250" width="10" height="10" fill="#ffd700" opacity="0.8"/>
+  <circle cx="350" cy="300" r="7" fill="#ff69b4" opacity="0.7"/>
+  <rect x="950" y="350" width="11" height="11" fill="#9147ff" opacity="0.7"/>
+  <circle cx="150" cy="450" r="9" fill="#ffd700" opacity="0.6"/>
+  <rect x="600" y="500" width="13" height="13" fill="#ff69b4" opacity="0.6"/>
+  <circle cx="1100" cy="550" r="8" fill="#9147ff" opacity="0.6"/>
+  <rect x="400" y="600" width="10" height="10" fill="#ffd700" opacity="0.5"/>
+  
+  <!-- Icon Circle -->
+  <circle cx="640" cy="300" r="80" fill="#9147ff" opacity="0.3"/>
+  
+  <!-- Icon Emoji -->
+  <text x="640" y="330" font-family="Arial, sans-serif" font-size="80" fill="#ffd700" text-anchor="middle">🎉</text>
+  
+  <!-- Title -->
+  <text x="640" y="450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle">Confetti Overlay</text>
+  
+  <!-- Subtitle -->
+  <text x="640" y="500" font-family="Arial, sans-serif" font-size="24" fill="#a0a0a0" text-anchor="middle">Preview Placeholder</text>
+  
+  <!-- Instructions -->
+  <text x="640" y="580" font-family="Arial, sans-serif" font-size="18" fill="#666666" text-anchor="middle">Replace this with an actual screenshot</text>
+  <text x="640" y="610" font-family="Arial, sans-serif" font-size="18" fill="#666666" text-anchor="middle">See PREVIEW_IMAGES_GUIDE.md for instructions</text>
+</svg>
