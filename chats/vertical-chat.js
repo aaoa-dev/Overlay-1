@@ -17,6 +17,7 @@ const defaultSettings = {
     filterCommands: true,
     allow3rdPartyEmotes: true,
     fontSize: 14,
+    theme: 'auto', // 'auto', 'light', or 'dark'
     perms: {
         mod: true,
         vip: true,
@@ -254,6 +255,7 @@ function loadSettings() {
     // 2. Load from URL params (overrides localStorage)
     const params = new URLSearchParams(window.location.search);
     if (params.has('fontSize')) CONFIG.fontSize = parseInt(params.get('fontSize'));
+    if (params.has('theme')) CONFIG.theme = params.get('theme');
     if (params.has('emotes')) CONFIG.allow3rdPartyEmotes = params.get('emotes') === 'true';
     if (params.has('mod')) CONFIG.perms.mod = params.get('mod') === 'true';
     if (params.has('vip')) CONFIG.perms.vip = params.get('vip') === 'true';
@@ -271,6 +273,9 @@ function saveSettings() {
 }
 
 function applySettings() {
+    // Apply theme to body
+    document.body.setAttribute('data-theme', CONFIG.theme || 'auto');
+
     // Update global font size
     let style = document.getElementById('dynamic-thermal-settings');
     if (!style) {
@@ -290,6 +295,7 @@ function syncUrlWithSettings() {
     const params = url.searchParams;
 
     params.set('fontSize', CONFIG.fontSize);
+    params.set('theme', CONFIG.theme);
     params.set('emotes', CONFIG.allow3rdPartyEmotes);
     params.set('mod', CONFIG.perms.mod);
     params.set('vip', CONFIG.perms.vip);
@@ -303,6 +309,7 @@ function syncUrlWithSettings() {
 function updateUIFromConfig() {
     const sizeInput = document.getElementById('setting-size');
     const sizeValue = document.getElementById('size-value');
+    const themeSelect = document.getElementById('setting-theme');
     const emoteToggle = document.getElementById('setting-emotes');
     const modPerm = document.getElementById('perm-mod');
     const vipPerm = document.getElementById('perm-vip');
@@ -312,6 +319,7 @@ function updateUIFromConfig() {
 
     if (sizeInput) sizeInput.value = CONFIG.fontSize;
     if (sizeValue) sizeValue.textContent = `${CONFIG.fontSize}px`;
+    if (themeSelect) themeSelect.value = CONFIG.theme;
     if (emoteToggle) emoteToggle.checked = CONFIG.allow3rdPartyEmotes;
     if (modPerm) modPerm.checked = CONFIG.perms.mod;
     if (vipPerm) vipPerm.checked = CONFIG.perms.vip;
@@ -417,6 +425,12 @@ async function init() {
         document.getElementById('setting-size')?.addEventListener('input', (e) => {
             CONFIG.fontSize = parseInt(e.target.value);
             document.getElementById('size-value').textContent = `${CONFIG.fontSize}px`;
+            applySettings();
+            saveSettings();
+        });
+
+        document.getElementById('setting-theme')?.addEventListener('change', (e) => {
+            CONFIG.theme = e.target.value;
             applySettings();
             saveSettings();
         });

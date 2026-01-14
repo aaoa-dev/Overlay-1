@@ -1,5 +1,34 @@
 # Project Documentation: Overlay-1
 
+## Session: January 14, 2026
+
+### Changes Made
+
+#### System Theme Support for Thermal Chat
+- **Decision:** Add automatic system theme detection and support for dark/light mode in the Thermal Receipt chat.
+- **Reasoning:** Users wanted the thermal chat to react to their system theme settings, especially when viewed through OBS Browser sources, which support the CSS `prefers-color-scheme` media query.
+- **Implementation:**
+    - **CSS Variables:** Introduced CSS custom properties (`--receipt-bg`, `--receipt-text`, `--receipt-border`, `--receipt-divider`, `--receipt-shadow`) to centralize theme colors.
+    - **Theme Modes:** Added three theme options:
+        - `auto` - Follows system preference using `prefers-color-scheme` media query
+        - `light` - Forces light theme (white background, black text)
+        - `dark` - Forces dark theme (dark gray background, light text)
+    - **Dark Mode Colors:** 
+        - Background: `#1a1a1a` (dark gray)
+        - Text: `#e0e0e0` (light gray)
+        - Maintains thermal printer aesthetic with inverted colors
+    - **Settings Integration:** Added theme selector dropdown in the settings panel
+    - **Persistence:** Theme preference is saved to `localStorage` and synchronized with URL parameters
+    - **Dynamic Updates:** Theme changes apply instantly without page reload
+    - **File Changes:**
+        - `chats/vertical-chat.html` - Added CSS variables, theme system, and theme selector UI
+        - `chats/vertical-chat.js` - Added theme configuration, persistence, and event handlers
+- **Technical Details:**
+    - Used `data-theme` attribute on `<body>` element to control active theme
+    - SVG icon filters automatically adjust for theme (invert on dark mode)
+    - Test buttons inherit theme colors for consistency
+    - All thermal printer UI elements (auth buttons, settings panel, test controls) respect theme
+
 ## Session: January 7, 2026
 
 ### Changes Made

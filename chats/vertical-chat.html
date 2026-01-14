@@ -93,6 +93,52 @@
             color: white;
         }
 
+        /* Theme System */
+        :root {
+            --receipt-bg: white;
+            --receipt-text: black;
+            --receipt-border: black;
+            --receipt-divider: black;
+            --receipt-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Auto mode - follows system preference */
+        body[data-theme="auto"] {
+            --receipt-bg: white;
+            --receipt-text: black;
+            --receipt-border: black;
+            --receipt-divider: black;
+            --receipt-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body[data-theme="auto"] {
+                --receipt-bg: #1a1a1a;
+                --receipt-text: #e0e0e0;
+                --receipt-border: #e0e0e0;
+                --receipt-divider: #e0e0e0;
+                --receipt-shadow: rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        /* Force light mode */
+        body[data-theme="light"] {
+            --receipt-bg: white;
+            --receipt-text: black;
+            --receipt-border: black;
+            --receipt-divider: black;
+            --receipt-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Force dark mode */
+        body[data-theme="dark"] {
+            --receipt-bg: #1a1a1a;
+            --receipt-text: #e0e0e0;
+            --receipt-border: #e0e0e0;
+            --receipt-divider: #e0e0e0;
+            --receipt-shadow: rgba(255, 255, 255, 0.3);
+        }
+
         body {
             width: 100vw;
             height: 100vh;
@@ -136,8 +182,8 @@
 
         /* Thermal printer receipt style */
         .chat-message {
-            background: white;
-            color: black;
+            background: var(--receipt-bg);
+            color: var(--receipt-text);
             border: none;
             padding: 0.75rem;
             width: 100%;
@@ -158,8 +204,8 @@
             height: 1px;
             background: repeating-linear-gradient(
                 to right,
-                black 0px,
-                black 5px,
+                var(--receipt-divider) 0px,
+                var(--receipt-divider) 5px,
                 transparent 5px,
                 transparent 10px
             );
@@ -191,7 +237,7 @@
         .username {
             font-weight: 700;
             font-size: 0.875rem;
-            color: black;
+            color: var(--receipt-text);
             text-transform: uppercase;
         }
 
@@ -199,7 +245,7 @@
             font-size: 0.875rem;
             line-height: 1.4;
             word-break: break-word;
-            color: black;
+            color: var(--receipt-text);
             /* Apply grayscale to all content including emojis and user images */
             filter: grayscale(100%);
         }
@@ -209,7 +255,7 @@
             max-width: 100%;
             height: auto;
             margin: 0.5rem 0;
-            border: 1px solid #eee;
+            border: 1px solid var(--receipt-border);
             image-rendering: pixelated; /* Thermal printer feel */
         }
 
@@ -233,9 +279,9 @@
         }
 
         .auth-button {
-            background: white;
-            color: black;
-            border: 2px solid black;
+            background: var(--receipt-bg);
+            color: var(--receipt-text);
+            border: 2px solid var(--receipt-border);
             padding: 0.5rem 1rem;
             text-decoration: none;
             font-size: 0.75rem;
@@ -247,30 +293,71 @@
             gap: 0.5rem;
             transition: all 0.2s;
             pointer-events: auto;
-            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+            box-shadow: 2px 2px 0 var(--receipt-shadow);
         }
 
         .auth-button:hover {
-            background: black;
-            color: white;
+            background: var(--receipt-text);
+            color: var(--receipt-bg);
         }
 
-        .auth-button svg {
+        body[data-theme="light"] .auth-button svg,
+        body[data-theme="auto"] .auth-button svg {
             filter: invert(0);
+        }
+
+        body[data-theme="dark"] .auth-button svg {
+            filter: invert(1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body[data-theme="auto"] .auth-button svg {
+                filter: invert(1);
+            }
         }
 
         .auth-button:hover svg {
             filter: invert(1);
         }
 
+        body[data-theme="dark"] .auth-button:hover svg {
+            filter: invert(0);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body[data-theme="auto"] .auth-button:hover svg {
+                filter: invert(0);
+            }
+        }
+
         .auth-button.logout {
-            background: white;
-            color: black;
+            background: var(--receipt-bg);
+            color: var(--receipt-text);
         }
 
         .auth-button.logout:hover {
-            background: black;
-            color: white;
+            background: var(--receipt-text);
+            color: var(--receipt-bg);
+        }
+
+        /* Test buttons */
+        .test-button {
+            background: var(--receipt-bg);
+            color: var(--receipt-text);
+            border: 2px solid var(--receipt-border);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 var(--receipt-shadow);
+            transition: all 0.2s;
+            font-family: 'Courier Prime', 'Courier New', monospace;
+        }
+
+        .test-button:hover {
+            background: var(--receipt-text);
+            color: var(--receipt-bg);
         }
     </style>
 </head>
@@ -310,6 +397,14 @@
                 <!-- Appearance Section -->
                 <section class="settings-section">
                     <h3 class="section-heading">Appearance</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Theme</label>
+                        <select id="setting-theme" class="select-input">
+                            <option value="auto">Auto (System)</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
                     <div class="settings-group">
                         <label class="control-label">Font Size <span id="size-value" class="value-display">14px</span></label>
                         <input type="range" id="setting-size" min="8" max="40" step="1" value="14" class="range-input">
@@ -374,54 +469,12 @@
     <!-- Test Controls - Thermal Printer Style (hidden in OBS) -->
     <div class="obs-control fixed bottom-4 right-4 flex flex-col gap-2 z-50" style="font-family: 'Courier Prime', 'Courier New', monospace;">
         <div class="flex gap-2">
-            <button 
-                onclick="window.testMessage('regular')" 
-                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-                onmouseover="this.style.background='black'; this.style.color='white';"
-                onmouseout="this.style.background='white'; this.style.color='black';"
-            >
-                Test Msg
-            </button>
-            <button 
-                onclick="window.testMessage('long')" 
-                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-                onmouseover="this.style.background='black'; this.style.color='white';"
-                onmouseout="this.style.background='white'; this.style.color='black';"
-            >
-                Test Long
-            </button>
-            <button 
-                onclick="window.testMessage('image')" 
-                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-                onmouseover="this.style.background='black'; this.style.color='white';"
-                onmouseout="this.style.background='white'; this.style.color='black';"
-            >
-                Test Image
-            </button>
-            <button 
-                onclick="window.testMessage('emotes')" 
-                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-                onmouseover="this.style.background='black'; this.style.color='white';"
-                onmouseout="this.style.background='white'; this.style.color='black';"
-            >
-                Test Emotes
-            </button>
-            <button 
-                onclick="window.testMessage('sequence')" 
-                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-                onmouseover="this.style.background='black'; this.style.color='white';"
-                onmouseout="this.style.background='white'; this.style.color='black';"
-            >
-                Sequence
-            </button>
-            <button 
-                onclick="window.testMessage('clear')" 
-                style="background: white; color: black; border: 2px solid black; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); transition: all 0.2s;"
-                onmouseover="this.style.background='black'; this.style.color='white';"
-                onmouseout="this.style.background='white'; this.style.color='black';"
-            >
-                Clear
-            </button>
+            <button onclick="window.testMessage('regular')" class="test-button">Test Msg</button>
+            <button onclick="window.testMessage('long')" class="test-button">Test Long</button>
+            <button onclick="window.testMessage('image')" class="test-button">Test Image</button>
+            <button onclick="window.testMessage('emotes')" class="test-button">Test Emotes</button>
+            <button onclick="window.testMessage('sequence')" class="test-button">Sequence</button>
+            <button onclick="window.testMessage('clear')" class="test-button">Clear</button>
         </div>
     </div>
 
