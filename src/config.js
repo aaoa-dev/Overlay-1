@@ -13,7 +13,8 @@ const DEFAULT_CONFIG = {
         SCOPES: [
             'chat:read', 
             'chat:edit',
-            'channel:read:subscriptions'
+            'channel:read:subscriptions',
+            'channel:read:hype_train'
         ]
     },
     YOUTUBE: {

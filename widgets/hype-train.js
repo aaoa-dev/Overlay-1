@@ -88,7 +88,7 @@ class HypeTrain {
 
     async init() {
         try {
-            // Initialize Twitch service for authentication
+            // Initialize Twitch service (automatically picks up URL params with highest priority)
             this.twitch = new TwitchService();
             await this.twitch.initialize();
             

@@ -23,7 +23,7 @@ export const config = {
             ACCESS_TOKEN: '',
             REFRESH_TOKEN: '',
             EXPIRES_IN: 0,
-            SCOPES: ['chat:read', 'chat:edit']
+            SCOPES: ['chat:read', 'chat:edit', 'channel:read:subscriptions', 'channel:read:hype_train']
         },
         YOUTUBE: {
             CHANNEL_NAME: ''
