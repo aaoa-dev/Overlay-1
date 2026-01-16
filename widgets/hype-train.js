@@ -107,8 +107,8 @@ class HypeTrain {
 
             const token = authConfig.password.replace('oauth:', '');
             
-            // Initialize EventSub
-            this.eventSub = new TwitchEventSub(token, authConfig.channelId);
+            // Initialize EventSub with Client ID
+            this.eventSub = new TwitchEventSub(token, authConfig.channelId, authConfig.clientId);
             
             ErrorHandler.info('Hype Train: Connecting to EventSub...');
             await this.eventSub.connect();
@@ -120,6 +120,21 @@ class HypeTrain {
             const allSuccess = subscriptions.every(sub => sub.success);
             if (!allSuccess) {
                 ErrorHandler.warn('Hype Train: Some subscriptions failed', subscriptions);
+                
+                // Check if it's an authorization issue
+                const hasAuthError = subscriptions.some(sub => 
+                    !sub.success && sub.error?.status === 401
+                );
+                
+                if (hasAuthError) {
+                    ErrorHandler.warn('Hype Train: Missing required OAuth scope. Please re-authenticate with Twitch to grant the channel:read:hype_train permission.');
+                    if (this.isSettingsMode) {
+                        this.showTestMode();
+                    } else {
+                        this.showError('Re-authenticate required');
+                    }
+                    return;
+                }
             } else {
                 ErrorHandler.info('Hype Train: All subscriptions successful');
             }

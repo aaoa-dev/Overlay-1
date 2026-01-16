@@ -7,9 +7,10 @@
 import { ErrorHandler } from '../utils/ErrorHandler.js';
 
 export class TwitchEventSub {
-    constructor(accessToken, channelId) {
+    constructor(accessToken, channelId, clientId = 'kimne78kx3ncx6brgo4mv6wki5h1ko') {
         this.accessToken = accessToken;
         this.channelId = channelId;
+        this.clientId = clientId;
         this.ws = null;
         this.sessionId = null;
         this.isConnected = false;
@@ -308,7 +309,7 @@ export class TwitchEventSub {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${this.accessToken}`,
-                        'Client-Id': 'kimne78kx3ncx6brgo4mv6wki5h1ko', // Default client ID
+                        'Client-Id': this.clientId,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
