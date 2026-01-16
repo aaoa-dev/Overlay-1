@@ -57,12 +57,30 @@
 - **Reasoning:** These engagement metrics are functionally different enough to warrant separate widgets rather than consolidation.
 - **Implementation:**
     1. **Hype Train** (`widgets/hype-train.html/js`):
-        - Tracks engagement points from subscriptions (T1/T2/T3), resubs, gift subs, and bits
-        - Level progression system with configurable threshold (default: 100 points per level)
-        - Optional decay system (points decrease after inactivity period)
-        - Configurable points per event type
-        - Purple-to-pink gradient progress bar
-        - Real-time updates via Twitch event listeners
+        - **Migrated to Official Twitch EventSub V2 API** (January 16, 2026)
+        - Uses real Twitch Hype Train data via WebSocket EventSub connection
+        - Displays actual Twitch contribution values:
+            - Tier 1 Sub: 500 points
+            - Tier 2 Sub: 1,000 points  
+            - Tier 3 Sub: 2,500 points
+            - Bits: 1 bit = 1 point
+        - Real-time level progression and progress tracking
+        - 5-minute countdown timer per level
+        - Supports V2 features: train type (regular/golden_kappa/treasure), shared trains
+        - Auto-show when train starts, auto-hide when ended (configurable)
+        - Purple-to-pink gradient progress bar with animations
+        - **Requirements:**
+            - OAuth scope: `channel:read:hype_train`
+            - Channel ID must be provided
+            - EventSub WebSocket connection
+        - **Technical Implementation:**
+            - Created `TwitchEventSub.js` service for WebSocket EventSub connections
+            - Handles session management, keepalive, reconnection logic
+            - Subscribes to `channel.hype_train.begin`, `progress`, `end` (V2)
+            - Replaces old arbitrary point system with official Twitch values
+        - **References:**
+            - https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/
+            - https://dev.twitch.tv/docs/eventsub/eventsub-reference/
     2. **Chat Engagement** (`widgets/chat-engagement.html/js`):
         - Tracks total message count and unique chatters
         - Real-time activity indicator (Quiet/Slow/Active/Very Active)

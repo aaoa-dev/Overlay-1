@@ -26,20 +26,22 @@
         }
 
         #hype-container {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
             border-radius: 1.5rem;
             padding: 2rem;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(145, 71, 255, 0.5);
+            box-shadow: 0 0 30px rgba(145, 71, 255, 0.3);
             max-width: 500px;
             width: 90%;
+            transition: all 0.3s ease;
         }
 
         .hype-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .hype-title {
@@ -50,6 +52,74 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        .hype-timer {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #9147ff;
+            text-shadow: 0 0 10px rgba(145, 71, 255, 0.5);
+        }
+
+        .hype-status {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-active {
+            background: rgba(0, 255, 0, 0.2);
+            color: #0f0;
+            border: 1px solid #0f0;
+        }
+
+        .status-ended {
+            background: rgba(255, 0, 0, 0.2);
+            color: #f00;
+            border: 1px solid #f00;
+        }
+
+        .status-completed {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+        }
+
+        .status-test {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+            border: 1px solid #ffa500;
+            animation: pulse-slow 2s infinite;
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Test button styles */
+        .settings-section button {
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .settings-section button:active {
+            transform: scale(0.98);
+        }
+
+        .settings-section button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-error {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+
         .hype-level {
             font-size: 2.5rem;
             font-weight: 900;
@@ -57,6 +127,7 @@
             color: #fff;
             text-shadow: 0 0 20px rgba(145, 71, 255, 0.8);
             margin-bottom: 1rem;
+            transition: transform 0.3s ease;
         }
 
         .progress-container {
@@ -66,6 +137,7 @@
             border-radius: 1rem;
             overflow: hidden;
             margin-bottom: 0.75rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .progress-bar {
@@ -80,6 +152,24 @@
             font-size: 1rem;
             color: white;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .progress-info {
@@ -92,11 +182,56 @@
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.15); }
         }
 
         .level-up {
-            animation: pulse 0.5s ease;
+            animation: pulse 1s ease;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes slideOutDown {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+        }
+
+        .hype-train-enter {
+            animation: slideInUp 0.5s ease;
+        }
+
+        .hype-train-exit {
+            animation: slideOutDown 0.5s ease;
+        }
+
+        .info-note {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(145, 71, 255, 0.1);
+            border: 1px solid rgba(145, 71, 255, 0.3);
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        .info-note strong {
+            color: #9147ff;
         }
     </style>
 </head>
@@ -104,6 +239,10 @@
     <div id="hype-container">
         <div class="hype-header">
             <div class="hype-title">🚂 Hype Train</div>
+            <div class="hype-timer" id="hype-timer">5:00</div>
+        </div>
+        <div style="text-align: center; margin-bottom: 0.5rem;">
+            <span class="hype-status status-active" id="hype-status">WAITING</span>
         </div>
         <div class="hype-level">Level <span id="hype-level-value">0</span></div>
         <div class="progress-container">
@@ -112,8 +251,8 @@
             </div>
         </div>
         <div class="progress-info">
-            <span id="hype-current">0 pts</span>
-            <span id="hype-target">100 pts</span>
+            <span id="hype-current">0</span>
+            <span id="hype-target">0</span>
         </div>
     </div>
 
@@ -140,46 +279,96 @@
             </header>
             
             <div class="settings-content">
+                <div class="info-note" style="font-size: 0.95rem; line-height: 1.6; color: #1a1a1a;">
+                    <strong style="font-size: 1.1rem; color: #7c3aed;">📡 Real Twitch Hype Train</strong><br>
+                    This displays your <em>actual</em> Twitch Hype Train using official EventSub API.<br>
+                    Shows automatically when a train starts on your channel!<br><br>
+                    <strong style="font-size: 1rem; color: #1a1a1a;">Official Point Values:</strong><br>
+                    • Tier 1 Sub: 500 points<br>
+                    • Tier 2 Sub: 1,000 points<br>
+                    • Tier 3 Sub: 2,500 points<br>
+                    • 1 Bit = 1 point
+                </div>
+
                 <section class="settings-section">
-                    <h3 class="section-heading">Configuration</h3>
+                    <h3 class="section-heading" style="font-size: 1rem; margin-bottom: 1rem; color: #7c3aed; font-weight: 700;">TESTING</h3>
                     <div class="settings-group">
-                        <label class="control-label">Points per Level</label>
-                        <input type="number" id="hype-threshold" min="10" max="1000" value="100" class="select-input">
+                        <button id="test-start-train" 
+                            style="width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 700; color: #ffffff !important; background: #7c3aed; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;"
+                            onmouseover="this.style.background='#6d28d9'" 
+                            onmouseout="this.style.background='#7c3aed'">
+                            🚂 Start Test Train (Level 1)
+                        </button>
+                    </div>
+                    <div class="settings-group" style="display: flex; gap: 0.5rem;">
+                        <button id="test-add-sub" 
+                            style="flex: 1; padding: 0.75rem 0.75rem; font-size: 0.95rem; font-weight: 700; color: #ffffff !important; background: #16a34a; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;"
+                            onmouseover="this.style.background='#15803d'" 
+                            onmouseout="this.style.background='#16a34a'">
+                            +500 (T1 Sub)
+                        </button>
+                        <button id="test-add-bits" 
+                            style="flex: 1; padding: 0.75rem 0.75rem; font-size: 0.95rem; font-weight: 700; color: #ffffff !important; background: #ca8a04; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;"
+                            onmouseover="this.style.background='#a16207'" 
+                            onmouseout="this.style.background='#ca8a04'">
+                            +100 (100 Bits)
+                        </button>
                     </div>
                     <div class="settings-group">
-                        <label class="control-label">Points per Tier 1 Sub</label>
-                        <input type="number" id="sub-points" min="1" max="100" value="10" class="select-input">
+                        <button id="test-level-up" 
+                            style="width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 700; color: #ffffff !important; background: #db2777; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;"
+                            onmouseover="this.style.background='#be185d'" 
+                            onmouseout="this.style.background='#db2777'">
+                            ⬆️ Complete Level
+                        </button>
                     </div>
                     <div class="settings-group">
-                        <label class="control-label">Points per Tier 2 Sub</label>
-                        <input type="number" id="tier2-points" min="1" max="100" value="20" class="select-input">
-                    </div>
-                    <div class="settings-group">
-                        <label class="control-label">Points per Tier 3 Sub</label>
-                        <input type="number" id="tier3-points" min="1" max="100" value="50" class="select-input">
-                    </div>
-                    <div class="settings-group">
-                        <label class="control-label">Points per 100 Bits</label>
-                        <input type="number" id="bit-points" min="1" max="100" value="5" class="select-input">
-                    </div>
-                    <div class="settings-group">
-                        <label class="control-label">Decay After (seconds)</label>
-                        <input type="number" id="decay-time" min="0" max="300" value="30" class="select-input">
-                        <p class="text-xs text-muted-foreground mt-1">0 = no decay</p>
+                        <button id="test-end-train" 
+                            style="width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 700; color: #ffffff !important; background: #dc2626; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;"
+                            onmouseover="this.style.background='#b91c1c'" 
+                            onmouseout="this.style.background='#dc2626'">
+                            🛑 End Test Train
+                        </button>
                     </div>
                 </section>
 
                 <section class="settings-section">
-                    <h3 class="section-heading">Appearance</h3>
+                    <h3 class="section-heading" style="font-size: 1rem; margin-bottom: 1rem; color: #7c3aed; font-weight: 700;">DISPLAY OPTIONS</h3>
                     <div class="settings-group">
-                        <label class="control-label">Scale <span id="scale-value" class="value-display">100%</span></label>
+                        <label class="control-label flex items-center gap-3" style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">
+                            <input type="checkbox" id="show-timer" checked class="checkbox-input" style="width: 20px; height: 20px;">
+                            Show countdown timer
+                        </label>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label flex items-center gap-3" style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">
+                            <input type="checkbox" id="auto-hide" checked class="checkbox-input" style="width: 20px; height: 20px;">
+                            Auto-hide when train ends
+                        </label>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading" style="font-size: 1rem; margin-bottom: 1rem; color: #7c3aed; font-weight: 700;">APPEARANCE</h3>
+                    <div class="settings-group">
+                        <label class="control-label" style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">
+                            Scale <span id="scale-value" class="value-display" style="font-size: 1.1rem; font-weight: 700; color: #7c3aed;">100%</span>
+                        </label>
                         <input type="range" id="scale-slider" min="50" max="200" step="10" value="100" class="range-input">
                     </div>
                     <div class="settings-group">
-                        <label class="control-label">Opacity <span id="opacity-value" class="value-display">100%</span></label>
+                        <label class="control-label" style="font-size: 1rem; font-weight: 600; color: #1a1a1a;">
+                            Opacity <span id="opacity-value" class="value-display" style="font-size: 1.1rem; font-weight: 700; color: #7c3aed;">100%</span>
+                        </label>
                         <input type="range" id="opacity-slider" min="0" max="100" step="5" value="100" class="range-input">
                     </div>
                 </section>
+
+                <div class="info-note" style="margin-top: 1rem; font-size: 0.95rem; line-height: 1.6; color: #1a1a1a;">
+                    <strong style="font-size: 1rem; color: #7c3aed;">💡 How It Works:</strong><br>
+                    Uses your global Twitch authentication automatically. No extra setup needed!<br>
+                    Widget appears when a Hype Train starts and hides when it ends.
+                </div>
             </div>
         </div>
     </div>
