@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Percentage Goal</title>
+    <link rel="stylesheet" href="../output.css">
+    <link rel="stylesheet" href="../styles/components/settings.css">
+    <link rel="stylesheet" href="../styles/obs-controls.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        #goal-container {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .goal-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+        }
+
+        .percentage-display {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .percentage-value {
+            font-size: 5rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .percentage-symbol {
+            font-size: 3rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.6);
+            margin-left: 0.25rem;
+        }
+
+        .goal-details {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
+        }
+
+        .progress-mini {
+            height: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+
+        .progress-mini-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            border-radius: 0.25rem;
+            transition: width 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .milestone-reached {
+            animation: pulse 0.5s ease;
+        }
+
+        .circular-progress {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .circular-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .circular-progress-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 10;
+        }
+
+        .circular-progress-bar {
+            fill: none;
+            stroke: #4ade80;
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .circular-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 900;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="goal-container">
+        <div class="goal-title" id="goal-title">🎯 Goal Progress</div>
+        
+        <div class="circular-progress">
+            <svg width="200" height="200" viewBox="0 0 200 200">
+                <circle class="circular-progress-bg" cx="100" cy="100" r="90"></circle>
+                <circle id="circular-bar" class="circular-progress-bar" cx="100" cy="100" r="90" 
+                        stroke-dasharray="565.48" stroke-dashoffset="565.48"></circle>
+            </svg>
+            <div class="circular-percentage" id="percentage-value">0%</div>
+        </div>
+        
+        <div class="goal-details">
+            <span id="goal-current">0</span> / <span id="goal-target">100</span>
+        </div>
+        
+        <div class="progress-mini">
+            <div class="progress-mini-bar" id="progress-mini-bar" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- Settings Panel (hidden in OBS) -->
+    <div class="obs-control fixed top-4 left-4 flex flex-col gap-2 z-20">
+        <button 
+            id="toggle-settings" 
+            class="settings-trigger"
+            title="Percentage Goal Settings"
+            aria-label="Open percentage goal settings"
+            aria-expanded="false"
+            aria-controls="settings-panel"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543-.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+        </button>
+
+        <div id="settings-panel" class="settings-panel hidden">
+            <header class="settings-header">
+                <h2 class="settings-title">Percentage Goal Settings</h2>
+                <button id="reset-settings" class="reset-button">Reset</button>
+            </header>
+            
+            <div class="settings-content">
+                <section class="settings-section">
+                    <h3 class="section-heading">Goal Configuration</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Goal Type</label>
+                        <select id="goal-type" class="select-input">
+                            <option value="followers">Followers</option>
+                            <option value="subs">Subscribers</option>
+                        </select>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Target</label>
+                        <input type="number" id="goal-target-value" min="1" max="100000" value="100" class="select-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Range</label>
+                        <select id="goal-range" class="select-input">
+                            <option value="all">All Time</option>
+                            <option value="day">Today</option>
+                            <option value="month">This Month</option>
+                            <option value="session">This Session</option>
+                        </select>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Custom Label (optional)</label>
+                        <input type="text" id="custom-label" placeholder="e.g. Road to Affiliate" class="select-input">
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Display Options</h3>
+                    <div class="settings-group">
+                        <div class="flex items-center justify-between">
+                            <label class="control-label">Show Title</label>
+                            <label class="toggle">
+                                <input type="checkbox" id="show-label" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="flex items-center justify-between">
+                            <label class="control-label">Show Circular Percentage</label>
+                            <label class="toggle">
+                                <input type="checkbox" id="show-percentage" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="flex items-center justify-between">
+                            <label class="control-label">Show Current/Target Numbers</label>
+                            <label class="toggle">
+                                <input type="checkbox" id="show-numbers" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="flex items-center justify-between">
+                            <label class="control-label">Show Mini Progress Bar</label>
+                            <label class="toggle">
+                                <input type="checkbox" id="show-progress-bar" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="flex items-center justify-between">
+                            <label class="control-label">Show Range in Title</label>
+                            <label class="toggle">
+                                <input type="checkbox" id="show-range" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Appearance</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Scale <span id="scale-value" class="value-display">100%</span></label>
+                        <input type="range" id="scale-slider" min="50" max="200" step="10" value="100" class="range-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Opacity <span id="opacity-value" class="value-display">100%</span></label>
+                        <input type="range" id="opacity-slider" min="0" max="100" step="5" value="100" class="range-input">
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- OBS Copy Button -->
+    <div class="obs-control fixed top-4 right-4 flex items-center gap-2 z-10">
+        <button 
+            id="copy-obs-url" 
+            class="px-6 py-3 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-2"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            Copy OBS URL
+        </button>
+    </div>
+
+    <script type="module" src="goal-percentage.js"></script>
+</body>
+</html>

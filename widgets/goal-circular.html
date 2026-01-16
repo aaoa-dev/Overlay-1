@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Goal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../output.css">
+    <link rel="stylesheet" href="../styles/components/settings.css">
+    <link rel="stylesheet" href="../styles/obs-controls.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        #goal-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .circle-background {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .circle-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-45deg);
+        }
+
+        .center-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Koulen', sans-serif;
+            font-size: 20rem;
+            font-weight: 400;
+            color: white;
+            line-height: 1;
+            z-index: 10;
+        }
+
+        .circular-text {
+            fill: white;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 1.25rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.9;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .milestone-reached {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes rotateCircle {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes rotateCircleSvg {
+            0% { transform: rotate(-45deg); }
+            50% { transform: rotate(315deg); }
+            100% { transform: rotate(-45deg); }
+        }
+
+        .circle-wrapper.rotate-animate .circle-background {
+            animation: rotateCircle 3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .circle-wrapper.rotate-animate .circle-svg {
+            animation: rotateCircleSvg 3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        /* Ensure center value stays static during rotation */
+        .center-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        /* Gradient backgrounds */
+        .gradient-purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .gradient-green {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .gradient-orange {
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6a4d 100%);
+        }
+
+        .gradient-pink {
+            background: linear-gradient(135deg, #ff6ec4 0%, #7873f5 100%);
+        }
+
+        .gradient-teal {
+            background: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
+        }
+    </style>
+</head>
+<body>
+    <div id="goal-container">
+        <div class="circle-wrapper">
+            <div id="circle-background" class="circle-background gradient-purple"></div>
+            
+            <svg class="circle-svg" viewBox="0 0 400 400">
+                <defs>
+                    <path id="circlePath" d="M 200, 200 m -160, 0 a 160,160 0 1,1 320,0 a 160,160 0 1,1 -320,0" />
+                    <path id="circlePathBottom" d="M 200, 200 m 160, 0 a 160,160 0 1,1 -320,0 a 160,160 0 1,1 320,0" />
+                </defs>
+                <text class="circular-text">
+                    <textPath id="circular-text" href="#circlePath" startOffset="50%" text-anchor="middle">
+                        DAILY FOLLOWER GOAL
+                    </textPath>
+                </text>
+                <text class="circular-text circular-text-secondary">
+                    <textPath id="circular-text-secondary" href="#circlePathBottom" startOffset="50%" text-anchor="middle">
+                        TARGET: 100
+                    </textPath>
+                </text>
+            </svg>
+            
+            <div id="center-value" class="center-value">0</div>
+        </div>
+    </div>
+
+    <!-- Settings Panel (hidden in OBS) -->
+    <div class="obs-control fixed top-4 left-4 flex flex-col gap-2 z-20">
+        <button 
+            id="toggle-settings" 
+            class="settings-trigger"
+            title="Circular Goal Settings"
+            aria-label="Open circular goal settings"
+            aria-expanded="false"
+            aria-controls="settings-panel"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543-.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+        </button>
+
+        <div id="settings-panel" class="settings-panel hidden">
+            <header class="settings-header">
+                <h2 class="settings-title">Circular Goal Settings</h2>
+                <button id="reset-settings" class="reset-button">Reset</button>
+            </header>
+            
+            <div class="settings-content">
+                <section class="settings-section">
+                    <h3 class="section-heading">Goal Configuration</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Goal Type</label>
+                        <select id="goal-type" class="select-input">
+                            <option value="followers">Followers</option>
+                            <option value="subs">Subscribers</option>
+                        </select>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Target</label>
+                        <input type="number" id="goal-target-value" min="1" max="100000" value="100" class="select-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Range</label>
+                        <select id="goal-range" class="select-input">
+                            <option value="all">All Time</option>
+                            <option value="day">Today</option>
+                            <option value="month">This Month</option>
+                            <option value="session">This Session</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Text Content</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Primary Circular Text (Top)</label>
+                        <input type="text" id="circular-text-input" placeholder="e.g. DAILY FOLLOWER GOAL" class="select-input" value="DAILY FOLLOWER GOAL">
+                        <p class="text-xs text-muted-foreground mt-1">Text that appears on the top half of the circle</p>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Secondary Circular Text (Bottom)</label>
+                        <input type="text" id="circular-text-secondary-input" placeholder="e.g. TARGET: 100" class="select-input" value="TARGET: 100">
+                        <p class="text-xs text-muted-foreground mt-1">Text that appears on the bottom half of the circle</p>
+                    </div>
+                    <div class="settings-group">
+                        <label class="toggle-wrapper">
+                            <span class="control-label">Show Secondary Text</span>
+                            <label class="toggle">
+                                <input type="checkbox" id="show-secondary-text" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Colors</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Background Gradient</label>
+                        <select id="gradient-select" class="select-input">
+                            <option value="purple">Purple</option>
+                            <option value="blue">Blue</option>
+                            <option value="green">Green</option>
+                            <option value="orange">Orange</option>
+                            <option value="pink">Pink</option>
+                            <option value="teal">Teal</option>
+                        </select>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Center Number Color</label>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="center-color" value="#ffffff" class="color-input">
+                            <span id="center-color-value" class="color-value-text">#FFFFFF</span>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Circular Text Color</label>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="text-color" value="#ffffff" class="color-input">
+                            <span id="text-color-value" class="color-value-text">#FFFFFF</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Typography</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Center Font Size <span id="center-size-value" class="value-display">5rem</span></label>
+                        <input type="range" id="center-size-slider" min="2" max="20" step="0.5" value="5" class="range-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Circular Text Size <span id="text-size-value" class="value-display">1.25rem</span></label>
+                        <input type="range" id="text-size-slider" min="0.5" max="4" step="0.05" value="1.25" class="range-input">
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Size</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Circle Size <span id="size-value" class="value-display">400px</span></label>
+                        <input type="range" id="size-slider" min="200" max="800" step="50" value="400" class="range-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Opacity <span id="opacity-value" class="value-display">100%</span></label>
+                        <input type="range" id="opacity-slider" min="0" max="100" step="5" value="100" class="range-input">
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Testing</h3>
+                    <div class="settings-group">
+                        <button id="test-rotation" class="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm transition-all hover:scale-105 w-full">
+                            Test Rotation Animation
+                        </button>
+                        <p class="text-xs text-muted-foreground mt-1">Preview the rotation effect that plays on follow events</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- OBS Copy Button -->
+    <div class="obs-control fixed top-4 right-4 flex items-center gap-2 z-10">
+        <button 
+            id="copy-obs-url" 
+            class="px-6 py-3 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-2"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            Copy OBS URL
+        </button>
+    </div>
+
+    <script type="module" src="goal-circular.js"></script>
+</body>
+</html>

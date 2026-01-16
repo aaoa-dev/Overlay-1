@@ -1,5 +1,148 @@
 # Project Documentation: Overlay-1
 
+## Session: January 16, 2026
+
+### Changes Made
+
+#### Consolidated Goal Widgets with Multiple Visual Styles
+- **Decision:** Consolidate goal tracking functionality into a shared backend (`widgets/shared/GoalWidget.js`) with three distinct visual presentations.
+- **Reasoning:** Streamers are visual creators who browse by aesthetics first. Rather than burying different styles in settings, we provide separate widgets in the gallery for visual discovery while keeping the codebase DRY through a shared backend.
+- **Implementation:**
+    - **Shared Backend** (`widgets/shared/GoalWidget.js`):
+        - Centralized goal tracking logic for followers/subscribers
+        - Integrates with `TwitchService` and `StreamStatsService`
+        - Supports multiple time ranges (all-time, today, this month, this session)
+        - Configurable via URL parameters and localStorage
+        - Milestone detection with animation callbacks
+        - One-click OBS URL generation with auth
+    - **Four Visual Styles:**
+        1. **Minimal Goal** (`goal-minimal.html/js`):
+            - Compact number display: "25/100"
+            - Customizable font size (1-30vw)
+            - Theme options (default, minimal, bold, glow)
+            - Optional label display
+            - Replaces old "Follower Goal", "Sub Counter", and "Custom Goal" widgets
+        2. **Progress Goal** (`goal-progress.html/js`):
+            - Full progress bar with current/target display
+            - Large numbers with green gradient progress bar
+            - Percentage display below bar
+            - Custom label support
+            - Renamed from original "Goal Tracker"
+        3. **Percentage Goal** (`goal-percentage.html/js`):
+            - Circular progress indicator
+            - Large percentage-focused display
+            - Mini progress bar at bottom
+            - Perfect for "at-a-glance" goal status
+        4. **Circular Goal** (`goal-circular.html/js`):
+            - Minimalist circular badge design
+            - Single centered number (current value)
+            - SVG circular text around the edge
+            - Customizable gradient backgrounds (6 presets)
+            - Perfect 1:1 aspect ratio
+            - Configurable circle size (200-800px)
+            - Text follows true circular path using SVG textPath
+    - **Code Benefits:**
+        - Single source of truth for goal logic
+        - Easy to add new visual styles
+        - Consistent settings across all styles
+        - Reduced maintenance burden
+    - **UX Benefits:**
+        - Visual browsing in widget gallery
+        - Each style gets its own preview image
+        - No hidden options - what you see is what you get
+        - Users can choose based on aesthetics
+
+#### Individual Engagement Widgets
+- **Decision:** Create three separate engagement widgets: Hype Train, Chat Engagement (retained from above).
+- **Reasoning:** These engagement metrics are functionally different enough to warrant separate widgets rather than consolidation.
+- **Implementation:**
+    1. **Hype Train** (`widgets/hype-train.html/js`):
+        - Tracks engagement points from subscriptions (T1/T2/T3), resubs, gift subs, and bits
+        - Level progression system with configurable threshold (default: 100 points per level)
+        - Optional decay system (points decrease after inactivity period)
+        - Configurable points per event type
+        - Purple-to-pink gradient progress bar
+        - Real-time updates via Twitch event listeners
+    2. **Chat Engagement** (`widgets/chat-engagement.html/js`):
+        - Tracks total message count and unique chatters
+        - Real-time activity indicator (Quiet/Slow/Active/Very Active)
+        - Color-coded pulsing dot based on messages per minute
+        - Configurable activity threshold
+        - Manual counter reset option
+        - Sliding window calculation (last 60 seconds)
+- **Technical Details:**
+    - All widgets follow existing architectural patterns
+    - Settings persist to localStorage using `StorageService`
+    - URL parameter support for OBS embeds
+    - Integration with `TwitchService` for real-time events
+    - "Copy OBS URL" functionality with authentication included
+- **Implementation:**
+    - **Widget Structure:** Created `widgets/engagement-suite.html` and `widgets/engagement-suite.js` following the existing architectural pattern used by `timer.html` and `counter.html`.
+    - **Three Independent Modules:**
+        1. **Hype Train Module:**
+            - Tracks engagement points from subscriptions, resubs, gift subs, and bits
+            - Displays current level and progress bar with percentage
+            - Configurable points per event (subs, bits)
+            - Optional decay system that reduces points after inactivity
+            - Visual: Progress bar with gradient (purple to pink), level indicator
+        2. **Goal Tracking Module:**
+            - Displays current vs. target for followers or subscribers
+            - Supports multiple time ranges (all time, today, this month, this session)
+            - Progress bar with percentage display
+            - Integrates with `StreamStatsService` for accurate relative counts
+            - Visual: Large current/target display with green progress bar
+        3. **Chat Engagement Module:**
+            - Tracks total message count and unique chatters
+            - Real-time activity indicator with status levels (Quiet, Slow, Active, Very Active)
+            - Configurable activity threshold (messages per minute)
+            - Color-coded activity dot (red, orange, yellow, green)
+            - Visual: Grid layout with stats and pulsing activity indicator
+    - **Module Toggles:** Each module can be independently enabled or disabled via settings
+    - **Layout Options:**
+        - Vertical (default): Modules stack vertically
+        - Horizontal: Modules arranged side-by-side
+        - Compact mode: Reduced padding and font sizes for tighter layouts
+    - **Configuration System:**
+        - All settings exposed via comprehensive settings panel
+        - Settings persist to `localStorage` using `StorageService`
+        - URL parameters support for OBS embeds
+        - One-click "Copy OBS URL" generates complete configuration URL with auth
+    - **Integration with Existing Services:**
+        - Uses `TwitchService` for real-time event listening and chat messages
+        - Uses `StreamStatsService` for follower/subscriber tracking and baselines
+        - Uses `StorageService` for settings persistence
+        - Uses `ErrorHandler` for error logging and debugging
+        - Follows same authentication pattern as other widgets (URL params, localStorage, config file)
+    - **Event Handlers:**
+        - Listens for `message`, `subscription`, `resub`, `subgift`, and `cheer` events
+        - Real-time updates without polling for chat metrics
+        - Periodic polling (30s) for follower/subscriber counts via Twitch API
+    - **Visual Design:**
+        - Glassmorphic dark cards with backdrop blur
+        - Smooth animations for progress bars and indicators
+        - Gradient progress bars matching brand colors
+        - Responsive layout adapts to content visibility
+        - Scale and opacity controls for overlay integration
+    - **File Changes:**
+        - Created `widgets/engagement-suite.html` - Widget page with three module sections and settings panel
+        - Created `widgets/engagement-suite.js` - Widget logic with state management and Twitch integration
+        - Modified `index.html` - Added Engagement Suite to OVERLAYS array for landing page discovery
+        - Created `previews/engagement-suite.svg` - Preview placeholder following project convention
+- **Technical Details:**
+    - Widget follows zero-configuration principle: works immediately with default settings when URL is opened
+    - Settings panel hidden in OBS but visible in browser for configuration
+    - Hype Train decay system runs on 1-second interval when enabled
+    - Chat activity calculation uses sliding window (last 60 seconds of messages)
+    - Goal tracking supports all StreamStatsService ranges for flexible milestone tracking
+    - All three modules update independently without blocking each other
+    - Modular design allows easy addition of future engagement metrics
+- **User Experience:**
+    - Single URL to copy-paste into OBS
+    - No external dependencies beyond existing shared services
+    - Instant visual feedback for all engagement events
+    - Customizable appearance matches stream branding
+    - Modules can be toggled on/off without recreating URL
+
 ## Session: January 14, 2026
 
 ### Changes Made

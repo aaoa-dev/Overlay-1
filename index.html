@@ -282,49 +282,36 @@
                 icon: 'sparkles'
             },
             {
-                id: 'followers',
-                title: 'Follower Goal',
-                description: 'Progressive counter to track and celebrate your growth.',
-                path: 'widgets/counter.html',
-                params: { type: 'followers', label: 'Followers' },
-                previewId: 'preview-followers',
-                icon: 'trending-up',
-                supportedRanges: [
-                    { id: 'all', label: 'All Time' },
-                    { id: 'day', label: 'Today' },
-                    { id: 'month', label: 'This Month' },
-                    { id: 'session', label: 'This Session' }
-                ]
+                id: 'goal-minimal',
+                title: 'Minimal Goal',
+                description: 'Compact follower or subscriber goal counter with clean typography.',
+                path: 'widgets/goal-minimal.html',
+                previewId: 'preview-goal-minimal',
+                icon: 'minus-circle'
             },
             {
-                id: 'subscribers',
-                title: 'Sub Counter',
-                description: 'Real-time subscriber tracking with goal milestones.',
-                path: 'widgets/counter.html',
-                params: { type: 'subs', label: 'Subscribers' },
-                previewId: 'preview-subscribers',
-                icon: 'heart',
-                supportedRanges: [
-                    { id: 'all', label: 'All Time' },
-                    { id: 'day', label: 'Today' },
-                    { id: 'month', label: 'This Month' },
-                    { id: 'session', label: 'This Session' }
-                ]
+                id: 'goal-progress',
+                title: 'Progress Goal',
+                description: 'Full progress bar display with current/target and percentage tracking.',
+                path: 'widgets/goal-progress.html',
+                previewId: 'preview-goal-progress',
+                icon: 'bar-chart-2'
             },
             {
-                id: 'custom-goal',
-                title: 'Custom Goal',
-                description: 'A highly configurable goal counter with custom labels and colors.',
-                path: 'widgets/counter.html',
-                params: { 
-                    type: 'followers', 
-                    label: 'Goal', 
-                    target: '100', 
-                    color: '#a855f7',
-                    theme: 'glow'
-                },
-                previewId: 'preview-custom',
-                icon: 'flag'
+                id: 'goal-percentage',
+                title: 'Percentage Goal',
+                description: 'Large circular percentage display perfect for visual goal tracking.',
+                path: 'widgets/goal-percentage.html',
+                previewId: 'preview-goal-percentage',
+                icon: 'pie-chart'
+            },
+            {
+                id: 'goal-circular',
+                title: 'Circular Goal',
+                description: 'Minimal circular badge with centered value and text around the edge.',
+                path: 'widgets/goal-circular.html',
+                previewId: 'preview-goal-circular',
+                icon: 'circle'
             },
             {
                 id: 'timer',
@@ -387,6 +374,22 @@
                 path: 'widgets/stamp.html',
                 previewId: 'preview-stamp',
                 icon: 'award'
+            },
+            {
+                id: 'hype-train',
+                title: 'Hype Train',
+                description: 'Track engagement points from subs, bits, and more with level progression.',
+                path: 'widgets/hype-train.html',
+                previewId: 'preview-hype-train',
+                icon: 'zap'
+            },
+            {
+                id: 'chat-engagement',
+                title: 'Chat Engagement',
+                description: 'Real-time chat activity tracker with message count and engagement levels.',
+                path: 'widgets/chat-engagement.html',
+                previewId: 'preview-chat-engagement',
+                icon: 'activity'
             }
         ];
 

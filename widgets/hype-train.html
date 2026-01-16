@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hype Train</title>
+    <link rel="stylesheet" href="../output.css">
+    <link rel="stylesheet" href="../styles/components/settings.css">
+    <link rel="stylesheet" href="../styles/obs-controls.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        #hype-container {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .hype-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .hype-title {
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .hype-level {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(145, 71, 255, 0.8);
+            margin-bottom: 1rem;
+        }
+
+        .progress-container {
+            position: relative;
+            height: 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #9147ff, #ff4d94);
+            border-radius: 1rem;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .level-up {
+            animation: pulse 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="hype-container">
+        <div class="hype-header">
+            <div class="hype-title">🚂 Hype Train</div>
+        </div>
+        <div class="hype-level">Level <span id="hype-level-value">0</span></div>
+        <div class="progress-container">
+            <div class="progress-bar" id="hype-progress" style="width: 0%;">
+                <span id="hype-progress-text">0%</span>
+            </div>
+        </div>
+        <div class="progress-info">
+            <span id="hype-current">0 pts</span>
+            <span id="hype-target">100 pts</span>
+        </div>
+    </div>
+
+    <!-- Settings Panel (hidden in OBS) -->
+    <div class="obs-control fixed top-4 left-4 flex flex-col gap-2 z-20">
+        <button 
+            id="toggle-settings" 
+            class="settings-trigger"
+            title="Hype Train Settings"
+            aria-label="Open hype train settings"
+            aria-expanded="false"
+            aria-controls="settings-panel"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543-.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+        </button>
+
+        <div id="settings-panel" class="settings-panel hidden">
+            <header class="settings-header">
+                <h2 class="settings-title">Hype Train Settings</h2>
+                <button id="reset-settings" class="reset-button">Reset</button>
+            </header>
+            
+            <div class="settings-content">
+                <section class="settings-section">
+                    <h3 class="section-heading">Configuration</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Points per Level</label>
+                        <input type="number" id="hype-threshold" min="10" max="1000" value="100" class="select-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Points per Tier 1 Sub</label>
+                        <input type="number" id="sub-points" min="1" max="100" value="10" class="select-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Points per Tier 2 Sub</label>
+                        <input type="number" id="tier2-points" min="1" max="100" value="20" class="select-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Points per Tier 3 Sub</label>
+                        <input type="number" id="tier3-points" min="1" max="100" value="50" class="select-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Points per 100 Bits</label>
+                        <input type="number" id="bit-points" min="1" max="100" value="5" class="select-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Decay After (seconds)</label>
+                        <input type="number" id="decay-time" min="0" max="300" value="30" class="select-input">
+                        <p class="text-xs text-muted-foreground mt-1">0 = no decay</p>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h3 class="section-heading">Appearance</h3>
+                    <div class="settings-group">
+                        <label class="control-label">Scale <span id="scale-value" class="value-display">100%</span></label>
+                        <input type="range" id="scale-slider" min="50" max="200" step="10" value="100" class="range-input">
+                    </div>
+                    <div class="settings-group">
+                        <label class="control-label">Opacity <span id="opacity-value" class="value-display">100%</span></label>
+                        <input type="range" id="opacity-slider" min="0" max="100" step="5" value="100" class="range-input">
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- OBS Copy Button -->
+    <div class="obs-control fixed top-4 right-4 flex items-center gap-2 z-10">
+        <button 
+            id="copy-obs-url" 
+            class="px-6 py-3 rounded-4xl bg-primary text-primary-foreground font-bold text-sm transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 flex items-center gap-2"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            Copy OBS URL
+        </button>
+    </div>
+
+    <script type="module" src="hype-train.js"></script>
+</body>
+</html>
