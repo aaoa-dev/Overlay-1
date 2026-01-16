@@ -58,6 +58,7 @@
             width: 100%;
             height: 100%;
             transform: rotate(-45deg);
+            mix-blend-mode: overlay;
         }
 
         .center-value {
@@ -71,16 +72,20 @@
             color: white;
             line-height: 1;
             z-index: 10;
+            -webkit-text-stroke-width: 8px;
         }
 
         .circular-text {
-            fill: white;
+            fill: black;
             font-family: 'Inter', system-ui, sans-serif;
             font-size: 1.25rem;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            opacity: 0.9;
+            opacity: 1;
+            stroke: black;
+            stroke-width: 2px;
+            paint-order: stroke fill;
         }
 
         @keyframes pulse {
@@ -154,8 +159,8 @@
             
             <svg class="circle-svg" viewBox="0 0 400 400">
                 <defs>
-                    <path id="circlePath" d="M 200, 200 m -160, 0 a 160,160 0 1,1 320,0 a 160,160 0 1,1 -320,0" />
-                    <path id="circlePathBottom" d="M 200, 200 m 160, 0 a 160,160 0 1,1 -320,0 a 160,160 0 1,1 320,0" />
+                    <path id="circlePath" d="M 200, 200 m -150, 0 a 150,150 0 1,1 300,0 a 150,150 0 1,1 -300,0" />
+                    <path id="circlePathBottom" d="M 200, 200 m 150, 0 a 150,150 0 1,1 -300,0 a 150,150 0 1,1 300,0" />
                 </defs>
                 <text class="circular-text">
                     <textPath id="circular-text" href="#circlePath" startOffset="50%" text-anchor="middle">
@@ -266,8 +271,8 @@
                     <div class="settings-group">
                         <label class="control-label">Circular Text Color</label>
                         <div class="color-input-wrapper">
-                            <input type="color" id="text-color" value="#ffffff" class="color-input">
-                            <span id="text-color-value" class="color-value-text">#FFFFFF</span>
+                            <input type="color" id="text-color" value="#000000" class="color-input">
+                            <span id="text-color-value" class="color-value-text">#000000</span>
                         </div>
                     </div>
                 </section>

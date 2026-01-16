@@ -45,7 +45,7 @@ class CircularGoalUI {
             showSecondaryText: true,
             gradient: 'purple',
             centerColor: '#ffffff',
-            textColor: '#ffffff',
+            textColor: '#000000',
             centerSize: 5,
             textSize: 1.25,
             circleSize: 400
@@ -131,10 +131,12 @@ class CircularGoalUI {
         
         // Apply colors
         this.elements.centerValue.style.color = this.extraConfig.centerColor;
+        this.elements.centerValue.style.webkitTextStrokeColor = this.extraConfig.centerColor;
         
         const textElements = document.querySelectorAll('.circular-text');
         textElements.forEach(el => {
             el.style.fill = this.extraConfig.textColor;
+            el.style.stroke = this.extraConfig.textColor;
         });
         
         // Apply font sizes
